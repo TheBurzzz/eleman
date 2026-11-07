@@ -2,8 +2,9 @@
 <h1 align="center">Eleman</h1>
 <p align="center">Kesim planlamanın yardımcısı: <b>Asorti Aracı</b> ve <b>Ölçü Tablosu</b> tek programda.</p>
 
-<!-- TANITIM VİDEOSU: Eleman_tanitim_github.mp4 dosyasını bu satırın altındaki boş satıra sürükle -->
+<p align="center"><sub>🔊 4 dakikalık sesli tanıtım. Video sessiz başlar; anlatımı duymak için oynatıcıdaki hoparlör simgesine bas.</sub></p>
 
+https://github.com/user-attachments/assets/385da325-eea1-4f1e-a2aa-67276aac243f
 
 | Uygulama | Ne yapar |
 |---|---|
