@@ -189,6 +189,12 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
   iki adı dener (mono'da denendi: eski adlı ayar, ayarsız, başka depo), eski PowerShell sunucusu da; kurulum yeni klasör adını
   tanır; README Eleman'ın vitrin sayfası oldu (simge, iki uygulama, kurulum, klasörler, dallar).
 
+- 2026-11-07 gece: **README'de tanıtım videosu** (yalnız README, program ve sürüm aynı): 4:23 sesli tanıtım, demo verisiyle
+  (gerçek müşteri belgesi yok). Video depoda değil, GitHub eki: `https://github.com/user-attachments/assets/767b67ba-…`
+  (ücretsiz planda 10 MB sınırı: 720p, 24 fps; ilk 1,5 sn giriş kartı, oynatıcı siyah kare göstermesin). README düzenlenirken
+  bu adres tek başına bir satırda, üstü altı boş kalmalı; `<video>` etiketine çevrilmemeli (giriş yapmış kullanıcıda oynamıyor).
+  mp4 depoya konmamalı: güncelleyici dalın zip'ini indiriyor, her güncelleme büyür. Oynatıcı sessiz başlıyor, üstünde not var.
+
 ## Sıradaki işler
 0. **Sürüm arşivi = GitHub Releases.** 32 sürüm (ilk-deneme, v1.0.0–v1.1.22, v2.0.0–v2.0.4) bir kerelik GitHub Actions işiyle
    taşındı, `surum-v*`, `arsiv`, `surum-test` dalları silindi (dallar: eleman, main, exe-deneme). Bu oturumlardan etiket ve
