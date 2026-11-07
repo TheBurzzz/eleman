@@ -4,7 +4,7 @@
 
 <p align="center"><sub>🔊 4 dakikalık sesli tanıtım. Video sessiz başlar; anlatımı duymak için oynatıcıdaki hoparlör simgesine bas.</sub></p>
 
-https://github.com/user-attachments/assets/385da325-eea1-4f1e-a2aa-67276aac243f
+https://github.com/user-attachments/assets/767b67ba-f821-4476-ba39-48d75cf4370b
 
 | Uygulama | Ne yapar |
 |---|---|
