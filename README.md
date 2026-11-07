@@ -2,6 +2,9 @@
 <h1 align="center">Eleman</h1>
 <p align="center">Kesim planlamanın yardımcısı: <b>Asorti Aracı</b> ve <b>Ölçü Tablosu</b> tek programda.</p>
 
+<!-- TANITIM VİDEOSU: Eleman_tanitim_github.mp4 dosyasını bu satırın altındaki boş satıra sürükle -->
+
+
 | Uygulama | Ne yapar |
 |---|---|
 | **Asorti Aracı** | Siparişi yaz, asortiyi hesapla, Excel'e kaydet. Pastalları Gerber'e gönder. |
