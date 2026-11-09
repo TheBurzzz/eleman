@@ -1,10 +1,10 @@
-# main'e yeni sürüm (AsortiAraci/surum.json) geldiğinde GitHub Releases'a kendiliğinden eklenir.
+# main'e yeni sürüm (Eleman/surum.json; eski adı AsortiAraci/surum.json) geldiğinde GitHub Releases'a kendiliğinden eklenir.
 # Etiket: v<sürüm>, notlar surum.json'dan. (Bu dosya main'e Eleman ile birlikte geçince çalışmaya başlar.)
 name: Sürüm
 on:
   push:
     branches: [main]
-    paths: ['AsortiAraci/surum.json']
+    paths: ['Eleman/surum.json', 'AsortiAraci/surum.json']
 permissions:
   contents: write
 jobs:
@@ -17,8 +17,9 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           python3 - <<'PY'
-          import json, subprocess
-          s = json.loads(open('AsortiAraci/surum.json', encoding='utf-8-sig').read())
+          import json, os, subprocess
+          yol = 'Eleman/surum.json' if os.path.exists('Eleman/surum.json') else 'AsortiAraci/surum.json'
+          s = json.loads(open(yol, encoding='utf-8-sig').read())
           t = 'v' + s['surum']
           if subprocess.run(['gh', 'release', 'view', t], capture_output=True).returncode == 0:
               print('zaten var:', t); raise SystemExit

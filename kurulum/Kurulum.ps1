@@ -1,5 +1,5 @@
 ﻿# Eleman (Asorti Aracı + Ölçü Tablosu Aracı) - kurulum sihirbazı
-# Paket yapısı:  Kurulum.bat | kurulum\Kurulum.ps1 | AsortiAraci\ (uygulama dosyaları)
+# Paket yapısı:  Kurulum.bat | kurulum\Kurulum.ps1 | Eleman\ (uygulama dosyaları; 3.2.0'dan önceki paketlerde adı AsortiAraci\)
 # Bilgisayarı kendisi tarar (AccuMark, müşteri klasörleri, OTOPASTAL, sürücü harfi) ve ona göre kurar; soru sormaz.
 # İsteyen "Ayarları elle değiştir" ile bulunanları değiştirebilir.
 Add-Type -AssemblyName System.Windows.Forms, System.Drawing
@@ -13,7 +13,7 @@ try {
 trap { try { [Windows.Forms.MessageBox]::Show("Kurulum sihirbazında beklenmeyen hata:`r`n" + $_.Exception.Message + "`r`n(satır " + $_.InvocationInfo.ScriptLineNumber + ")", 'Eleman') | Out-Null } catch {}; exit 1 }
 
 $PAKET  = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
-$KAYNAK = Join-Path $PAKET 'AsortiAraci'
+$KAYNAK = Join-Path $PAKET 'Eleman'; if (-not (Test-Path -LiteralPath $KAYNAK)) { $KAYNAK = Join-Path $PAKET 'AsortiAraci' }
 $PC     = $env:COMPUTERNAME
 $ESKI   = 'C:\AccuNest'          # ilk denemelerin yapıldığı eski yer
 $VARSAYILAN_HEDEF = 'C:\AsortiAraci'
@@ -260,7 +260,7 @@ function Ozet {
   $liste.Items.Clear(); $script:hataSay = 0
   $r = $script:rapor; $s = Secilen
   Satir $(if ($PSVersionTable.PSVersion.Major -ge 5) { 'ok' } else { 'hata' }) 'PowerShell' ("sürüm " + $PSVersionTable.PSVersion) $true
-  if (-not (Test-Path $KAYNAK)) { Satir 'hata' 'Paket dosyaları' "AsortiAraci klasörü bulunamadı ($KAYNAK)" $true }
+  if (-not (Test-Path $KAYNAK)) { Satir 'hata' 'Paket dosyaları' "Eleman klasörü bulunamadı ($KAYNAK)" $true }
   $tb = TarayiciBul; Satir $(if ($tb) { 'ok' } else { 'hata' }) 'Edge / Chrome' $(if ($tb) { $tb } else { 'bulunamadı (uygulama penceresi için gerekli)' }) $true
   $am = $(if ($r) { $r.accumark } else { $null }); $ur = $(if ($r) { $r.userroot } else { $null })
   if ($s.accumark) { Satir 'ok' 'Gerber AccuMark' ($(if ($am -and $am.yol -ieq $s.accumark -and $am.surum) { "$($am.surum) · " } else { '' }) + $s.accumark) $false }

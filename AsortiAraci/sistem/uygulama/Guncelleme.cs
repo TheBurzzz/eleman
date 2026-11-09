@@ -30,25 +30,29 @@ namespace AsortiAraci
             WebException son = null;
             foreach (string depo in DepoAdaylari(a))
             {
-                if (k.Length > 0)
+                // paketteki program klasörü: önce Eleman, yoksa eski adı AsortiAraci (bkz. ProgramKlasorleri)
+                foreach (string pk in ProgramKlasorleri)
                 {
-                    // gizli depo: anahtarla (depo herkese açıkken de çalışır); olmazsa herkese açık yol
-                    try { metin = Web.MetinAnahtarla("https://api.github.com/repos/" + depo + "/contents/AsortiAraci/surum.json?ref=" + Uri.EscapeDataString(a.Dal), 8000, k); }
-                    catch (Exception ex) { AnahtarReddedildiyse(ex); Kayit.Yaz("guncelleme (anahtarla) okunamadi, herkese acik yol deneniyor: " + ex.Message); }
-                }
-                if (metin == null)
-                {
-                    try { metin = Web.Metin("https://raw.githubusercontent.com/" + depo + "/" + a.Dal + "/AsortiAraci/surum.json?t=" + DateTime.UtcNow.Ticks, 8000); }
-                    catch (WebException ex)
+                    if (k.Length > 0)
                     {
-                        // bu adda depo yok (404): öbür adı dene; bağlantı hatasıysa denemeye gerek yok
-                        HttpWebResponse y = ex.Response as HttpWebResponse;
-                        if (y != null && (int)y.StatusCode == 404) { son = ex; continue; }
-                        throw;
+                        // gizli depo: anahtarla (depo herkese açıkken de çalışır); olmazsa herkese açık yol
+                        try { metin = Web.MetinAnahtarla("https://api.github.com/repos/" + depo + "/contents/" + pk + "/surum.json?ref=" + Uri.EscapeDataString(a.Dal), 8000, k); }
+                        catch (Exception ex) { AnahtarReddedildiyse(ex); Kayit.Yaz("guncelleme (anahtarla) okunamadi, herkese acik yol deneniyor: " + ex.Message); }
                     }
+                    if (metin == null)
+                    {
+                        try { metin = Web.Metin("https://raw.githubusercontent.com/" + depo + "/" + a.Dal + "/" + pk + "/surum.json?t=" + DateTime.UtcNow.Ticks, 8000); }
+                        catch (WebException ex)
+                        {
+                            // bu klasör ya da bu adda depo yok (404): sıradakini dene; bağlantı hatasıysa denemeye gerek yok
+                            HttpWebResponse y = ex.Response as HttpWebResponse;
+                            if (y != null && (int)y.StatusCode == 404) { son = ex; continue; }
+                            throw;
+                        }
+                    }
+                    break;
                 }
-                aktifDepo = depo;
-                break;
+                if (metin != null) { aktifDepo = depo; break; }
             }
             if (metin == null) throw son ?? new WebException("surum.json bulunamadı");
             uzak = Json.Oku(metin);
@@ -121,7 +125,9 @@ namespace AsortiAraci
                 System.IO.Compression.ZipFile.ExtractToDirectory(zip, ac);
                 string[] ici = Directory.GetDirectories(ac);
                 if (ici.Length == 0) throw new Exception("indirilen paket boş");
-                string ic = ici[0], src = Path.Combine(ic, "AsortiAraci");
+                string ic = ici[0], src = null;
+                foreach (string pk in ProgramKlasorleri) { string aday = Path.Combine(ic, pk); if (Directory.Exists(aday)) { src = aday; break; } }
+                if (src == null) throw new Exception("indirilen pakette program klasörü (Eleman) yok");
                 foreach (string g in new string[] { "uygulama.html", "asorti_araci.html", "surum.json", "sistem/sunucu.ps1", "sistem/ortak.ps1", "sistem/bul.ps1", "sistem/tara.ps1", "kopru/kopru.ps1", "sistem/uygulama/Program.cs" })
                 {
                     if (!File.Exists(Path.Combine(src, g.Replace('/', Path.DirectorySeparatorChar)))) throw new Exception("indirilen pakette " + g + " yok");
@@ -154,6 +160,10 @@ namespace AsortiAraci
         // Depo adı: kullanıcı GitHub'da "asorti-araci"yı "eleman" yaptı (7 Kasım 2026). GitHub eski adı yeni ada yönlendirir;
         // yine de ikisi sırayla denenir (yönlendirme bir gün kalksa da, ad henüz değişmemiş olsa da güncellemeler sürer).
         static readonly string[] ElemanDepolari = { "TheBurzzz/eleman", "TheBurzzz/asorti-araci" };
+
+        // Paketteki program klasörü: depoda "AsortiAraci/" iken "Eleman/" olacak (bütün kurulumlar 3.2.0'a geçince).
+        // 3.2.0'dan önceki güncelleyiciler yalnız AsortiAraci/'yi bilir; bu sürüm ikisini de tanır, önce Eleman.
+        static readonly string[] ProgramKlasorleri = { "Eleman", "AsortiAraci" };
         string aktifDepo;   // en son surum.json'u veren depo; indirme de oradan yapılır
         static string[] DepoAdaylari(Ayarlar a)
         {

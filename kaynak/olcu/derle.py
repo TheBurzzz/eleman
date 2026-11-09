@@ -12,7 +12,9 @@ import base64, os, sys
 
 D = os.path.dirname(os.path.abspath(__file__))
 KOK = os.path.normpath(os.path.join(D, "..", ".."))
-SISTEM = os.path.join(KOK, "AsortiAraci", "sistem")
+# program klasörü: Eleman (eski adı AsortiAraci; depoda ad değişince ikisi de çalışsın)
+PROG = os.path.join(KOK, "Eleman") if os.path.isdir(os.path.join(KOK, "Eleman")) else os.path.join(KOK, "AsortiAraci")
+SISTEM = os.path.join(PROG, "sistem")
 
 
 def arg(ad, varsayilan=None):
@@ -38,7 +40,7 @@ assert s.count("/*__TOKEN__*/") == 1
 anahtar = arg("--anahtar")
 if anahtar:
     s = s.replace("/*__TOKEN__*/", anahtar)
-cikti = arg("--cikti", os.path.join(KOK, "AsortiAraci", "olcu_tablosu_araci.html"))
+cikti = arg("--cikti", os.path.join(PROG, "olcu_tablosu_araci.html"))
 if (anahtar or sab) and os.path.normpath(os.path.dirname(os.path.abspath(cikti))).startswith(KOK):
     sys.exit("Anahtarlı ya da şablonlu hali depo klasörüne yazılmaz (herkese açık). --cikti ile depo dışına ver.")
 open(cikti, "w", encoding="utf-8", newline="\n").write(s)

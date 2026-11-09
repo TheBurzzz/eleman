@@ -16,7 +16,9 @@ import os, re, sys
 
 src, out = sys.argv[1], sys.argv[2]
 s = open(src, encoding="utf-8").read()
-SISTEM = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "AsortiAraci", "sistem")
+_KOK = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
+# program klasörü: Eleman (eski adı AsortiAraci)
+SISTEM = os.path.join(_KOK, "Eleman" if os.path.isdir(os.path.join(_KOK, "Eleman")) else "AsortiAraci", "sistem")
 
 
 def r(a, b, n=1):

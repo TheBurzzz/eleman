@@ -193,11 +193,12 @@ function UzakSurum([bool]$taze) {
   if (-not $taze -and $script:uzak -and ((Get-Date) - $script:uzakZaman).TotalMinutes -lt 10) { return $script:uzak }
   Web
   $r = $null; $k = GuncAnahtar
-  if ($k) { try { $r = Invoke-WebRequest -UseBasicParsing -TimeoutSec 8 -Headers @{ Authorization = "Bearer $k"; Accept = 'application/vnd.github.raw' } -Uri ("https://api.github.com/repos/$($A.guncelleme)/contents/AsortiAraci/surum.json?ref=" + (Dal)) } catch { $r = $null } }
+  # paketteki program klasoru: once Eleman, yoksa eski adi AsortiAraci (3.2.0'dan once yalniz AsortiAraci vardi)
+  if ($k) { foreach ($pk in 'Eleman', 'AsortiAraci') { try { $r = Invoke-WebRequest -UseBasicParsing -TimeoutSec 8 -Headers @{ Authorization = "Bearer $k"; Accept = 'application/vnd.github.raw' } -Uri ("https://api.github.com/repos/$($A.guncelleme)/contents/$pk/surum.json?ref=" + (Dal)); break } catch { $r = $null } } }
   if (-not $r) {
     # depo adi degisti (asorti-araci -> eleman): ikisi sirayla denenir
     $adaylar = @("$($A.guncelleme)"); if ($adaylar[0] -in 'TheBurzzz/eleman', 'TheBurzzz/asorti-araci') { $adaylar = @('TheBurzzz/eleman', 'TheBurzzz/asorti-araci') }
-    foreach ($d in $adaylar) { try { $r = Invoke-WebRequest -UseBasicParsing -TimeoutSec 8 -Uri ("https://raw.githubusercontent.com/$d/$(Dal)/AsortiAraci/surum.json?t=" + [DateTime]::UtcNow.Ticks); $script:aktifDepo = $d; break } catch { if ($d -eq $adaylar[-1]) { throw } } }
+    :depo foreach ($d in $adaylar) { foreach ($pk in 'Eleman', 'AsortiAraci') { try { $r = Invoke-WebRequest -UseBasicParsing -TimeoutSec 8 -Uri ("https://raw.githubusercontent.com/$d/$(Dal)/$pk/surum.json?t=" + [DateTime]::UtcNow.Ticks); $script:aktifDepo = $d; break depo } catch { if ($d -eq $adaylar[-1] -and $pk -eq 'AsortiAraci') { throw } } } }
   }
   $metin = [Text.Encoding]::UTF8.GetString($r.RawContentStream.ToArray()).TrimStart([char]0xFEFF)
   $script:uzak = $metin | ConvertFrom-Json; $script:uzakZaman = Get-Date
@@ -314,7 +315,8 @@ function Guncelle {
     Add-Type -AssemblyName System.IO.Compression.FileSystem
     [IO.Compression.ZipFile]::ExtractToDirectory($zip, (Join-Path $tmp 'ac'))
     $ic = Get-ChildItem (Join-Path $tmp 'ac') -Directory | Select-Object -First 1
-    $src = Join-Path $ic.FullName 'AsortiAraci'
+    $src = $null; foreach ($pk in 'Eleman', 'AsortiAraci') { $aday = Join-Path $ic.FullName $pk; if (Test-Path -LiteralPath $aday) { $src = $aday; break } }
+    if (-not $src) { throw 'indirilen pakette program klasoru (Eleman) yok' }
     foreach ($g in 'uygulama.html', 'asorti_araci.html', 'surum.json', 'sistem\sunucu.ps1', 'sistem\ortak.ps1', 'sistem\bul.ps1', 'sistem\tara.ps1', 'kopru\kopru.ps1') { if (-not (Test-Path (Join-Path $src $g))) { throw "indirilen pakette $g yok" } }
     $yeni = (Get-Content (Join-Path $src 'surum.json') -Raw -Encoding UTF8 | ConvertFrom-Json).surum; $eski = (YerelSurum $Root).surum
     # geri donebilmek icin simdiki surumu yedekle (sadece program dosyalari)

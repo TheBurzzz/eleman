@@ -1,7 +1,10 @@
 {
- "surum": "3.1.0",
- "tarih": "2026-11-07",
+ "surum": "3.2.0",
+ "tarih": "2026-11-09",
  "notlar": [
-  "GitHub'da her şey tek yerde: program deposunun adı 'eleman' oluyor; güncellemeler yeni adresten gelir, eski adres de çalışmaya devam eder"
+  "Asorti Aracı artık Eleman'ın içinde: program açılınca ana sayfa gelir; sol üstteki Eleman simgesinden ya da Ctrl+1 / 2 / 3 ile Ana sayfa, Asorti Aracı ve Ölçü Tablosu arasında geçilir",
+  "Ölçü Tablosu da Eleman'da: müşteri kağıdını tara, tabloyu kontrol et, Excel'e kaydet ve yazdır; öğrendiklerini bütün bilgisayarlarla paylaşır",
+  "Asorti sayfaların, ayarların ve Gerber bağlantısı olduğu gibi kalır; masaüstündeki kısayolun adı ve simgesi Eleman olur",
+  "Görünüm ⚙ Ayarlar'da (Açık, Koyu, Otomatik); açık görünüm yeni cam tasarımda"
  ]
 }
