@@ -1,10 +1,9 @@
 {
- "surum": "3.2.0",
+ "surum": "3.2.1",
  "tarih": "2026-11-09",
  "notlar": [
-  "Asorti Aracı artık Eleman'ın içinde: program açılınca ana sayfa gelir; sol üstteki Eleman simgesinden ya da Ctrl+1 / 2 / 3 ile Ana sayfa, Asorti Aracı ve Ölçü Tablosu arasında geçilir",
-  "Ölçü Tablosu da Eleman'da: müşteri kağıdını tara, tabloyu kontrol et, Excel'e kaydet ve yazdır; öğrendiklerini bütün bilgisayarlarla paylaşır",
-  "Asorti sayfaların, ayarların ve Gerber bağlantısı olduğu gibi kalır; masaüstündeki kısayolun adı ve simgesi Eleman olur",
-  "Görünüm ⚙ Ayarlar'da (Açık, Koyu, Otomatik); açık görünüm yeni cam tasarımda"
+  "Asorti · çizgili ürün: yeni «Kol birimi ayrı» seçeneği. Beden birimi ve kol birimi ayrı ayrı girilir; kolda bedenler farklı gruplanabilir. Excel'e ve yazdırmaya BEDEN BİRİMLERİ ve KOL BİRİMLERİ diye iki ayrı sarı tablo yazılır",
+  "Seçenek açılınca kol tablosu beden gruplarıyla hazır gelir. Kol birimini beden tablosuna aynı bedenlerle ikinci satır olarak yazdıysan, o satır kendiliğinden kol tablosuna geçer",
+  "Çizgili tabloyu aynı bedenlerle yeniden hazırlayınca girdiğin birimler silinmez"
  ]
 }

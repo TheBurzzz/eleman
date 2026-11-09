@@ -219,6 +219,18 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
   - Aynı sabah kullanıcının onayıyla ("hemen değiştir") depodaki program klasörü `Eleman/` oldu (sürüm aynı, 3.2.0;
     iş bilgisayarı yeni yoldan sürümü görüyor). Evdeki eski kurulum artık güncellenemez, gerekirse yeniden kurulur.
 
+- 2026-11-09 öğle (Asorti sohbeti): **Eleman 3.2.1**, çizgili üründe **Kol birimi ayrı** seçeneği (kullanıcı: "beden birimini
+  ayrı, kol birimini ayrı şekilde yapabilme seçeneği olsun"; o sabah bir çizgili sayfada kol birimini aynı bedenlere ikinci grup
+  olarak yazmıştı).
+  - `asorti_araci.html`: kol grupları `bgk`, seçenek `bkOn` (grup işlevleri `bgAdd/bgDel/bgSet/bgTog(k, …)`, k=0 beden, 1 kol).
+    Sayfa ve Excel kaydında `bgk` (kapalıyken null; eski kayıtlarda yok → seçenek kapalı açılır).
+  - Excel / yazdırma: BEDEN BİRİMLERİ'nin altında (2 boş satır) aynı biçimde sarı KOL BİRİMLERİ. Kapalıyken çıktı eskisiyle aynı.
+  - Seçenek açılınca kol tablosu boşsa: beden tablosunda aynı bedene ikinci kez yazılmış gruplar kola taşınır, yoksa beden
+    grupları birimsiz kopyalanır ("Beden gruplarını kopyala" düğmesi de var). Çizgili tablo aynı bedenlerle yeniden
+    hazırlanınca birimler kalır (önceden siliniyordu).
+  - Playwright (kabuk içinden, açık ve koyu): seçenek, taşıma, kopyalama, kolda farklı gruplama, uyarılar, Excel (LibreOffice
+    ile bakıldı), yazdırma, sayfa kaydı ve yeniden açılış, eski kayıt, çizgisiz iş. Sayfa hatası yok.
+
 ## Sıradaki işler
 0. **Sürüm arşivi = GitHub Releases.** 32 sürüm (ilk-deneme, v1.0.0–v1.1.22, v2.0.0–v2.0.4) bir kerelik GitHub Actions işiyle
    taşındı, `surum-v*`, `arsiv`, `surum-test` dalları silindi (dallar: eleman, main, exe-deneme). Bu oturumlardan etiket ve

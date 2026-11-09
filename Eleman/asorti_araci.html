@@ -157,7 +157,7 @@ html[data-theme=dark] #rst:hover:not(:disabled){background:linear-gradient(180de
 <div class="chips"><span class="t">&nbsp;</span><label><input type="checkbox" id="S" checked>Tüm renkler tüm pastalları kullansın</label></div></div>
 <div style="margin-top:14px"><button class="pri" id="go" disabled>Hesapla</button><span id="st" class="m"></span></div></div>
 <div id="res"></div>
-<div class="card" id="stb" style="display:none"><h2><span class="step">2</span>Beden birimleri <span class="m">(çizgili ürün)</span></h2><div class="m" style="margin-bottom:6px">Çizgili üründe asorti / pastal yok. Birimi aynı olan bedenleri işaretle, yanına birimini yaz (örn. 10 · 12 · 14 → 92). Tablo Excel'de adetlerin hemen altına yazılır.</div><div id="bg"></div><div style="margin-top:8px"><button type="button" onclick="bgAdd()">+ Beden grubu ekle</button></div></div>
+<div class="card" id="stb" style="display:none"><h2><span class="step">2</span><span id="stbt">Beden birimleri</span> <span class="m">(çizgili ürün)</span></h2><div class="m" style="margin-bottom:6px">Çizgili üründe asorti / pastal yok. Birimi aynı olan bedenleri işaretle, yanına birimini yaz (örn. 10 · 12 · 14 → 92). Tablo Excel'de adetlerin hemen altına yazılır.</div><div class="chips" style="margin:10px 0 4px"><label title="Beden birimi ile kol birimi farklıysa: ikisini ayrı ayrı gir. Excel'e BEDEN BİRİMLERİ ve KOL BİRİMLERİ diye iki ayrı sarı tablo yazılır."><input type="checkbox" id="bkt" onchange="bkTog(this.checked)">Kol birimi ayrı</label></div><div id="bg"></div></div>
 <div class="card" id="stx" style="display:none"><h2><span class="step">3</span>Ek asorti tabloları <span class="m">(Hızar, Tela, Kontrast cep…)</span></h2><div class="m" id="xdesc" style="margin-bottom:6px">Ana asortinin çıkan (artılı) adetleri üzerinden ayrı bir asorti hazırlar. Excel'de sarı başlıklı ayrı tablo olarak yazılır. Bu tablo ne için olacak?</div><div id="xgz"></div><div id="xt"></div><div style="margin-top:8px"><button type="button" onclick="xAdd('hizar')">+ Hızar asortisi</button><button type="button" onclick="xAdd('tela')">+ Tela asortisi</button><button type="button" onclick="xAdd('ribana')">+ Ribana asortisi</button><button type="button" onclick="xAdd('astar')">+ Astar asortisi</button><button type="button" onclick="xAdd('cep')">+ Kontrast cep</button><button type="button" onclick="xAdd('diger')">+ Başka tablo</button></div></div>
 <div class="card" id="st3" style="display:none"><h2><span class="step">4</span>Ek satırlar <span class="m">(Biye, Hızar…)</span></h2><div id="ex"></div><div style="margin-top:8px"><button type="button" onclick="exAdd('BİYE')">+ BİYE</button><button type="button" onclick="exAdd('HIZAR')">+ HIZAR</button><button type="button" onclick="exAdd('')">+ Başka satır</button></div><div class="m" style="margin-top:6px">Bu satırlar Excel'de pastalların bir satır altına, sağa yaslı ve alt alta yazılır.</div></div>
 <div id="act"></div><div id="msg"></div>
@@ -390,17 +390,31 @@ function exBekle(mod){if(exBek)exKaydet(exBek.blob,exBek.ad,mod,exBek.uyar)}
 window.addEventListener('message',e=>{const d=e.data||{};if(d.t==='exKlasor'){exKl={klasor:d.klasor||'',var:!!d.klasor};exYerCiz()}});
 if(KHTTP)setTimeout(exYukle,300);
 /* ---- çizgili ürün: asortisiz, beden birimleri ---- */
-let bgr=[];
-function setupCz(){info.mi=info.colors.map((_,g)=>g);info.mtotal=info.total;info.tk=null;sols=[{pastals:[],over:0}];cur=0;bgr=[{s:[],b:''}];lock=[];ban=[];
+/* çizgili: beden birimleri (bgr) ve "Kol birimi ayrı" seçiliyse kol birimleri (bgk). Grup: {s:[beden sırası], b:'birim'} */
+let bgr=[],bgk=[],bkOn=false;const bgL=k=>k?bgk:bgr;
+function setupCz(){info.mi=info.colors.map((_,g)=>g);info.mtotal=info.total;info.tk=null;sols=[{pastals:[],over:0}];cur=0;bgr=[{s:[],b:''}];bgk=[{s:[],b:''}];bkOn=false;lock=[];ban=[];
  $('act').innerHTML=actBtn();$('stb').style.display='block';$('stx').style.display='block';$('st3').style.display='block';bgDraw();xDraw()}
-function bgAdd(){bgr.push({s:[],b:''});bgDraw()}
-function bgDel(j){bgr.splice(j,1);if(!bgr.length)bgr.push({s:[],b:''});bgDraw()}
-function bgSet(j,v){bgr[j].b=String(v||'').trim()}
-function bgTog(j,i){const a=bgr[j].s,k=a.indexOf(i);k<0?a.push(i):a.splice(k,1);a.sort((x,y)=>x-y);bgDraw()}
-function bgDraw(){const c=$('bg');if(!c||!info)return;const sz=info.sizes,cnt=sz.map((_,i)=>bgr.filter(g=>g.s.includes(i)).length);
+function bgAdd(k){bgL(k).push({s:[],b:''});bgDraw()}
+function bgDel(k,j){const L=bgL(k);L.splice(j,1);if(!L.length)L.push({s:[],b:''});bgDraw()}
+function bgSet(k,j,v){bgL(k)[j].b=String(v||'').trim()}
+function bgTog(k,j,i){const a=bgL(k)[j].s,q=a.indexOf(i);q<0?a.push(i):a.splice(q,1);a.sort((x,y)=>x-y);bgDraw()}
+function bgKopya(){bgk=bgr.filter(g=>g.s.length).map(g=>({s:g.s.slice(),b:''}));if(!bgk.length)bgk=[{s:[],b:''}];bgDraw()}
+/* açılınca kol tablosu boşsa: beden tablosunda aynı bedenlere ikinci kez yazılmış gruplar (kol birimi oraya girilmiş) kola taşınır,
+   yoksa beden gruplarının bedenleri birimsiz kopyalanır */
+function bkTog(v){bkOn=!!v;
+ if(bkOn&&!bgk.some(g=>g.s.length)){const al=new Set(),kal=[],tas=[];
+  bgr.forEach(g=>{if(g.s.length&&g.s.some(i=>al.has(i)))tas.push(g);else{kal.push(g);g.s.forEach(i=>al.add(i))}});
+  if(tas.length){bgr=kal;bgk=tas;bgDraw()}else bgKopya()}
+ else bgDraw()}
+function bgSec(k){const L=bgL(k),sz=info.sizes,cnt=sz.map((_,i)=>L.filter(g=>g.s.includes(i)).length);
  const miss=sz.filter((_,i)=>!cnt[i]),dup=sz.filter((_,i)=>cnt[i]>1);
- c.innerHTML=bgr.map((g,j)=>'<div class="row" style="align-items:center;margin:8px 0;gap:14px"><div class="szs">'+sz.map((x,i)=>'<button type="button" class="szb'+(g.s.includes(i)?' on':'')+'" onclick="bgTog('+j+','+i+')">'+esc(x)+'</button>').join('')+'</div><div><span class="t">Birim</span><input style="width:110px" value="'+esc(g.b)+'" placeholder="örn. 92" onchange="bgSet('+j+',this.value);this.value=nv(this.value)"></div><button type="button" class="sm" style="width:auto" onclick="bgDel('+j+')">× Sil</button></div>').join('')+
- (miss.length&&bgr.some(g=>g.s.length)?'<div class="m e">Birimi verilmemiş beden: '+esc(miss.join(', '))+'</div>':'')+(dup.length?'<div class="m e">Birden fazla grupta olan beden: '+esc(dup.join(', '))+'</div>':'')}
+ return (bkOn?'<h3><span class="tag">'+(k?'KOL':'BEDEN')+' BİRİMLERİ</span></h3>':'')+
+  L.map((g,j)=>'<div class="row" style="align-items:center;margin:8px 0;gap:14px"><div class="szs">'+sz.map((x,i)=>'<button type="button" class="szb'+(g.s.includes(i)?' on':'')+'" onclick="bgTog('+k+','+j+','+i+')">'+esc(x)+'</button>').join('')+'</div><div><span class="t">'+(bkOn?(k?'Kol birimi':'Beden birimi'):'Birim')+'</span><input style="width:110px" value="'+esc(g.b)+'" placeholder="örn. '+(k?'60':'92')+'" onchange="bgSet('+k+','+j+',this.value);this.value=nv(this.value)"></div><button type="button" class="sm" style="width:auto" onclick="bgDel('+k+','+j+')">× Sil</button></div>').join('')+
+  (miss.length&&L.some(g=>g.s.length)?'<div class="m e">Birimi verilmemiş beden: '+esc(miss.join(', '))+'</div>':'')+
+  (dup.length?'<div class="m e">Birden fazla grupta olan beden: '+esc(dup.join(', '))+(bkOn?'':' · kol birimi için yazdıysan yukarıdaki <b>Kol birimi ayrı</b> seçeneğini işaretle')+'</div>':'')+
+  '<div style="margin-top:8px"><button type="button" onclick="bgAdd('+k+')">+ '+(k?'Kol':'Beden')+' grubu ekle</button>'+(k&&!L.some(g=>g.s.length)&&bgr.some(g=>g.s.length)?'<button type="button" onclick="bgKopya()">Beden gruplarını kopyala</button>':'')+'</div>'}
+function bgDraw(){const c=$('bg');if(!c||!info)return;const t=$('bkt'),h=$('stbt');if(t)t.checked=bkOn;if(h)h.textContent=bkOn?'Beden ve kol birimleri':'Beden birimleri';
+ c.innerHTML=bkOn?'<div class="xc">'+bgSec(0)+'</div><div class="xc">'+bgSec(1)+'</div>':bgSec(0)}
 
 /* ---- ek asorti tabloları (hızar / tela / kontrast cep) ---- */
 const XK={hizar:{base:'HIZAR',mode:'col'},tela:{base:'TELA',mode:'tot'},ribana:{base:'RİBANA',mode:'col'},astar:{base:'ASTAR',mode:'tot'},cep:{base:'KONTRAST CEP',mode:'tot'},diger:{base:'',mode:'col'}};
@@ -509,9 +523,10 @@ async function xPoll(id){clearTimeout(xTim[id]);const x=xt.find(q=>q.id==id);if(
  const a=(x.job.st||{}).asama;clearTimeout(xTim[id]);if(xBitti(a)){xDraw();return}const e=$('xg'+id);if(e)e.innerHTML=xJobHtml(x);xTim[id]=setTimeout(()=>xPoll(id),3000)}
 function kRef(){if(!info)return;const c=$('chk');if(c&&sols[cur]&&sols[cur].pastals.length)c.innerHTML=chk(sols[cur]);xSync();xDraw()}
 function xWarn(){const w=xt.filter(x=>!x.res).map(x=>(x.base||'EK')+' ASORTİSİ');let h=w.length?'<br><span class="e">⚠ Hesaplanmadığı için Excel\'e yazılmadı: '+esc(w.join(', '))+'</span>':'';
- if(info.cizgili){const gr=bgr.filter(g=>g.s.length);if(!gr.length)h+='<br><span class="e">⚠ Beden birimleri girilmediği için o tablo Excel\'e yazılmadı</span>';else{const miss=info.sizes.filter((_,i)=>!gr.some(g=>g.s.includes(i)));const nob=gr.filter(g=>!g.b);if(miss.length)h+='<br><span class="e">⚠ Birimi verilmemiş beden: '+esc(miss.join(', '))+'</span>';if(nob.length)h+='<br><span class="e">⚠ Birimi boş grup var</span>'}}return h}
+ if(info.cizgili)[[bgr,'Beden','BEDEN BİRİMLERİ']].concat(bkOn?[[bgk,'Kol','KOL BİRİMLERİ']]:[]).forEach(([L,ad,tb])=>{const gr=L.filter(g=>g.s.length),bi=bkOn?tb+' tablosunda birimi':'Birimi';
+  if(!gr.length)h+='<br><span class="e">⚠ '+ad+' birimleri girilmediği için o tablo Excel\'e yazılmadı</span>';else{const miss=info.sizes.filter((_,i)=>!gr.some(g=>g.s.includes(i)));const nob=gr.filter(g=>!g.b);if(miss.length)h+='<br><span class="e">⚠ '+bi+' verilmemiş beden: '+esc(miss.join(', '))+'</span>';if(nob.length)h+='<br><span class="e">⚠ '+bi+' boş grup var</span>'}});return h}
 function outBlocks(){const s=sols[cur],B=[];
- if(info.cizgili){const gr=bgr.filter(g=>g.s.length);if(gr.length)B.push({id:'z',type:'birim',title:'BEDEN BİRİMLERİ',yellow:true,rows:gr.map(g=>({label:g.s.map(i=>info.sizes[i]).join(' - '),b:g.b}))})}
+ if(info.cizgili){[[bgr,'z','BEDEN BİRİMLERİ'],[bkOn?bgk:[],'zk','KOL BİRİMLERİ']].forEach(([L,id,title])=>{const gr=L.filter(g=>g.s.length);if(gr.length)B.push({id,type:'birim',title,yellow:true,rows:gr.map(g=>({label:g.s.map(i=>info.sizes[i]).join(' - '),b:g.b}))})})}
  else mainBlocks().forEach(b=>B.push({id:b.id,title:b.title,yellow:b.yellow,names:b.ci.map(g=>info.colors[g]),pastals:s.pastals.filter(p=>p.a.some(v=>v)).map(p=>({a:p.a,k:b.ci.map(g=>p.k[g])}))}));
  xt.forEach(x=>{if(!x.res||!x.res.length)return;const r=x.res[x.cur];
   const nm=x.mode=='tot'?[x.fab]:x.names;
@@ -837,7 +852,7 @@ const b64d=t=>new TextDecoder().decode(Uint8Array.from(atob(t),c=>c.charCodeAt(0
 function getState(){exRd();xSync();const s=sols[cur];
  return{app:'asorti-araci',v:1,date:new Date().toISOString(),gA:info.gA||'',gU:info.gU||'',gW:info.gW||'',gW2:info.gW2||'',gFab:info.gFab||{},gWx:info.gWx||{},gY:info.gY||'',gY2:info.gY2||'',gAs:info.gAs||null,area:info.area||'',ord:Object.assign({},info.snap||{},{art:info.art||''}),
   set:{P:$('P').value,T:$('T').value,Y:$('Y').value,K:$('K').value,S:$('S').checked,pc:[...document.querySelectorAll('.pc:checked')].map(x=>x.value)},
-  sol:s&&!info.cizgili?{pastals:s.pastals.map(p=>({a:p.a.slice(),k:p.k.slice()})),over:s.over}:null,meas,extras,bgr,
+  sol:s&&!info.cizgili?{pastals:s.pastals.map(p=>({a:p.a.slice(),k:p.k.slice()})),over:s.over}:null,meas,extras,bgr,bgk:bkOn?bgk:null,
   xt:xt.map(x=>({id:x.id,kind:x.kind,base:x.base,mode:x.mode,fab:x.fab,side:x.side,P:x.P,T:x.T,Y:x.Y,one:x.one,kat:!!x.kat,N:x.N||'2',Lt:x.Lt||'',W:x.W||'',ust:!!x.ust,gY:x.gY||'',job:x.job||null,okuMsg:x.okuMsg||'',res:x.res?[x.res[x.cur]]:null,cur:0,names:x.names,need:x.need,tot:x.tot,timeout:x.timeout,err:x.res?'':x.err}))}}
 function stateParts(){const id='{'+'xxxxxxxx-xxxx-4xxx-8xxx-xxxxxxxxxxxx'.replace(/x/g,()=>(Math.random()*16|0).toString(16)).toUpperCase()+'}',d=((new Date().getFullYear()-1980)<<9)|((new Date().getMonth()+1)<<5)|new Date().getDate();
  const E=(name,text)=>({name,text,flags:0,method:8,time:0,date:d});
@@ -860,7 +875,7 @@ async function applyState(st){
   meas=st.meas||{};extras=st.extras||[];exDraw();info.gA=st.gA||'';info.gU=st.gU||'';ord.gA=info.gA;ord.gU=info.gU;info.gW=st.gW||'';info.gW2=st.gW2||'';info.gFab=st.gFab||{};info.gWx=st.gWx||{};info.gY=st.gY||'';info.gY2=st.gY2||'';info.gAs=st.gAs||null;info.area=st.area||'';showArt();
   xt=(st.xt||[]).map(x=>Object.assign({res:null,cur:0,sig:'',err:'',busy:false},x));xid=xt.reduce((a,x)=>Math.max(a,x.id||0),0);
   setTimeout(()=>xt.forEach(x=>{if(x.job&&!xBitti((x.job.st||{}).asama)&&Date.now()-x.job.t<6*3600e3)xPoll(x.id)}),600);
-  if(info.cizgili){bgr=st.bgr&&st.bgr.length?st.bgr:[{s:[],b:''}];bgDraw()}
+  if(info.cizgili){bgr=st.bgr&&st.bgr.length?st.bgr:[{s:[],b:''}];bkOn=!!(st.bgk&&st.bgk.length);bgk=bkOn?st.bgk:[{s:[],b:''}];bgDraw()}
   else if(st.sol&&st.sol.pastals&&st.sol.pastals.length&&st.sol.pastals.every(p=>p.a.length==info.n&&p.k.length==info.G)){sols=[st.sol];cur=0;info.timeout=false}
   xt.forEach(x=>{if(x.res)x.sig=xSig(x)});
   if(!info.cizgili&&sols[cur]&&sols[cur].pastals.length)show();else{$('act').innerHTML=actBtn();xDraw()}
@@ -1128,6 +1143,7 @@ function nwDraw(){const sz=ord.sizes,st=ord.stage,L=ord.ser?PRE[ord.ser]:null;
  $('nw').innerHTML=h}
 async function mkBase(fromLoad){rd();if(gJob&&['bitti','hata','iptal'].includes((gJob.st||{}).asama)){gJob=null;gMsg=''}const o=ord,sz=o.sizes,R=o.rows.filter(r=>r.name);
  const prev=!fromLoad&&info&&!info.cizgili&&!o.cizgili&&sols[cur]&&sols[cur].pastals.length&&info.sizes.join('|')===sz.join('|')?{colors:info.colors.slice(),sol:sols[cur],xt:(xSync(),xt),meas}:null;
+ const prevCz=!fromLoad&&info&&info.cizgili&&o.cizgili&&info.sizes.join('|')===sz.join('|')?{bgr,bgk,bkOn}:null;
  if(!sz.length)return alert('Önce beden dizilimini ve aralığını seçip "Bedenleri ekle"ye bas');if(!R.length)return alert('En az bir renk satırı yaz');{const nm=R.map(r=>r.name),d=nm.filter((x,i)=>nm.indexOf(x)!=i);if(d.length)return alert('Aynı isimde iki satır var: '+d[0]+'. Her satırın adı farklı olmalı.')}if(o.takim&&(!R.some(r=>r.g!='ÜST')||!R.some(r=>r.g=='ÜST')))return alert('Alt-üst takımda hem ALT hem ÜST için en az bir satır olmalı');
  try{ents=await readZip(Uint8Array.from(atob(TPL),c=>c.charCodeAt(0)).buffer);
   const n=sz.length,Rn=R.length,H=Rn<=9?17:8+Rn+2,sh=new Sheet(await txt(ents.find(x=>x.name=='xl/worksheets/sheet1.xml')),[]),S=r=>sh.styleOf(r);
@@ -1149,7 +1165,7 @@ async function mkBase(fromLoad){rd();if(gJob&&['bitti','hata','iptal'].includes(
   fname=o.art||'';fh=null;skipEx=true;$('fn').textContent='✔ Tablo hazırlandı';$('msg').textContent='';await parse();info.snap=JSON.parse(JSON.stringify({sizes:sz,rows:R,ser:o.ser,takim:!!o.takim,cizgili:!!o.cizgili}));info.takim=!!o.takim;info.cizgili=!!o.cizgili;if(o.takim){info.gA=o.gA||'';info.gU=o.gU||''}info.grp=info.colors.map(nm=>{const r=R.find(q=>q.name===nm||q.name.replace(/[-–]?\s*TOPLAM\s*/i,'').trim()===nm);return o.takim&&r?(r.g=='ÜST'?'ÜST':'ALT'):''});setTk();xt=[];sols=[];cur=0;xDraw();$('stx').style.display='none';$('st3').style.display='none';infoHtml();ord.made=true;if(!ord.art)ord.art=info.art||'';showArt();nwDraw();
   let wb=await txt(ents.find(x=>x.name=='xl/workbook.xml'));
   info.colors.forEach((c,g)=>{if(g>6)return;const nm=(g+1)+'. '+c.replace(/[\[\]:*?\/\\"]/g,'-').slice(0,26);wb=wb.split('name="'+(g+1)+'. RENK"').join('name="'+esc(nm)+'"').split("'"+(g+1)+". RENK'!").join("'"+nm.replace(/'/g,"''")+"'!")});
-  ents.find(x=>x.name=='xl/workbook.xml').text=wb;ents=await readZip(await(await writeZip(ents)).arrayBuffer());info.cp=info.colors.map((_,g)=>g<7?info.paths[g+1]:null);if(info.cizgili){$('st2').style.display='none';$('res').innerHTML='';setupCz();$('stb').scrollIntoView({behavior:'smooth',block:'nearest'})}else{$('stb').style.display='none';$('act').innerHTML='';$('st2').style.display='block';$('st2').scrollIntoView({behavior:'smooth',block:'nearest'})}
+  ents.find(x=>x.name=='xl/workbook.xml').text=wb;ents=await readZip(await(await writeZip(ents)).arrayBuffer());info.cp=info.colors.map((_,g)=>g<7?info.paths[g+1]:null);if(info.cizgili){$('st2').style.display='none';$('res').innerHTML='';setupCz();if(prevCz){bgr=prevCz.bgr;bgk=prevCz.bgk;bkOn=prevCz.bkOn;bgDraw()}$('stb').scrollIntoView({behavior:'smooth',block:'nearest'})}else{$('stb').style.display='none';$('act').innerHTML='';$('st2').style.display='block';$('st2').scrollIntoView({behavior:'smooth',block:'nearest'})}
   if(prev&&!info.cizgili){const pk=nm=>prev.colors.indexOf(nm);
    sols=[{pastals:prev.sol.pastals.map(p=>({a:p.a.slice(),k:info.colors.map(nm=>pk(nm)<0?0:p.k[pk(nm)])})),over:0}];cur=0;meas=prev.meas;xt=prev.xt;
    show();$('fn').innerHTML='✔ Tablo hazırlandı · <span class="m">asortiler korundu, katlar yeni adetlere göre yeniden hesaplanıyor</span>';fixMode=true;$('go').click()}}
