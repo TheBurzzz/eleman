@@ -1,9 +1,8 @@
 {
- "surum": "3.2.1",
+ "surum": "3.2.2",
  "tarih": "2026-11-09",
  "notlar": [
-  "Asorti · çizgili ürün: yeni «Kol birimi ayrı» seçeneği. Beden birimi ve kol birimi ayrı ayrı girilir; kolda bedenler farklı gruplanabilir. Excel'e ve yazdırmaya BEDEN BİRİMLERİ ve KOL BİRİMLERİ diye iki ayrı sarı tablo yazılır",
-  "Seçenek açılınca kol tablosu beden gruplarıyla hazır gelir. Kol birimini beden tablosuna aynı bedenlerle ikinci satır olarak yazdıysan, o satır kendiliğinden kol tablosuna geçer",
-  "Çizgili tabloyu aynı bedenlerle yeniden hazırlayınca girdiğin birimler silinmez"
+  "Gerber · tek pastallı işlerde (ek asorti tabloları: hızar, tela, kontrast cep…) pastal oluştuğu halde «Durdu: Pastal oluşmadı» çıkması düzeltildi; köprü pastalı Batch gerçekten yazana kadar bekliyor",
+  "Gerber · Batch bir pastalı yazarken köprü Batch'i kapatmıyor"
  ]
 }

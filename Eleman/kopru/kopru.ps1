@@ -403,7 +403,9 @@ function PastalAdim($j) {
   if ($once) { $j.t0b = Get-Date }
   $hazir = $false
   $st = @($bo | ForEach-Object { EngineStatus $j.skip $_ })
-  if (-not ($st | Where-Object { $_ -ne 'ok' -and $_ -ne 'hata' })) { $hazir = $true }
+  # durumu henuz bilinmeyen ('') pastal da beklenir. Sayi ile bakilir: tek pastalli iste filtre tek bir '' dondurur,
+  # PowerShell onu bos (yanlis) sayar ve pastal daha olusmadan "hazir" denirdi (ek asorti tablolari, 9 Kasim 2026)
+  if (-not @($st | Where-Object { $_ -ne 'ok' -and $_ -ne 'hata' }).Count) { $hazir = $true }
   if (-not $hazir) {
     # Batch pastali yazinca kaydin zamani gonderimden sonrasini gosterir: hepsi yazildiktan 5 sn sonra devam et
     # (Batch pastala sonradan bir daha yazarsa zaman ilerler ve bekleme de kendiliginden uzar)
@@ -419,7 +421,12 @@ function PastalAdim($j) {
     return
   }
   $varM = CtlNames $area 'mark'; $eksik = @($bo | Where-Object { $varM -notcontains $_ })
-  if ($eksik.Count) { throw ('Pastal olusmadi: ' + ($eksik -join ', ')) }
+  if ($eksik.Count) {
+    # Batch durumu yazdiktan sonra pastal kaydi gec gorunebilir: Batch hata demediyse ilk 60 sn beklenir
+    $bHata = @($eksik | Where-Object { (EngineStatus $j.skip $_) -eq 'hata' })
+    if (-not $bHata.Count -and ((Get-Date) - $j.t0b).TotalSeconds -lt 60) { return }
+    throw ('Pastal olusmadi: ' + ($eksik -join ', '))
+  }
   Log "$base : pastallar hazir"
   $hz = @($bo | Where-Object { $j.nq -contains $_ } | ForEach-Object { @{ ad = $_; tamam = $true; kaydedildi = $true; boy_cm = 0; verim = 0; adet = 0; sonuc = 'olusturuldu' } })
   $qo = @($bo | Where-Object { $j.nq -notcontains $_ })
@@ -598,7 +605,8 @@ function BatchKapatGerekirse {
   if (-not $script:batchBizde) { return }
   if (@(Get-ChildItem -Path (Join-Path $K 'gelen') -Filter *.txt -ErrorAction SilentlyContinue).Count) { return }
   if (@(Get-ChildItem -Path (Join-Path $K 'isleniyor') -Filter *.txt -ErrorAction SilentlyContinue).Count) { return }
-  $bek = @($script:batchIs | Where-Object { (EngineStatus $script:batchSkip $_) -notin @('ok', 'hata', '') })
+  # durumu bilinmeyen ('') pastal da bitmemis sayilir: Batch o pastali yazarken kapatilmasin (en fazla 15 sn beklenir)
+  $bek = @($script:batchIs | Where-Object { (EngineStatus $script:batchSkip $_) -notin @('ok', 'hata') })
   if ($bek.Count -and ((Get-Date) - $script:isBitti).TotalSeconds -lt 15) { return }
   $b = @(Get-Process -Name batch -ErrorAction SilentlyContinue)
   if ($b.Count) {

@@ -231,6 +231,19 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
   - Playwright (kabuk içinden, açık ve koyu): seçenek, taşıma, kopyalama, kolda farklı gruplama, uyarılar, Excel (LibreOffice
     ile bakıldı), yazdırma, sayfa kaydı ve yeniden açılış, eski kayıt, çizgisiz iş. Sayfa hatası yok.
 
+- 2026-11-09 öğleden sonra (Asorti sohbeti): **Eleman 3.2.2**, köprü düzeltmesi. Kullanıcı bir ek tabloyu (kontrast cep, tek
+  pastal, OTOPASTAL'sız) Gerber'e gönderince "Durdu: Pastal olusmadi" çıktı, ama pastal oluşmuştu.
+  - Sebep (`kopru.ps1` `PastalAdim`): `-not ($st | Where-Object …)`. Tek pastallı işte durum '' iken (engine.que'de henüz yok)
+    filtre tek bir '' döndürür, PowerShell onu yanlış sayar → "hazır" → pastal kaydı yok → hata. v2.0.4'ün 6 sn önbelleğinden beri
+    ilk bakış hep amsubmit'ten önce okunan metne düşüyor, yani tek pastallı işler (ek tablolar) her seferinde düşebilirdi;
+    çok pastallı işte de ['ok',''] erken "hazır" sayılıyordu. 6 Kasım'daki tek pastallı iş v2.0.3'teydi (önbellek yok), sorun yoktu.
+    Aynı '' Batch kapatılırken "bitmiş" sayıldığı için köprü Batch'i pastal yazılırken kapatmaya başlamıştı
+    (pastal 13:00:19'da yazıldı, Batch 13:00:20'de zorla kapatıldı; pastal dosyası tam).
+  - Düzeltme: sayıyla bakılır (`@(...).Count`). Batch "tamamlandı" deyip pastal kaydı henüz görünmüyorsa, Batch hata demediyse
+    60 sn beklenir. Batch kapatılırken '' de bitmemiş sayılır (iş bittikten sonra en fazla 15 sn beklenir).
+  - pwsh benzetimi (gerçek işlevler, sahte engine.que ve .ctl), eski ve yeni karşılaştırmalı: tek pastal Batch yazmadan /
+    yazarken / "tamamlandı" ama kayıt yok / kayıt geldi; Batch başarısız; 60 sn'de gelmedi; çok pastallı; Batch'i kapatma.
+
 ## Sıradaki işler
 0. **Sürüm arşivi = GitHub Releases.** 32 sürüm (ilk-deneme, v1.0.0–v1.1.22, v2.0.0–v2.0.4) bir kerelik GitHub Actions işiyle
    taşındı, `surum-v*`, `arsiv`, `surum-test` dalları silindi (dallar: eleman, main, exe-deneme). Bu oturumlardan etiket ve
