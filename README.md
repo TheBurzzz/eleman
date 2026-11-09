@@ -1,4 +1,4 @@
-<p align="center"><img src="AsortiAraci/sistem/eleman.png" width="112" alt="Eleman simgesi"></p>
+<p align="center"><img src="Eleman/sistem/eleman.png" width="112" alt="Eleman simgesi"></p>
 <h1 align="center">Eleman</h1>
 <p align="center">Kesim planlamanın yardımcısı: <b>Asorti Aracı</b> ve <b>Ölçü Tablosu</b> tek programda.</p>
 
@@ -33,7 +33,7 @@ Eleman açılışta kendisi bakar, yeni sürüm varsa haber verir. Elle: **⚙ �
 ## Klasörler
 | Klasör | İçinde |
 |---|---|
-| `AsortiAraci/` | Programın kendisi (kurulan dosyalar). Adı, eski sürümler güncellemeyi bu klasörden aldığı için şimdilik böyle. |
+| `Eleman/` | Programın kendisi (kurulumda bilgisayara kopyalanan dosyalar). |
 | `kaynak/` | Kaynak dosyalar: Eleman kabuğu (`eleman/`), Ölçü Tablosu (`olcu/`). |
 | `kurulum/` | Kurulum sihirbazı (`Kurulum.bat` bunu çalıştırır). |
 | `ELEMAN_DURUM.md` | Geliştirme notları. |

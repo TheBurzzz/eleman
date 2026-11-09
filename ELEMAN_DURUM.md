@@ -22,10 +22,11 @@ Her sohbet işe başlamadan önce bunu okur, iş bitince "Son durum" bölümün�
   klasör adlarını tanır. Varsayılan dal `eleman` yapılır (depo sayfası ve Download ZIP Eleman'ı verir; güncelleyiciler dalı
   açıkça yazdığı için etkilenmez). **Eski adla yeni bir depo açılmaz** (yönlendirme bozulur). Sohbetler depoyu yeni adla
   (`TheBurzzz/eleman`) eklemeli. Ortak hafıza ayrı gizli depo olarak kalır (`eleman-hafiza`; anahtarlar yalnız ona erişir).
-- Paketteki program klasörü şimdilik `AsortiAraci/`. v2.x ve Eleman ≤3.1.0 yalnız `AsortiAraci/surum.json`'a ve zip içindeki
-  `AsortiAraci/`'ye bakar; **3.2.0+ güncelleyici (Guncelleme.cs, sunucu.ps1) ve kurulum (Kurulum.ps1) `Eleman/`'ı da tanır
-  (önce Eleman)**. Bilinen kurulumların hepsi (iş bilgisayarı, ev) 3.2.0'a geçince klasör `git mv AsortiAraci Eleman` ile
-  değişir; derle.py, kabuk_yap.py ve surum.yml iki adı da tanır, README'deki resim yolu ve OKU_BENI elle düzeltilir.
+- **Program klasörü depoda `Eleman/`** (9 Kasım 2026'dan beri; önce `AsortiAraci/`). 3.2.0+ güncelleyici (Guncelleme.cs,
+  sunucu.ps1) ve kurulum (Kurulum.ps1) iki adı da tanır (önce Eleman); derle.py, kabuk_yap.py ve surum.yml de. v2.x ve
+  Eleman ≤3.1.0 yalnız `AsortiAraci/`'yi bildiği için artık güncellenemez (kullanıcı kabul etti: evdeki eski kurulum gerekirse
+  GitHub'dan indirilip Kurulum.bat ile yeniden kurulur, ayarlar korunur). **Aşağıdaki eski notlarda geçen `AsortiAraci/...`
+  depo yolları artık `Eleman/...`.**
 - Kurulum klasörü `C:\AsortiAraci` aynı kalır (OTOPASTAL bağlantısı, WebView2 profili, çalışma sayfaları bu yolda).
 - `AsortiAraci.exe` dosya adı şimdilik aynı; görünen ad (pencere, görev yöneticisi, bildirim, uyarılar) **Eleman**.
 - Sunucu adresi `localhost:8642` aynı (sayfaların yerel kaydı bu adrese bağlı).
@@ -74,19 +75,19 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
 ## Ölçü Tablosu kaynağı
 
 - Kaynak: `kaynak/olcu/src.html` + `kaynak/olcu/veri/` (ölçü sözlüğü vb.). Eleman içindeki hali:
-  `python kaynak/olcu/derle.py` → `AsortiAraci/olcu_tablosu_araci.html` (anahtarsız, şablonsuz).
+  `python kaynak/olcu/derle.py` → `Eleman/olcu_tablosu_araci.html` (anahtarsız, şablonsuz).
 - Masaüstündeki tek başına hali depo dışına derlenir: `derle.py --sablonlar <gizli> --anahtar <gizli> --cikti <depo dışı>`.
-- Sunucu tarafı: `AsortiAraci/sistem/uygulama/SunucuOlcu.cs` (yalnız `/olcu/...` adresleri), kitaplıklar `AsortiAraci/sistem/olcu/`.
+- Sunucu tarafı: `Eleman/sistem/uygulama/SunucuOlcu.cs` (yalnız `/olcu/...` adresleri), kitaplıklar `Eleman/sistem/olcu/`.
 
 ## Asorti ya da Ölçü değişince (9 Kasım 2026'dan beri)
 
-- **Asorti düzeltmesi** (Asorti sohbeti): `eleman` dalında `AsortiAraci/asorti_araci.html` düzeltilir (exe-deneme yok).
+- **Asorti düzeltmesi** (Asorti sohbeti): `eleman` dalında `Eleman/asorti_araci.html` düzeltilir (exe-deneme yok).
   Asorti'nin sekmeli penceresi (sekmeler, Gerber durumu, güncelleme) değişecekse kaynağı `kaynak/eleman/asorti_kabugu.html`
   (Asorti 2.0.4'ün `uygulama.html`'i) düzeltilir ve kabuk yeniden üretilir:
-  `python3 kaynak/eleman/kabuk_yap.py kaynak/eleman/asorti_kabugu.html AsortiAraci/uygulama.html` (`uygulama.html` elle düzeltilmez).
+  `python3 kaynak/eleman/kabuk_yap.py kaynak/eleman/asorti_kabugu.html Eleman/uygulama.html` (`uygulama.html` elle düzeltilmez).
 - **Ölçü Tablosu düzeltmesi** (Ölçü sohbeti): `kaynak/olcu/src.html` eleman dalında düzeltilir, `python3 kaynak/olcu/derle.py`
-  çalıştırılır (AsortiAraci/olcu_tablosu_araci.html yenilenir). Masaüstündeki tek başına hali gerekirse depo dışına derlenir.
-- **Yayın** (iş bilgisayarına gitsin): `AsortiAraci/surum.json` (sürüm, tarih, kullanıcının göreceği Türkçe notlar) ve
+  çalıştırılır (Eleman/olcu_tablosu_araci.html yenilenir). Masaüstündeki tek başına hali gerekirse depo dışına derlenir.
+- **Yayın** (iş bilgisayarına gitsin): `Eleman/surum.json` (sürüm, tarih, kullanıcının göreceği Türkçe notlar) ve
   `Program.cs` AssemblyVersion artar, `eleman`'a itilir, sonra `git push origin eleman:main`. Releases'a `surum.yml` ekler.
 - **Bakım**: dal silme ve sürüm başlığı `.github/workflows/bakim.yml` ile (workflow_dispatch; API:
   `POST repos/TheBurzzz/eleman/actions/workflows/bakim.yml/dispatches`). Git vekili dal silmeye ve depo ayarına izin vermiyor;
@@ -215,19 +216,19 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
   - İş bilgisayarı (KALIP1) kayıtları: 08:46:03 "guncellendi: 2.0.4 -> 3.2.0", 08:46:07 Windows csc ile derlendi, pencere
     yeniden açıldı, "kisayollar uygulamaya baglandi (6 kisayol)", kurulum klasöründeki `Asorti Araci.lnk` → `Eleman.lnk`.
     Asorti sayfaları (yerel_kayit.json) yerinde. Ölçü şablonları (olcu_sablonlar.json) Ölçü Tablosu ilk açılınca iner.
-  - Kalan: depodaki `AsortiAraci/` klasörünün adı `Eleman/` (evdeki kurulum da 3.2.0'a geçince; aşağıda 0).
+  - Aynı sabah kullanıcının onayıyla ("hemen değiştir") depodaki program klasörü `Eleman/` oldu (sürüm aynı, 3.2.0;
+    iş bilgisayarı yeni yoldan sürümü görüyor). Evdeki eski kurulum artık güncellenemez, gerekirse yeniden kurulur.
 
 ## Sıradaki işler
 0. **Sürüm arşivi = GitHub Releases.** 32 sürüm (ilk-deneme, v1.0.0–v1.1.22, v2.0.0–v2.0.4) bir kerelik GitHub Actions işiyle
    taşındı, `surum-v*`, `arsiv`, `surum-test` dalları silindi (dallar: eleman, main, exe-deneme). Bu oturumlardan etiket ve
    Release oluşturulamıyor (git vekili etiket itmeye 403, API Release yazmaya izin vermiyor); işi Actions yapar:
-   `.github/workflows/surum.yml` main'de `AsortiAraci/surum.json` değişince `v<sürüm>` Release'ini kendisi ekler
-   (Eleman main'e geçince çalışmaya başlar). O zamana kadar main'e yeni Asorti sürümü çıkarsa dal açılmaz, Eleman sohbetine söylenir.
+   `.github/workflows/surum.yml` main'de `Eleman/surum.json` değişince `v<sürüm>` Release'ini kendisi ekler
+   (9 Kasım 2026'dan beri çalışıyor: Eleman v3.2.0).
    Kurulum, Releases zip'inin klasör adındaki sürüm numarasını (eleman-1.1.22) dal sanmaz.
-0. ✓ (3.2.0) güncelleyici (Guncelleme.cs, sunucu.ps1) ve kurulum (Kurulum.ps1) paketteki program klasörünü
-   hem `Eleman/` hem `AsortiAraci/` olarak tanıyor (önce Eleman). **Kalan:** klasör adı `Eleman/` (yukarıda "Değişmeyecekler"). İş bilgisayarı Eleman'a geçtikten sonra klasör `Eleman/`
-   yapılır (kullanıcı adların "Asorti Aracı" kalmasını sordu: şimdilik böyle durmalı, sonra değişecek). İstenirse eski
-   `surum-v1.*` dalları GitHub Releases'a taşınabilir (dal listesi sadeleşir; Asorti sohbetinin sürüm arşivi alışkanlığı da değişir).
+0. ✓ 9 Kasım 2026: depoda program klasörü `Eleman/` (3.2.0 güncelleyici ve kurulum iki adı da tanır). Kullanıcı
+   "her şey tamamen Eleman olsun" dedi; bilgisayardaki kurulum klasörü `C:\AsortiAraci` ve `AsortiAraci.exe` adı yine aynı
+   (Gerber bağlantısı, WebView2 profili; yukarıda "Değişmeyecekler"), görünen her yer Eleman.
 
 1. ✓ Müşteri şablonları gizli `eleman-hafiza` deposunda: `olcu-tablosu/veri/sablonlar.json` (2026-11-06, 7 müşteri).
    Eleman ilk açılışta `anahtar.txt` ile oradan indirip `olcu_sablonlar.json` olarak saklar, 6 saatte bir arka planda tazeler

@@ -1,7 +1,7 @@
 # Ölçü Tablosu Aracı: kaynaktan tek dosyalık programı üretir.
 #
 #   python kaynak/olcu/derle.py
-#       -> AsortiAraci/olcu_tablosu_araci.html  (Eleman içindeki hali: anahtarsız, müşteri şablonları gömülü değil;
+#       -> Eleman/olcu_tablosu_araci.html  (Eleman içindeki hali: anahtarsız, müşteri şablonları gömülü değil;
 #          şablonlar Eleman'da gizli ortak hafızadan / kurulumdaki yerel dosyadan gelir)
 #
 #   python kaynak/olcu/derle.py --sablonlar <gizli/sablonlar.json> --anahtar <github_pat_...> --cikti <yol>

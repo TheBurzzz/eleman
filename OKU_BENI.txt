@@ -6,7 +6,7 @@ Kurmak için: Kurulum.bat dosyasına çift tıkla. Sihirbaz adım adım kurar.
 Klasörler
   Kurulum.bat          sihirbazı açar
   kurulum\             sihirbaz ve paket denetimi
-  AsortiAraci\         uygulamanın kendisi (kurulum bunu C:\AsortiAraci'ye kopyalar)
+  Eleman\              uygulamanın kendisi (kurulum bunu C:\AsortiAraci'ye kopyalar)
     uygulama.html        Eleman: ana sayfa ve sekmeli pencere
     asorti_araci.html    asorti hesabı (her sekme bir çalışma sayfası)
     olcu_tablosu_araci.html  ölçü tablosu (kağıt okuma, tarama, Excel)

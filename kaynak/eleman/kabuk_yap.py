@@ -1,6 +1,6 @@
-# Eleman kabuğu: Asorti Aracı'nın sekmeli penceresini (AsortiAraci/uygulama.html) Eleman'a çevirir.
+# Eleman kabuğu: Asorti Aracı'nın sekmeli penceresini (kaynak/eleman/asorti_kabugu.html) Eleman'a çevirir (Eleman/uygulama.html).
 #
-#   python3 kaynak/eleman/kabuk_yap.py kaynak/eleman/asorti_kabugu.html AsortiAraci/uygulama.html
+#   python3 kaynak/eleman/kabuk_yap.py kaynak/eleman/asorti_kabugu.html Eleman/uygulama.html
 #
 # Asorti'nin kendi kodu (sekmeler, Gerber, güncelleme, görünüm) olduğu gibi kalır; üstüne eklenenler:
 #   - sol üstte Eleman simgesi: basınca Ana sayfa / Asorti Aracı / Ölçü Tablosu menüsü
@@ -12,7 +12,7 @@
 #   - ⚙ menüsünde açık uygulamaya göre bölümler (görünüm hepsinde ortak); sürüm yalnız ⚙ menüsünde
 #   - renk: Eleman sarı, Asorti mavi (aynen), Ölçü yeşil
 # Kaynak: kaynak/eleman/asorti_kabugu.html = Asorti Aracı 2.0.4'ün sekmeli penceresi (main Eleman'a geçmeden önceki
-# AsortiAraci/uygulama.html). Asorti'nin sekmeli penceresinde düzeltme gerekirse o dosya düzeltilir, bu betik yeniden çalıştırılır.
+# program klasöründeki uygulama.html). Asorti'nin sekmeli penceresinde düzeltme gerekirse o dosya düzeltilir, bu betik yeniden çalıştırılır.
 import os, re, sys
 
 src, out = sys.argv[1], sys.argv[2]

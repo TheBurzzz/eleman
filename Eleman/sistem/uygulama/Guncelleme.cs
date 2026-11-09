@@ -161,8 +161,8 @@ namespace AsortiAraci
         // yine de ikisi sırayla denenir (yönlendirme bir gün kalksa da, ad henüz değişmemiş olsa da güncellemeler sürer).
         static readonly string[] ElemanDepolari = { "TheBurzzz/eleman", "TheBurzzz/asorti-araci" };
 
-        // Paketteki program klasörü: depoda "AsortiAraci/" iken "Eleman/" olacak (bütün kurulumlar 3.2.0'a geçince).
-        // 3.2.0'dan önceki güncelleyiciler yalnız AsortiAraci/'yi bilir; bu sürüm ikisini de tanır, önce Eleman.
+        // Paketteki program klasörü: depoda 9 Kasım 2026'ya kadar "AsortiAraci/", sonra "Eleman/".
+        // 3.2.0'dan önceki güncelleyiciler yalnız AsortiAraci/'yi bilir; 3.2.0 ve sonrası ikisini de tanır, önce Eleman.
         static readonly string[] ProgramKlasorleri = { "Eleman", "AsortiAraci" };
         string aktifDepo;   // en son surum.json'u veren depo; indirme de oradan yapılır
         static string[] DepoAdaylari(Ayarlar a)
