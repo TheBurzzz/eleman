@@ -244,6 +244,15 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
   - pwsh benzetimi (gerçek işlevler, sahte engine.que ve .ctl), eski ve yeni karşılaştırmalı: tek pastal Batch yazmadan /
     yazarken / "tamamlandı" ama kayıt yok / kayıt geldi; Batch başarısız; 60 sn'de gelmedi; çok pastallı; Batch'i kapatma.
 
+- 2026-11-09 öğleden sonra (Asorti sohbeti): **Eleman 3.2.3**, Gerber adları 20 harf (kullanıcı: "gerberin harf sınırı var … ben
+  urt-c yerine u-c veya ur-c yazıyordum … program izin vermezse sen de benim yaptığım gibi yap").
+  - Sınır, iş bilgisayarındaki 166 Gerber klasörünün .ctl kayıtlarından: en uzun ad 20 harf (4343 pastal tam 20). Kullanıcının
+    elle kısaltmaları da oradan görüldü: `…-UR1-2`, `…-UR-H`, `…-U1-E`, `…-U-H2`, `…-U4-TOF` (URT → UR → U, gerisi aynen).
+  - `asorti_araci.html`: `gAd(model, no, harf)` URT → UR → U, U ile de sığmazsa model adının sonu kısalır; üretim pastalları,
+    diğer kumaşlar, ek tablolar (`xAd`) ve Gerber'den boy / verim okuma hep bunu kullanır. Denemeler `gAsAd` (MODEL-AS01,
+    sığmazsa model kısalır); köprü eski denemeleri silerken aynı kısaltmayla da arar. Kısaltınca iki ad aynı olursa gönderilmez,
+    uyarı çıkar. Adı 20'ye sığanlar eskisiyle aynı (önceki işlerin adları değişmez).
+
 ## Sıradaki işler
 0. **Sürüm arşivi = GitHub Releases.** 32 sürüm (ilk-deneme, v1.0.0–v1.1.22, v2.0.0–v2.0.4) bir kerelik GitHub Actions işiyle
    taşındı, `surum-v*`, `arsiv`, `surum-test` dalları silindi (dallar: eleman, main, exe-deneme). Bu oturumlardan etiket ve

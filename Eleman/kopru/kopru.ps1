@@ -338,8 +338,10 @@ function IsBasla($file) {
     # 0) "En verimli asortiyi bul" denemelerinden kalan MODEL-ASnn siparis ve pastallarini sil (uretime kopyalanacaklar kopyadan sonra silinir)
     if ($temiz) {
       $sil = 0
+      # Gerber adi en fazla 20 harf: MODEL-AS01 sigmazsa sayfa model adinin sonunu kisaltir (gAsAd), eski denemeler o adla da aranir
+      $asOnek = @($mods | ForEach-Object { if ($_.Length + 5 -gt 20) { $_.Substring(0, 15).TrimEnd('-') } else { $_ } } | Sort-Object -Unique)
       foreach ($kind in 'order', 'mark') {
-        $cand = @(CtlNames $area $kind | Sort-Object -Unique | Where-Object { $n = $_; @($mods | Where-Object { $n -match ('^' + [regex]::Escape($_) + '-AS\d+$') }).Count -gt 0 -and $pend -notcontains $n -and $kaynak -notcontains $n })
+        $cand = @(CtlNames $area $kind | Sort-Object -Unique | Where-Object { $n = $_; @($asOnek | Where-Object { $n -match ('^' + [regex]::Escape($_) + '-AS\d+$') }).Count -gt 0 -and $pend -notcontains $n -and $kaynak -notcontains $n })
         foreach ($n in $cand) {
           $o3 = Yerel { & .\amdelete.exe $(if ($kind -eq 'mark') { 'marker' } else { 'order' }) ($DRV + $area) $n }
           Log ("sil $kind $n : " + ($o3.Trim() -replace '\s+', ' ')); $sil++

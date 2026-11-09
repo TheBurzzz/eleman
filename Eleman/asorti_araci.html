@@ -487,7 +487,7 @@ function xGerberUI(x){const j=x.job,busy=j&&!xBitti((j.st||{}).asama),q='xt.find
  h+='<button type="button" class="pri" '+(busy?'disabled ':'')+'onclick="xSend('+x.id+')">'+(busy?'Oluşturuluyor…':'Gerber\'de pastalını oluştur')+'</button>';
  h+='<button type="button" '+(busy?'disabled ':'')+'onclick="xOku('+x.id+')" title="Pastalı Gerber\'de yerleştirip kaydettikten sonra bas: boy ve verim tabloya yazılır">Gerber\'den boy ve verimi al</button></div><div id="xg'+x.id+'">'+xJobHtml(x)+'</div><div id="xo'+x.id+'">'+(x.okuMsg||'')+'</div></div>';return h}
 const xYon=x=>x.kind=='tela'?'n':(x.gY||gYon(gMods().length>1&&x.side==='ÜST'?1:0));
-function xAd(x){const Lt=String(XL[x.kind]||x.Lt||'').toUpperCase(),M=gMods(),mm=M.length>1?(M.find(q=>q.b.id==(x.side=='ALT'?'a':'u'))||M[0]).m:M[0].m;return{Lt,nm:mm+'-URT-'+Lt,mm}}
+function xAd(x){const Lt=String(XL[x.kind]||x.Lt||'').toUpperCase(),M=gMods(),mm=M.length>1?(M.find(q=>q.b.id==(x.side=='ALT'?'a':'u'))||M[0]).m:M[0].m;return{Lt,nm:gAd(mm,'',Lt),mm}}
 async function xOku(id){xSync();const x=xt.find(q=>q.id==id);if(!x||!x.res||!x.res.length)return;if(!KHTTP){alert('Bunun için programı masaüstündeki "Asorti Araci" simgesinden aç.');return}
  if(!info.gAr){alert('Önce yukarıdaki Gerber bölümünden müşteri klasörünü seç.');return}
  const {Lt,nm}=xAd(x),e=$('xo'+id),yaz=h=>{x.okuMsg=h;if(e)e.innerHTML=h};if(!/^[A-Z]$/.test(Lt)){alert('Bu tablonun Gerber kumaş harfini yaz.');return}
@@ -641,6 +641,13 @@ async function rApply(files){const H=[],MM=[];let unk=0;
 /* ---- Gerber siparişi oluştur (CSV Getir / CSVIMPRT biçimi) ---- */
 gdb.cfg=Object.assign({a:'YAZ-DKSLI',b:'BAFIR-005',g:'P-NOTCH',f:'K',ly:'TEK-AYNIYON-NES',ln:'TEK-FARKLIYON-NES'},gdb.cfg||{});
 function gMods(){const B=mainBlocks();return B.length>1?B.map(b=>({b,m:gM(b.id=='a'?(info.gA||info.art):(info.gU||info.art))})):[{b:B[0],m:gM(info.art)}]}
+/* Gerber (AccuMark) sipariş / pastal adı en fazla 20 harf. Sığmazsa kullanıcının elle yaptığı gibi URT → UR → U kısalır
+   (MODEL-URT1 → MODEL-UR1 → MODEL-U1, MODEL-URT-C → MODEL-UR-C → MODEL-U-C); U ile de sığmazsa model adının sonu kısalır */
+const GAD=20,gKes=(m,n)=>m.length<=n?m:m.slice(0,n).replace(/-+$/,'');
+function gAd(m,no,Lt){const e=k=>'-'+k+(no||'')+(Lt?'-'+Lt:'');for(const k of['URT','UR','U'])if(m.length+e(k).length<=GAD)return m+e(k);return gKes(m,GAD-e('U').length)+e('U')}
+/* "en verimli asortiyi bul" denemeleri MODEL-AS01…; sığmazsa model adı kısalır (köprü eski denemeleri bu kısaltmayla da bulup siler) */
+const gAsAd=(m,i)=>{const s='-AS'+String(i).padStart(2,'0');return gKes(m,GAD-s.length)+s};
+const gAdCift=a=>{const d=a.find((x,i)=>a.indexOf(x)!=i);if(d)alert('Gerber adları en fazla 20 harf olabildiği için kısaltılınca iki pastalın adı aynı oluyor ('+d+'). Gerber\'de model adlarından birini kısaltıp tekrar dene.');return!!d};
 function gDefW(k){const M=gMods(),x=M[k||0];if(!x)return'';const v=k?info.gW2:info.gW;if(v)return v;const m=gdb.models[x.m];return m&&m.w?String(m.w).replace('.',','):''}
 /* kumaş yönü (yönlü / yönsüz) her model için ayrı: alt-üst takımda iki modelin kumaşı farklı olabilir; son seçilen modele göre hatırlanır */
 function gYon(k){k=k||0;const v=k?info.gY2:info.gY;if(v)return v;const x=gMods()[k],m=x&&gdb.models[x.m];if(m&&m.yon)return m.yon;return k?gYon(0):'n'}
@@ -669,16 +676,17 @@ function gBuild(){if(!info||!sols[cur])return null;const c=gdb.cfg,M=gMods(),W=M
  const F=F0,fo=f=>(info.gFab||{})[f]!==undefined?info.gFab[f]:f==='K';
  const addO=(nm,w,m,fab,a,lay)=>{L.push('=:order','o:'+nm,'5:'+nm,'w:'+w,'l:'+lay,'a:'+c.a,'b:'+c.b,'g:'+c.g,'j:C','m:'+m);if(fab)L.push('0:'+fab);a.forEach((v,i)=>{if(v)L.push('q:'+v,'s:'+info.sizes[i])})};
  const AS=info.gAs,asI=AS&&gAsImza(M,WS,F?F.main:c.f),kopya=[],asOk=k=>!!(AS&&AS.ad&&AS.alan===asI.alan&&AS.sz===asI.sz&&AS.cfg===asI.cfg&&JSON.stringify(AS.mods[k]||0)===JSON.stringify(asI.mods[k]));
- if(!F||fo('K'))M.forEach(({m,b},k)=>P.forEach((p,j)=>{const nm=m+'-URT'+(j+1);names.push(nm);if(OTO!=='yok'&&asOk(k)&&AS.ad[k+'|'+p.a.join()])kopya.push(nm+'='+AS.ad[k+'|'+p.a.join()]);map[nm]={key:b.id+'|'+p.a.join(),pc:p.a.reduce((x,y)=>x+y,0),t:(M.length>1?b.title+' ':'')+(j+1)+'. pastal'};
+ if(!F||fo('K'))M.forEach(({m,b},k)=>P.forEach((p,j)=>{const nm=gAd(m,j+1);names.push(nm);if(OTO!=='yok'&&asOk(k)&&AS.ad[k+'|'+p.a.join()])kopya.push(nm+'='+AS.ad[k+'|'+p.a.join()]);map[nm]={key:b.id+'|'+p.a.join(),pc:p.a.reduce((x,y)=>x+y,0),t:(M.length>1?b.title+' ':'')+(j+1)+'. pastal'};
   addO(nm,WS[k],m,F?F.main:c.f,p.a,gLay(k))}));
  if(F)for(const Lt of F.ex){if(FABX[Lt]||!fo(Lt))continue;const x=gXfor(Lt);
   if(!FABX[Lt]){const wx=gnum((info.gWx||{})[Lt]);if(!(wx>20)){alert(Lt+' kumaşı için kumaş enini yaz.');return null}
-   M.forEach(({m},k)=>P.forEach((p,j)=>{const nm=m+'-URT'+(j+1)+'-'+Lt;names.push(nm);addO(nm,String(+wx.toFixed(2)),m,Lt,p.a,gLay(k))}));continue}
+   M.forEach(({m},k)=>P.forEach((p,j)=>{const nm=gAd(m,j+1,Lt);names.push(nm);addO(nm,String(+wx.toFixed(2)),m,Lt,p.a,gLay(k))}));continue}
   }
  if(OTO==='yok')names.forEach(n=>{if(!kq.includes(n))kq.push(n)});
  if(kq.length)L.splice(hp,0,'# kuyruksuz:'+kq.join(','));
  if(kopya.length)L.splice(hp,0,'# kopya:'+kopya.join(','));
  if(!names.length){alert('Gönderilecek pastal yok: en az bir kumaş tipi seç.');return null}
+ if(gAdCift(names))return null;
  return{data:enc1254(L.join('\r\n')+'\r\n'),names,map,ws,kq,kopya}}
 async function gOrder(){const g=gBuild();if(!g)return;const fn=(trn(info.art)||'siparis').replace(/[\\/:*?"<>|]/g,'')+'_gerber.txt';
  try{if(window.showSaveFilePicker){const h=await showSaveFilePicker({id:'gerber-siparis',suggestedName:fn,types:[{description:'Gerber sipariş',accept:{'text/plain':['.txt']}}]});const wr=await h.createWritable();await wr.write(g.data);await wr.close()}
@@ -743,8 +751,9 @@ async function gAra(){if(!info||!sols[cur])return;if(!info.gAr){alert('Müşteri
  while((U=uniq()).size>14&&(nA>2||nB>1)){if(nB>1&&nB>=nA/2)nB--;else nA--}
  const cands=[...A.slice(0,nA),...Bp.slice(0,nB)],comps=[...U.values()],c=gdb.cfg,F=gFabs(),fab=F?F.main:c.f;
  const L=['# Asorti Araci - en verimli asorti denemesi - '+(info.art||''),'# alan:'+info.gAr,'# uzerine-yaz:evet'],map={},names=[];
- M.forEach(({m},k)=>comps.forEach((a,i)=>{const nm=m+'-AS'+String(i+1).padStart(2,'0');names.push(nm);map[nm]={k,a:a.join()};
+ M.forEach(({m},k)=>comps.forEach((a,i)=>{const nm=gAsAd(m,i+1);names.push(nm);map[nm]={k,a:a.join()};
   L.push('=:order','o:'+nm,'5:'+nm,'w:'+String(+W[k].toFixed(2)),'l:'+gLay(k),'a:'+c.a,'b:'+c.b,'g:'+c.g,'j:C','m:'+m);if(fab)L.push('0:'+fab);a.forEach((v,j)=>{if(v)L.push('q:'+v,'s:'+info.sizes[j])})}));
+ if(gAdCift(names))return;
  const z=new Date(),pd=x=>String(x).padStart(2,'0'),base=(trn(info.art)||'siparis').replace(/[^A-Za-z0-9-]/g,'')+'_ara_'+z.getFullYear()+pd(z.getMonth()+1)+pd(z.getDate())+'-'+pd(z.getHours())+pd(z.getMinutes())+pd(z.getSeconds());
  try{await kPut('gelen/'+base+'.txt',enc1254(L.join('\r\n')+'\r\n'))}catch(e){alert('Köprüye gönderilemedi: '+e.message);return}
  gJob={kind:'ara',base,map,names,cands,t:Date.now(),st:{asama:'gonderildi'},ara:gAsImza(M,W.map(w=>String(+w.toFixed(2))),fab)};try{localStorage.setItem(JK,JSON.stringify(gJob))}catch(e){}gYonHatirla();gPoll();show()}
@@ -785,7 +794,7 @@ async function gSend(){if(!info.gAr){alert('Müşteri klasörünü listeden seç
 async function gOku(){if(!info||!sols[cur])return;if(!KHTTP){alert('Bunun için programı masaüstündeki "Asorti Araci" simgesinden aç.');return}
  if(!info.gAr){alert('Müşteri klasörünü listeden seç.');const e=$('gAr');if(e)e.focus();return}
  const M=gMods(),P=sols[cur].pastals.filter(p=>p.a.some(v=>v)),L=[];
- M.forEach(({m,b})=>P.forEach((p,j)=>L.push({nm:m+'-URT'+(j+1),key:b.id+'|'+p.a.join(),pc:p.a.reduce((x,y)=>x+y,0)})));
+ M.forEach(({m,b})=>P.forEach((p,j)=>L.push({nm:gAd(m,j+1),key:b.id+'|'+p.a.join(),pc:p.a.reduce((x,y)=>x+y,0)})));
  const g=$('gpm');if(g)g.innerHTML='<div class="m">Gerber\'den okunuyor…</div>';
  let ok=0;const eks=[];
  for(const x of L){let j;try{j=await (await fetch('/pastal?alan='+encodeURIComponent(info.gAr)+'&ad='+encodeURIComponent(x.nm),{cache:'no-store'})).json()}catch(err){eks.push(x.nm+' (okunamadı)');continue}

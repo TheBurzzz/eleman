@@ -1,8 +1,8 @@
 {
- "surum": "3.2.2",
+ "surum": "3.2.3",
  "tarih": "2026-11-09",
  "notlar": [
-  "Gerber · tek pastallı işlerde (ek asorti tabloları: hızar, tela, kontrast cep…) pastal oluştuğu halde «Durdu: Pastal oluşmadı» çıkması düzeltildi; köprü pastalı Batch gerçekten yazana kadar bekliyor",
-  "Gerber · Batch bir pastalı yazarken köprü Batch'i kapatmıyor"
+  "Gerber · pastal adı 20 harfe sığmazsa senin elle yaptığın gibi kısalır: URT → UR → U (MODEL-URT1 → MODEL-UR1 → MODEL-U1, MODEL-URT-C → MODEL-UR-C → MODEL-U-C). U ile de sığmazsa model adının sonu kısalır; adlar Gerber bölümünde görünür",
+  "Gerber · tek pastallı işlerde (ek asorti tabloları) pastal oluştuğu halde «Pastal oluşmadı» çıkması düzeltildi; köprü Batch'i pastal yazarken kapatmıyor"
  ]
 }
