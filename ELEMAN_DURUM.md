@@ -46,7 +46,8 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
 - **Güncel karar (6 Kasım 2026, 22:58):** "her pc hem öğrensin hem öğretsin; 1 yıl sonra başka bir bilgisayara geçtiğimde
   sana 'bu benim bilgisayarım' demek zorunda kalmayayım." Asıl kullanım iş bilgisayarı, ev deneme. Bu yüzden **programın
   içindeki anahtar** (`SunucuOlcu.cs` → `OKUMA`, ters + "eleman-okuma" ile XOR + base64; GitHub'daki adı `eleman-okuma`,
-  yalnız `eleman-hafiza`) her kurulumda kullanılır ve kullanıcı onu GitHub'da **Contents: Read and write** yapar.
+  yalnız `eleman-hafiza`) her kurulumda kullanılır ve kullanıcı onu GitHub'da **Contents: Read and write** yapar
+  (✓ 9 Kasım 2026'da iş bilgisayarından denendi: okuyor, yazabiliyor; deneme yanlış sha ile yapıldı, hiçbir şey değişmedi).
   Düz yazılmaz çünkü GitHub herkese açık depoda gördüğü anahtarı iptal eder; gizleme değildir, kurcalayan çözebilir
   (kullanıcı kabul etti: müşteriler gizli değil, başkası kullanmıyor). Başkası da kullanırsa öğrendikleri ortak olur.
 - Sunucu `salt` hep false. Ölçü Tablosu yazmayı dener; GitHub 403 derse (anahtar yalnız okuyorsa) kendiliğinden yalnız
@@ -202,6 +203,19 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
   (ücretsiz planda 10 MB sınırı: 720p, 24 fps; ilk 1,5 sn giriş kartı, oynatıcı siyah kare göstermesin). README düzenlenirken
   bu adres tek başına bir satırda, üstü altı boş kalmalı; `<video>` etiketine çevrilmemeli (giriş yapmış kullanıcıda oynamıyor).
   mp4 depoya konmamalı: güncelleyici dalın zip'ini indiriyor, her güncelleme büyür. Oynatıcı sessiz başlıyor, üstünde not var.
+
+- 2026-11-09 sabah: **Eleman 3.2.0 main'e geçti, iş bilgisayarı Eleman oldu** (kullanıcı iş bilgisayarından: "programı tamamen
+  elemana çevirelim … yeni güncelleme iş yerindeki pc'me güncelleme olarak gelsin").
+  - 3.2.0: güncelleyici ve kurulum `Eleman/` ve `AsortiAraci/` klasör adlarını tanır; sürüm notları 2.0.4 kullanıcısına göre.
+  - Önce iş bilgisayarının yedeği: `C:\AsortiAraci\yedek_asorti_2.0.4_eleman_oncesi` (program dosyaları, ayarlar, yerel kayıtlar,
+    WebView2 Local Storage; 78 dosya, 3,3 MB). Güncelleyicinin kendi yedeği `C:\AsortiAraci\yedek`.
+  - `git push origin eleman:main` (ileri sarma). Releases: **Eleman v3.2.0** (surum.yml, Latest); v2.0.4'ün başlığından
+    "(iş bilgisayarındaki sürüm)" kalktı. `exe-deneme` silindi (bakim.yml). Dallar: `main`, `eleman`. Varsayılan dal `eleman`
+    (vekil depo ayarına izin vermiyor; main yapmak isterse kullanıcı Settings'ten değiştirir).
+  - İş bilgisayarı (KALIP1) kayıtları: 08:46:03 "guncellendi: 2.0.4 -> 3.2.0", 08:46:07 Windows csc ile derlendi, pencere
+    yeniden açıldı, "kisayollar uygulamaya baglandi (6 kisayol)", kurulum klasöründeki `Asorti Araci.lnk` → `Eleman.lnk`.
+    Asorti sayfaları (yerel_kayit.json) yerinde. Ölçü şablonları (olcu_sablonlar.json) Ölçü Tablosu ilk açılınca iner.
+  - Kalan: depodaki `AsortiAraci/` klasörünün adı `Eleman/` (evdeki kurulum da 3.2.0'a geçince; aşağıda 0).
 
 ## Sıradaki işler
 0. **Sürüm arşivi = GitHub Releases.** 32 sürüm (ilk-deneme, v1.0.0–v1.1.22, v2.0.0–v2.0.4) bir kerelik GitHub Actions işiyle
