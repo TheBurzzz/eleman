@@ -25,6 +25,7 @@ Yeni bilgisayara kurarken
   - İstersen "Ayarları elle değiştir…" ile bulunanları değiştirebilirsin.
   Sonradan bir şey değişirse: uygulamada ⚙ → Gerber bağlantısı → Otomatik bul.
 
-Güncelleme: yeni paketi aynı şekilde kur; ayarların ve çalışma sayfaların korunur.
+Güncelleme: Eleman açılışta kendisi bakar, yeni sürüm varsa haber verir (elle: ⚙ → Güncellemeleri denetle).
+           Ayarların, çalışma sayfaların ve öğrenilenler korunur.
 Kaldırma : C:\AsortiAraci\Kaldir.bat
-Ölçü Tablosu ortak hafıza anahtarı: anahtar.txt (elden verilir, Kurulum.bat'ın yanına konur; GitHub'a konmaz)
+Ölçü Tablosu'nun müşteri şablonları ve ortak hafızası kendiliğinden gelir; ayrı bir anahtar dosyası gerekmez.

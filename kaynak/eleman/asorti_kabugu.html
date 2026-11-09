@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Asorti Aracı</title>
+<script>try{if(window.asortiPencere&&asortiPencere.baslik)document.documentElement.classList.add('pencere')}catch(e){}</script>
+<link rel="icon" type="image/png" sizes="192x192" href="sistem/asorti.png?v=2"><link rel="icon" href="sistem/asorti.ico?v=2" sizes="16x16 20x20 24x24 32x32 40x40 48x48 64x64 128x128 256x256"><link rel="apple-touch-icon" href="sistem/asorti.png?v=2">
+<style>
+/* yazı tipi: Inter (SIL Open Font License, sistem/Inter-OFL.txt) — programla birlikte gelir, internet gerekmez */
+@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:fallback;src:url(sistem/inter-latin.woff2?v=4) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:fallback;src:url(sistem/inter-latin-ext.woff2?v=4) format("woff2");unicode-range:U+0100-02AF,U+0304,U+0308,U+0329,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+:root{--bldbg:rgba(252,252,254,.97);--ink:#1d1d1f;--mut:#6e6e73;--line:rgba(60,60,67,.14);--bg:#eef0f6;--bar:rgba(246,247,250,.86);--tabh:rgba(60,60,67,.07);--on:#fff;--acc:#0071e3;--accs:rgba(0,113,227,.12);--ok:#1f9d55;--bad:#d13b30;--pop:rgba(255,255,255,.9);--sh:0 1px 2px rgba(0,0,0,.08),0 3px 10px rgba(30,45,90,.10);--psh:0 18px 50px rgba(20,30,60,.22),0 2px 8px rgba(20,30,60,.10)}
+html[data-theme=dark]{--bldbg:rgba(46,49,61,.97);--ink:#f5f5f7;--mut:#a1a1a6;--line:rgba(255,255,255,.12);--bg:#0a0c13;--bar:rgba(28,30,38,.88);--tabh:rgba(255,255,255,.07);--on:#3a3f4e;--acc:#0a84ff;--accs:rgba(10,132,255,.22);--ok:#32d17a;--bad:#ff6b61;--pop:rgba(40,43,54,.94);--sh:0 1px 2px rgba(0,0,0,.4),0 4px 14px rgba(0,0,0,.35);--psh:0 18px 50px rgba(0,0,0,.55),0 2px 8px rgba(0,0,0,.4)}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:13.5px/1.4 "Inter","Segoe UI Variable Text","Segoe UI",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit}
+#bar{position:relative;z-index:5;display:flex;align-items:center;gap:10px;height:54px;padding:0 12px 0 14px;background:var(--bar);backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(--line);user-select:none}
+/* sol üst: simge + "Asorti Aracı"; ince bir çizgiyle sekmelerden ayrılır */
+#logo{position:relative;display:flex;align-items:center;gap:10px;flex:none;white-space:nowrap;padding-right:16px;margin-right:2px;font-size:15.5px;font-weight:420;letter-spacing:-.02em;color:var(--mut);cursor:default}
+#logo::after{content:'';position:absolute;right:0;top:50%;width:1px;height:22px;margin-top:-11px;background:var(--line)}
+#logo svg{flex:none;width:28px;height:28px;filter:drop-shadow(0 1px 1.5px rgba(0,58,150,.26)) drop-shadow(0 3px 6px rgba(0,58,150,.10))}
+html[data-theme=dark] #logo svg{filter:drop-shadow(0 1px 2px rgba(0,0,0,.55))}
+#logo b{font-weight:650;color:var(--ink)}
+#serit{flex:1;min-width:0;display:flex;align-items:center;gap:6px;align-self:stretch}
+#tabs{display:flex;align-items:center;gap:4px;overflow-x:auto;scrollbar-width:none;padding:6px 2px;min-width:0;scroll-behavior:smooth}
+#tabs::-webkit-scrollbar{display:none}
+.tab{position:relative;display:flex;align-items:center;gap:7px;height:34px;padding:0 8px 0 12px;border-radius:10px;cursor:pointer;white-space:nowrap;max-width:230px;min-width:96px;color:var(--mut);font-weight:500;letter-spacing:-.005em;transition:background .22s,color .22s,box-shadow .22s}
+/* açılıp kapanırken (genişlik değişirken) yazı kırpılarak görünsün, "…" ile titremesin */
+.tab[data-anim]{overflow:hidden}.tab[data-anim] .ad{text-overflow:clip}.tab[data-kapaniyor]{pointer-events:none}
+.tab:hover{background:var(--tabh);color:var(--ink)}
+.tab+.tab:not(.on)::before{content:'';position:absolute;left:-3px;top:9px;bottom:9px;width:1px;background:var(--line)}
+.tab.on+.tab::before,.tab:hover::before,.tab:hover+.tab::before{display:none}
+.tab.on{background:var(--on);color:var(--ink);font-weight:600;box-shadow:var(--sh),inset 0 0 0 1.5px var(--acc)}
+.tab .ad{overflow:hidden;text-overflow:ellipsis;flex:1}
+/* seçilince yazı kalınlaşır: sekme genişliği baştan kalın yazıya göre ayrılır, sekmeler yerinden oynamaz */
+.tab .ad::after{content:attr(data-t);display:block;height:0;overflow:hidden;visibility:hidden;font-weight:600;pointer-events:none}
+.tab .ik{width:8px;height:8px;border-radius:50%;flex:none;background:var(--line)}
+.tab.on .ik{background:var(--acc)}
+.tab .ik.is{background:var(--acc);animation:nb 1.2s ease-in-out infinite}
+.tab .ik.ok{background:var(--ok)}
+@keyframes nb{50%{opacity:.25}}
+.tab .x{flex:none;display:grid;place-items:center;width:20px;height:20px;border:0;border-radius:6px;background:transparent;color:var(--mut);cursor:pointer;padding:0;opacity:0;transition:opacity .15s,background .15s,color .15s}
+.tab .x svg{width:10px;height:10px;pointer-events:none}
+.tab:hover .x,.tab.on .x{opacity:1}
+.tab .x:hover{background:rgba(220,60,60,.14);color:var(--bad)}
+#yeni{flex:none;display:flex;align-items:center;gap:6px;height:32px;padding:0 13px 0 10px;border:0;border-radius:16px;background:var(--accs);color:var(--acc);font-weight:600;cursor:pointer;white-space:nowrap;transition:background .18s,color .18s,transform .12s}
+#yeni:hover{background:var(--acc);color:#fff}
+#yeni:active{transform:scale(.96)}
+#yeni svg{width:16px;height:16px}
+#sag{display:flex;align-items:center;gap:8px;white-space:nowrap}
+#durum{display:flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:14px;background:var(--tabh);font-size:12px;color:var(--mut)}
+#durum i{width:7px;height:7px;border-radius:50%;background:var(--mut)}
+#durum.ok i{background:var(--ok);box-shadow:0 0 0 3px rgba(31,157,85,.18)}
+#durum.bad{color:var(--bad)}#durum.bad i{background:var(--bad)}
+#durum.bekle i{background:#ff9f0a;animation:nb 1.2s ease-in-out infinite}
+#gun{display:none;align-items:center;gap:8px;height:30px;padding:0 4px 0 12px;border-radius:15px;background:var(--accs);color:var(--acc);font-size:12.5px}
+#gun.on{display:flex}
+#gun a{cursor:pointer;text-decoration:underline;opacity:.8}
+#gun button{border:0;border-radius:12px;background:var(--acc);color:#fff;height:24px;padding:0 11px;cursor:pointer;font-weight:600}
+#gun button:disabled{opacity:.6;cursor:default}
+#ayar{width:32px;height:32px;border:0;border-radius:16px;background:transparent;color:var(--mut);cursor:pointer;display:grid;place-items:center;transition:background .15s,color .15s}
+#ayar:hover,#ayar.acik{background:var(--tabh);color:var(--ink)}
+#ayar svg{width:19px;height:19px;pointer-events:none}
+/* görünüm menüsü */
+/* tek parça başlık (uygulamanın kendi penceresi): üst çubuk pencerenin başlığıdır; boş yerinden tutulup taşınır,
+   çift tıklayınca büyür / küçülür, sağ tıklayınca Windows menüsü; küçült / büyüt / kapat en sağda */
+#pk{display:none}
+html.pencere #bar{padding-right:0;app-region:drag;-webkit-app-region:drag}
+html.pencere #bar :is(.tab,button,a,input,select,textarea,#gun,#durum,#menu,#pk){app-region:no-drag;-webkit-app-region:no-drag}
+html.pencere #pk{display:flex;align-self:stretch;margin-left:4px}
+#pk button{width:46px;height:auto;padding:0;border:0;border-radius:0;background:transparent;color:var(--ink);display:grid;place-items:center;cursor:default;transition:background .12s,color .12s}
+#pk button:hover{background:rgba(0,0,0,.059)}
+#pk button:active{background:rgba(0,0,0,.102)}
+html[data-theme=dark] #pk button:hover{background:rgba(255,255,255,.078)}
+html[data-theme=dark] #pk button:active{background:rgba(255,255,255,.122)}
+#pk #pkK:hover{background:#c42b1c;color:#fff}
+#pk #pkK:active{background:#b0261a;color:#fff}
+#pk svg{width:10px;height:10px;stroke:currentColor;stroke-width:1;fill:none;shape-rendering:crispEdges}
+#pk .geri,html.tam #pk .buyut{display:none}
+html.tam #pk .geri{display:inline}
+html.pasif #pk button:not(:hover){color:var(--mut)}
+html.pencere #menu{right:150px}
+#menu{position:absolute;top:50px;right:10px;width:320px;max-height:calc(100vh - 62px);overflow-y:auto;overscroll-behavior:contain;padding:14px;border-radius:16px;background:var(--pop);backdrop-filter:saturate(180%) blur(24px);box-shadow:var(--psh);border:1px solid var(--line);opacity:0;transform:translateY(-6px) scale(.98);transform-origin:top right;pointer-events:none;transition:opacity .16s,transform .16s;z-index:20}
+#menu.on{opacity:1;transform:none;pointer-events:auto}
+#menu h4{margin:2px 2px 8px;font-size:11.5px;font-weight:600;letter-spacing:.3px;text-transform:uppercase;color:var(--mut)}
+.blok{padding:10px;border-radius:12px;background:var(--tabh);margin-bottom:12px}
+.seg{display:flex;padding:2px;border-radius:9px;background:rgba(120,120,128,.14)}
+.seg button{flex:1;height:28px;border:0;border-radius:7px;background:transparent;cursor:pointer;font-size:12.5px;color:var(--ink);transition:background .15s,box-shadow .15s}
+.seg button.on{background:var(--on);box-shadow:0 1px 3px rgba(0,0,0,.16);font-weight:600}
+/* koyu görünümde seçili düğme belirgin olsun (Apple'ın koyu bölümlü düğmesi gibi: açık gri zemin, beyaz kalın yazı) */
+html[data-theme=dark] .seg{background:rgba(118,118,128,.24)}
+html[data-theme=dark] .seg button{color:rgba(235,235,245,.7)}
+html[data-theme=dark] .seg button:not(.on):hover{color:#fff;background:rgba(255,255,255,.06)}
+html[data-theme=dark] .seg button.on{background:#6a6f7e;color:#fff;box-shadow:0 1px 4px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.14)}
+.not{font-size:11.5px;color:var(--mut);margin:7px 2px 0}
+.satir{display:flex;align-items:center;gap:10px;margin-top:10px}
+.satir span{font-size:12px;color:var(--mut)}
+input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:6px;border-radius:3px;background:linear-gradient(90deg,#ffe9b8,#ff9f2e);outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.35);cursor:pointer}
+input[type=range]:disabled{opacity:.4}
+select{flex:1;height:28px;border-radius:8px;border:1px solid var(--line);background:var(--on);color:var(--ink);font:inherit;font-size:12.5px;padding:0 6px}
+.kon{margin-top:12px}
+.yol{font-size:12.5px;font-weight:600;word-break:break-all;line-height:1.35}
+.yol.bos{font-weight:400;color:var(--mut)}
+.dug{margin-top:8px}
+.dug button{flex:1;height:28px;border:0;border-radius:8px;background:var(--on);box-shadow:0 1px 2px rgba(0,0,0,.12);cursor:pointer;font-size:12.5px;color:var(--ink)}
+.dug button:hover{background:var(--accs);color:var(--acc)}
+.dug button:disabled{opacity:.5;cursor:default}
+.alt{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--mut);padding:0 2px}
+#gbOzet{font-size:12.5px;font-weight:600;line-height:1.35}#gbOzet.bos{font-weight:400;color:var(--mut)}
+.gbl{list-style:none;margin:8px 0 0;padding:0;font-size:12px;line-height:1.45}
+.gbl li{display:flex;gap:6px;padding:1px 0;color:var(--ink)}.gbl li b{font-weight:600}.gbl .m{color:var(--mut)}
+.gbl .i{flex:none;width:14px;text-align:center;font-weight:700}.gbl .ok .i{color:var(--ok)}.gbl .uy .i{color:#c27c0e}.gbl .no .i{color:var(--bad)}
+html[data-theme=dark] .gbl .uy .i{color:#ffb340}
+/* sonuç listesi yumuşakça açılıp kapanır (yükseklik + saydamlık) */
+.gbAc{display:grid;grid-template-rows:1fr;opacity:1;transition:grid-template-rows .45s cubic-bezier(.4,0,.2,1),opacity .35s ease}
+.gbAc.kapali{grid-template-rows:0fr;opacity:0}
+.gbAc>div{overflow:hidden;min-height:0}
+.gbKisa{display:flex;align-items:center;gap:6px;width:100%;margin:8px 0 0;padding:5px 6px;border:0;border-radius:8px;background:rgba(120,120,128,.08);font:inherit;font-size:12px;line-height:1.35;color:var(--ink);text-align:left;cursor:pointer;transition:background .15s}
+.gbKisa:hover{background:rgba(120,120,128,.16)}
+.gbKisa .i{flex:none;width:14px;text-align:center;font-weight:700;color:#c27c0e}
+html[data-theme=dark] .gbKisa .i{color:#ffb340}
+.gbKisa .t{flex:1;min-width:0}
+.gbKisa svg{flex:none;width:14px;height:14px;color:var(--mut);transition:transform .35s cubic-bezier(.4,0,.2,1)}
+.gbKisa[aria-expanded=true] svg{transform:rotate(180deg)}
+.gbKisa+.gbAc .gbl{margin-top:4px}
+@media(prefers-reduced-motion:reduce){.gbAc,.gbKisa svg{transition:none}}
+.alt button{border:0;background:transparent;color:var(--acc);cursor:pointer;padding:4px 2px}
+/* pencerenin kendisi hiç kaymaz (kaydırma çubuğu sadece sayfaların içinde çıkar) */
+html,body{overflow:hidden}
+#sayfalar{position:absolute;top:54px;left:0;right:0;bottom:0;overflow:hidden}
+#sayfalar iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:none;background:var(--bg)}
+#sayfalar iframe.on{display:block;z-index:2}
+/* yeni açılan sayfa görünmeden arkada yüklenir; hazır olunca öncekinin yerine geçer */
+#sayfalar iframe.yukleniyor{display:block;visibility:hidden;z-index:0}
+/* bildirim: sağ üstte küçük, Apple bildirimleri gibi kayarak gelir ve gider */
+#bildirimler{position:fixed;top:64px;right:14px;z-index:40;display:flex;flex-direction:column;align-items:flex-end;gap:8px;pointer-events:none;width:min(340px,calc(100vw - 28px))}
+.bld{position:relative;display:flex;align-items:center;gap:11px;width:100%;padding:10px 12px 10px 11px;border-radius:14px;background:var(--bldbg);border:1px solid var(--line);box-shadow:0 10px 30px rgba(20,30,60,.16),0 1px 4px rgba(20,30,60,.10);color:var(--ink);pointer-events:auto;cursor:default;user-select:none}
+.bld.tik{cursor:pointer}
+.bld .bik{flex:none;width:30px;height:30px;display:grid;place-items:center}
+.bld .bik svg{width:30px;height:30px}
+.bld .bmt{flex:1;min-width:0;line-height:1.3}
+.bld .bbas{display:flex;align-items:baseline;gap:8px;font-size:13px;font-weight:600}
+.bld .bbas span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bld .bzm{flex:none;font-size:11px;font-weight:400;font-style:normal;color:var(--mut)}
+.bld .bmet{font-size:12.5px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px}
+.bld .bx{position:absolute;top:-7px;left:-7px;width:20px;height:20px;border-radius:50%;border:1px solid var(--line);background:var(--bldbg);color:var(--mut);display:grid;place-items:center;padding:0;cursor:pointer;opacity:0;transform:scale(.8);transition:opacity .15s,transform .15s;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.bld .bx svg{width:8px;height:8px}
+.bld:hover .bx{opacity:1;transform:none}
+.bld .bx:hover{color:var(--ink)}
+/* mavi ışık filtresi: her şeyin üstünde, tıklamaları engellemez */
+::view-transition-old(root),::view-transition-new(root){animation-duration:.55s;animation-timing-function:cubic-bezier(.4,0,.2,1)}
+#gece{position:fixed;inset:0;pointer-events:none;z-index:50;background:#ff8a1c;mix-blend-mode:multiply;opacity:0;transition:opacity .6s}
+</style></head><body>
+<div id="bar">
+ <div id="logo" title="Asorti Aracı"><svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="lgA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5AACFF"/><stop offset="1" stop-color="#0068DA"/></linearGradient><radialGradient id="lgH" cx=".5" cy="0" r=".95"><stop offset="0" stop-color="#fff" stop-opacity=".26"/><stop offset=".6" stop-color="#fff" stop-opacity="0"/></radialGradient><path id="lgS" d="M64 32L64 35.15L64 38.36L63.98 41.7L63.92 45.22L63.73 48.96L63.21 52.85L62.04 56.65L59.86 59.86L56.65 62.04L52.85 63.21L48.96 63.73L45.22 63.92L41.7 63.98L38.36 64L35.15 64L32 64L28.85 64L25.64 64L22.3 63.98L18.78 63.92L15.04 63.73L11.15 63.21L7.35 62.04L4.14 59.86L1.96 56.65L0.79 52.85L0.27 48.96L0.08 45.22L0.02 41.7L0 38.36L0 35.15L0 32L0 28.85L0 25.64L0.02 22.3L0.08 18.78L0.27 15.04L0.79 11.15L1.96 7.35L4.14 4.14L7.35 1.96L11.15 0.79L15.04 0.27L18.78 0.08L22.3 0.02L25.64 0L28.85 0L32 0L35.15 0L38.36 0L41.7 0.02L45.22 0.08L48.96 0.27L52.85 0.79L56.65 1.96L59.86 4.14L62.04 7.35L63.21 11.15L63.73 15.04L63.92 18.78L63.98 22.3L64 25.64L64 28.85Z"/></defs><use href="#lgS" fill="url(#lgA)"/><use href="#lgS" fill="url(#lgH)"/><g fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round"><path d="M13.75 24.75L32 14.75L50.25 24.75L32 34.75Z" fill="#fff" stroke-width="2.5"/><path d="M13.75 31.75L32 41.75L50.25 31.75" stroke-opacity=".82" stroke-width="3.62"/><path d="M13.75 38.75L32 48.75L50.25 38.75" stroke-opacity=".6" stroke-width="3.62"/></g></svg><span><b>Asorti</b> Aracı</span></div>
+ <div id="serit"><div id="tabs" role="tablist"></div>
+  <button id="yeni" type="button" title="Yeni çalışma sayfası aç (sekme çubuğunda boş yere çift tıklayarak da açılır)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg>Yeni sayfa</button></div>
+ <div id="sag">
+  <div id="gun"><span id="gunYazi"></span><a id="gunNot" title="Bu sürümde neler var">neler yeni?</a><button id="gunBtn" type="button">Güncelle</button></div>
+  <div id="durum" title="Gerber köprüsünün durumu"><i></i><span id="durumYazi">Bağlanıyor…</span></div>
+  <button id="ayar" type="button" title="Ayarlar: görünüm, gece ışığı, Excel kayıt klasörü, güncelleme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+ </div>
+ <div id="pk" aria-label="Pencere"><button id="pkM" type="button" tabindex="-1" title="Simge durumuna küçült"><svg viewBox="0 0 10 10"><path d="M0 5.5H10"/></svg></button><button id="pkB" type="button" tabindex="-1" title="Ekranı kapla"><svg class="buyut" viewBox="0 0 10 10"><path d="M.5 .5H9.5V9.5H.5Z"/></svg><svg class="geri" viewBox="0 0 10 10"><path d="M2.5 2.5V.5H9.5V7.5H7.5M.5 2.5H7.5V9.5H.5Z"/></svg></button><button id="pkK" type="button" tabindex="-1" title="Kapat"><svg viewBox="0 0 10 10" style="shape-rendering:geometricPrecision"><path d="M.5 .5L9.5 9.5M9.5 .5L.5 9.5"/></svg></button></div>
+ <div id="menu" role="dialog" aria-label="Ayarlar">
+  <h4>Görünüm</h4>
+  <div class="blok"><div class="seg" id="tmSeg"><button data-v="acik">☀ Açık</button><button data-v="koyu">☾ Koyu</button><button data-v="oto">Otomatik</button></div>
+   <div class="not" id="tmNot"></div>
+   <div class="satir kon"><span>Konum</span><select id="konSec" aria-label="Konum"></select></div><div class="not" id="konNot"></div></div>
+  <h4>Gece ışığı · mavi ışık filtresi</h4>
+  <div class="blok"><div class="seg" id="gcSeg"><button data-v="kapali">Kapalı</button><button data-v="acik">Açık</button><button data-v="oto">Akşamları</button></div>
+   <div class="satir"><span>Az</span><input type="range" id="sicak" min="0" max="100" step="1" aria-label="Sarı tonu" title="Çift tıklayınca varsayılan tona döner"><span>Çok sarı</span></div>
+   <div class="not" id="gcNot"></div></div>
+  <h4>Excel kayıt klasörü</h4>
+  <div class="blok"><div class="yol" id="exYol">Yükleniyor…</div>
+   <div class="satir dug"><button type="button" id="exSec">Klasör seç…</button><button type="button" id="exAc">Klasörü aç</button></div>
+   <div class="not">"Excel dosyasını kaydet" dediğinde dosya sormadan bu klasöre kaydedilir.</div></div>
+  <h4>Gerber bağlantısı</h4>
+  <div class="blok"><div id="gbOzet">Yükleniyor…</div><div class="not" id="gbAlt" style="margin-top:3px"></div>
+   <div class="satir dug"><button type="button" id="gbBul" title="AccuMark'ı, müşteri klasörlerini ve OTOPASTAL'ı bu bilgisayarda ve ağda arar; ayarlara dokunmaz">Otomatik bul</button><button type="button" id="gbUy" style="display:none">Bulunanları kullan</button></div>
+   <div id="gbNot"></div></div>
+  <div class="alt"><span id="surum"></span><button id="denetle" type="button">Güncellemeleri denetle</button></div>
+ </div>
+</div>
+<div id="sayfalar"></div>
+<div id="bildirimler" aria-live="polite"></div>
+<div id="gece"></div>
+<script>
+/* çalışma sayfaları ve ayarlar pencerenin yerel kaydında (localStorage) durur; ayrıca diskte de yedeklenir (yerel_kayit.json).
+   Yeni pencere (ör. uygulama ilk kez kendi penceresinde açılınca) boş başlıyorsa her şey o yedekten geri gelir. */
+(()=>{try{if(localStorage.getItem('asorti-sayfalar')!==null||!/^https?:$/.test(location.protocol))return;
+ const x=new XMLHttpRequest();x.open('GET','/yerel-kayit',false);x.send();if(x.status!==200)return;
+ const d=JSON.parse(x.responseText||'{}');for(const k in d)if(k.startsWith('asorti-')&&typeof d[k]==='string'&&localStorage.getItem(k)===null)localStorage.setItem(k,d[k])}catch(e){}})();
+var yedekT=0,yedekSon='';
+function yedekVeri(){const d={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('asorti-'))d[k]=localStorage.getItem(k)}return JSON.stringify(d)}
+function yerelYedek(hemen){clearTimeout(yedekT);
+ const yap=()=>{try{const v=yedekVeri();if(v==='{}'||v===yedekSon)return;yedekSon=v;fetch('/yerel-kayit',{method:'POST',body:v,keepalive:v.length<60000}).catch(()=>{yedekSon=''})}catch(e){}};
+ if(hemen)yap();else yedekT=setTimeout(yap,1500)}
+/* pencere kapanmadan hemen önce (uygulama penceresi çağırır): yedek beklemeden yazılsın */
+window.yedekAl=()=>{try{const v=yedekVeri();if(v==='{}')return false;const x=new XMLHttpRequest();x.open('POST','/yerel-kayit',false);x.send(v);yedekSon=v;return x.status===200}catch(e){return false}};
+window.addEventListener('storage',()=>yerelYedek());
+document.addEventListener('visibilitychange',()=>{if(document.hidden)yerelYedek(true)});
+window.addEventListener('pagehide',()=>yerelYedek(true));
+setInterval(()=>yerelYedek(),20000);setTimeout(()=>yerelYedek(true),4000);
+const $=i=>document.getElementById(i),LS='asorti-sayfalar',LG='asorti-gorunum';
+/* uygulamanın kendi penceresi (AsortiAraci.exe): pencere düğmeleri, Gerber bildirimleri Windows'a, köprü haberleri sayfalara */
+const PW=window.chrome&&chrome.webview?chrome.webview:null;
+function pencereIs(is){try{if(PW)PW.postMessage({t:'pencere',is})}catch(e){}}
+let S=(()=>{try{return JSON.parse(localStorage.getItem(LS)||'null')}catch(e){return null}})()||{list:[],on:''};
+const info={};
+function save(){try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}yerelYedek()}
+function yeniId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,5)}
+/* sekmeler ve sayfalar: sekmeler yerinde güncellenir (yeniden çizilmez), böylece açılış / kapanış / geçiş yumuşak olur */
+const T=$('tabs'),AZ=matchMedia('(prefers-reduced-motion: reduce)'),YUMUSAK='cubic-bezier(.2,.8,.2,1)';
+const xIk='<svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2.3 2.3l5.4 5.4M7.7 2.3L2.3 7.7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
+let giris=null,gosterilen=null,sonAktif=null;
+function frame(id){let f=document.querySelector('#sayfalar iframe[data-id="'+id+'"]');
+ if(!f){f=document.createElement('iframe');f.dataset.id=id;f.addEventListener('load',()=>{f.dataset.hazir='1'});
+  f.src='asorti_araci.html?sayfa='+encodeURIComponent(id);$('sayfalar').appendChild(f)}
+ return f}
+function sekme(id){let b=T.querySelector('.tab[data-id="'+id+'"]');
+ if(!b){b=document.createElement('div');b.className='tab';b.dataset.id=id;b.setAttribute('role','tab');
+  b.innerHTML='<span class="ik"></span><span class="ad"></span><button class="x" type="button" title="Sayfayı kapat" aria-label="Sayfayı kapat">'+xIk+'</button>';
+  b.addEventListener('click',e=>{if(b.dataset.kapaniyor)return;if(e.target.closest('.x'))kapat(id);else ac(id)})}
+ return b}
+/* sekme genişliği 0'dan kendi boyuna açılır / kapanırken 0'a iner; yanındakiler kayarak yer açar */
+function sekmeOyna(b,acil,bitince){const w=b.getBoundingClientRect().width,cs=getComputedStyle(b),ml=b.previousElementSibling?'-4px':'0px',
+  kapali={width:'0px',minWidth:'0px',paddingLeft:'0px',paddingRight:'0px',marginLeft:ml,opacity:0},
+  acik={width:w+'px',minWidth:'0px',paddingLeft:cs.paddingLeft,paddingRight:cs.paddingRight,marginLeft:'0px',opacity:1};
+ b.dataset.anim='1';
+ const an=b.animate(acil?[kapali,acik]:[acik,kapali],acil?{duration:280,easing:YUMUSAK}:{duration:220,easing:'cubic-bezier(.4,0,.2,1)',fill:'forwards'});
+ an.onfinish=an.oncancel=()=>{delete b.dataset.anim;if(bitince)bitince()}}
+function sekmeCik(b){b.dataset.kapaniyor='1';b.classList.remove('on');
+ if(AZ.matches)b.remove();else sekmeOyna(b,false,()=>b.remove())}
+function ciz(){let onceki=null;
+ S.list.forEach((id,i)=>{const b=sekme(id),d=info[id]||{},yeniMi=!b.isConnected;
+  let h=onceki?onceki.nextElementSibling:T.firstElementChild;while(h&&h.dataset.kapaniyor)h=h.nextElementSibling;
+  if(h!==b)T.insertBefore(b,h);onceki=b;
+  const ad=d.ad||'Sayfa '+(i+1),ik='ik'+(d.busy?' is':d.bitti?' ok':''),a=b.querySelector('.ad'),k=b.querySelector('.ik');
+  b.classList.toggle('on',id===S.on);b.setAttribute('aria-selected',String(id===S.on));
+  if(a.textContent!==ad){a.textContent=ad;a.dataset.t=ad}if(k.className!==ik)k.className=ik;
+  b.title=ad+(d.busy?' · Gerber işi sürüyor':d.bitti?' · Gerber işi bitti':'');
+  if(yeniMi&&giris===id){giris=null;if(!AZ.matches)sekmeOyna(b,true,()=>{if(b.classList.contains('on'))b.scrollIntoView({block:'nearest',inline:'nearest'})})}});
+ [...T.children].forEach(b=>{if(!b.dataset.kapaniyor&&!S.list.includes(b.dataset.id))sekmeCik(b)});
+ sayfaGoster(S.on);
+ if(S.on!==sonAktif){sonAktif=S.on;const a=T.querySelector('.tab.on');if(a&&!a.dataset.anim)a.scrollIntoView({block:'nearest',inline:'nearest'})}}
+/* sayfa geçişi: sayfalar yer değiştirir, arka plan aynı kalır; sadece sayfanın içeriği bir an yumuşakça belirir
+   (iki sayfa üst üste görünmez, hiçbir şey kaymaz). Yeni açılan sayfa arkada yüklenir, hazır olunca gelir. */
+function sayfaKaldir(x){x.classList.remove('on','yukleniyor');if(x.dataset.sil)x.remove()}
+function sayfaGoster(id){const f=frame(id);if(gosterilen===f)return;gosterilen=f;
+ const degis=()=>{if(gosterilen!==f)return;
+  document.querySelectorAll('#sayfalar iframe').forEach(x=>{if(x!==f&&!x.classList.contains('yukleniyor'))sayfaKaldir(x)});
+  f.classList.remove('yukleniyor');f.classList.add('on');
+  try{const w=f.contentWindow;if(w&&w.sayfaBelir)w.sayfaBelir()}catch(e){}};
+ if(f.dataset.hazir)return degis();
+ f.classList.add('yukleniyor');let t=0;
+ const hazir=()=>{clearTimeout(t);f.removeEventListener('load',hazir);if(gosterilen===f)degis();else f.classList.remove('yukleniyor')};
+ f.addEventListener('load',hazir);t=setTimeout(hazir,1200)}
+function ac(id){S.on=id;save();ciz()}
+function yeni(){const id=yeniId();S.list.push(id);giris=id;ac(id)}
+/* boş sayfa (hiçbir şey yazılmamış, tablo yok, Gerber işi yok) sormadan kapanır */
+function sayfaBosMu(id,f){try{const w=f&&f.contentWindow;if(w&&typeof w.sayfaBos==='function')return !!w.sayfaBos()}catch(e){}
+ try{return !localStorage.getItem('asorti-sayfa-'+id)&&!localStorage.getItem('asorti-gjob-'+id)}catch(e){return false}}
+function kapat(id){const i=S.list.indexOf(id);if(i<0)return;const d=info[id]||{},f=document.querySelector('#sayfalar iframe[data-id="'+id+'"]');
+ if((d.busy||!sayfaBosMu(id,f))&&!confirm((d.ad?d.ad+' sayfası':'Bu sayfa')+' kapatılsın mı?'+(d.busy?'\n\nDikkat: bu sayfanın Gerber işi hâlâ sürüyor.':'')+'\nSayfadaki bilgiler silinir (Excel\'e kaydettiklerin durur).'))return;
+ S.list.splice(i,1);delete info[id];
+ if(f){try{f.contentWindow.sifirlaniyor=true}catch(e){}f.dataset.sil='1'}   // kapanan sayfa artık kendini kaydetmesin
+ try{localStorage.removeItem('asorti-sayfa-'+id);localStorage.removeItem('asorti-gjob-'+id)}catch(e){}
+ if(!S.list.length){const n=yeniId();S.list.push(n);giris=n;S.on=n}else if(S.on===id)S.on=S.list[Math.max(0,i-1)];
+ save();ciz();if(f&&f!==gosterilen&&!f.classList.contains('on'))f.remove()}
+$('yeni').onclick=yeni;
+$('serit').addEventListener('dblclick',e=>{if(e.target===$('serit')||e.target===$('tabs'))yeni()});
+/* uygulamanın kendi penceresinde: küçült / büyüt / kapat; pencerenin durumu; bildirime tıklayınca o sayfa; köprüden iş haberi */
+if(PW){
+ $('pkM').onclick=()=>pencereIs('kucult');$('pkB').onclick=()=>pencereIs('buyut');$('pkK').onclick=()=>pencereIs('kapat');
+ PW.addEventListener('message',e=>{const d=e.data||{},h=document.documentElement;
+  if(d.t==='pencere'){h.classList.toggle('pencere',!!d.baslik);h.classList.toggle('tam',!!d.tam);h.classList.toggle('pasif',d.etkin===false);$('pkB').title=d.tam?'Önceki boyutuna getir':'Ekranı kapla';if(d.baslik)$('yeni').title='Yeni çalışma sayfası aç'}
+  if(d.t==='git'&&S.list.includes(d.id))ac(d.id);
+  if(d.t==='kopru')document.querySelectorAll('#sayfalar iframe').forEach(f=>{try{f.contentWindow.postMessage({t:'kopruDegisti',base:d.base},'*')}catch(x){}})});
+ pencereIs('durum')}
+$('tabs').addEventListener('wheel',e=>{if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){$('tabs').scrollLeft+=e.deltaY;e.preventDefault()}},{passive:false});
+window.addEventListener('message',e=>{const d=e.data||{};
+ if(d.t==='exKlasor'){document.querySelectorAll('#sayfalar iframe').forEach(f=>{if(f.contentWindow!==e.source)try{f.contentWindow.postMessage(d,'*')}catch(x){}});if($('menu').classList.contains('on'))exGoster()}
+ if(d.t==='sayfa'&&S.list.includes(d.id)){const o=info[d.id]||{};if(o.ad!==d.ad||o.busy!==d.busy||o.bitti!==d.bitti){info[d.id]={ad:d.ad,busy:d.busy,bitti:d.bitti};ciz()}}
+ if(d.t==='tema'){G0.tema=d.v==='dark'?'koyu':'acik';kaydet();uygula()}
+ if(d.t==='bildirim'&&S.list.includes(d.id))sayfaBildirimi(d)});
+
+/* ---------- bildirimler: sağ üstte küçük kart; kayarak gelir, birkaç saniye sonra kayarak gider (fare üstündeyken bekler) ---------- */
+const BIK={
+ excel:'<svg viewBox="0 0 30 30" aria-hidden="true"><rect x="1" y="1" width="28" height="28" rx="7.5" fill="#1f9d55"/><path d="M10.2 7.2h6.6l4.6 4.6v10.3a1.6 1.6 0 0 1-1.6 1.6H10.2a1.6 1.6 0 0 1-1.6-1.6V8.8a1.6 1.6 0 0 1 1.6-1.6z" fill="#fff"/><path d="M11.8 16.4l2.3 2.3 4.3-4.6" fill="none" stroke="#1f9d55" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+ uygulama:'<svg viewBox="0 0 64 64" aria-hidden="true"><use href="#lgS" fill="url(#lgA)"/><use href="#lgS" fill="url(#lgH)"/><g fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round"><path d="M13.75 24.75L32 14.75L50.25 24.75L32 34.75Z" fill="#fff" stroke-width="2.5"/><path d="M13.75 31.75L32 41.75L50.25 31.75" stroke-opacity=".82" stroke-width="3.62"/><path d="M13.75 38.75L32 48.75L50.25 38.75" stroke-opacity=".6" stroke-width="3.62"/></g></svg>',
+ hata:'<svg viewBox="0 0 30 30" aria-hidden="true"><circle cx="15" cy="15" r="14" fill="#e5484d"/><path d="M15 8.6v8" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><circle cx="15" cy="21.2" r="1.6" fill="#fff"/></svg>'};
+function bildirim(o){const K=$('bildirimler');
+ while(K.children.length>=3)K.lastElementChild.remove();
+ const b=document.createElement('div');b.className='bld'+(o.tik?' tik':'');b.setAttribute('role','status');
+ b.innerHTML='<span class="bik">'+(BIK[o.tur]||BIK.uygulama)+'</span><div class="bmt"><div class="bbas"><span></span><i class="bzm">şimdi</i></div><div class="bmet"></div></div><button class="bx" type="button" aria-label="Kapat" title="Kapat">'+xIk+'</button>';
+ b.querySelector('.bbas span').textContent=o.baslik||'';b.querySelector('.bmet').textContent=o.metin||'';if(o.ipucu)b.title=o.ipucu;
+ K.prepend(b);
+ let kalan=o.sure||4500,bas=0,zam=0;
+ const git=()=>{clearTimeout(zam);if(b.dataset.gidiyor)return;b.dataset.gidiyor='1';b.style.pointerEvents='none';
+  if(AZ.matches)return b.remove();
+  const a=b.animate([{opacity:1,transform:'none'},{opacity:0,transform:'translateX(28px)'}],{duration:260,easing:'cubic-bezier(.4,0,1,1)',fill:'forwards'});
+  a.onfinish=()=>{const h=b.offsetHeight;const c=b.animate([{height:h+'px',marginBottom:'0px'},{height:'0px',marginBottom:'-8px',paddingTop:'0px',paddingBottom:'0px',borderWidth:'0px'}],{duration:170,easing:'ease-out',fill:'forwards'});c.onfinish=c.oncancel=()=>b.remove()}};
+ const kur=()=>{clearTimeout(zam);bas=Date.now();zam=setTimeout(git,kalan)};
+ b.addEventListener('mouseenter',()=>{clearTimeout(zam);kalan=Math.max(1800,kalan-(Date.now()-bas))});
+ b.addEventListener('mouseleave',kur);
+ b.querySelector('.bx').addEventListener('click',e=>{e.stopPropagation();git()});
+ if(o.tik)b.addEventListener('click',()=>{try{o.tik()}catch(e){}git()});
+ if(!AZ.matches)b.animate([{opacity:0,transform:'translateX(34px) scale(.98)'},{opacity:1,transform:'none'}],{duration:440,easing:'cubic-bezier(.2,.9,.25,1)'});
+ kur()}
+function sayfaBildirimi(d){
+ /* pencere önde değilse (başka programdaysan ya da küçültülmüşse) Windows bildirimi de çıkar */
+ if(PW&&d.tur!=='excel')try{PW.postMessage({t:'bildirim',id:d.id,tur:d.tur||'',baslik:d.baslik||'',metin:d.metin||''})}catch(e){}
+ if(d.tur==='excel')return bildirim({tur:'excel',baslik:d.baslik||'Excel\'e kaydedildi',metin:d.metin||d.ad||'',ipucu:'Açmak için tıkla',
+  tik:d.ad?()=>fetch('/excel/ac?ad='+encodeURIComponent(d.ad)+'&nasil=dosya',{method:'POST',body:'{}'}).catch(()=>{}):null});
+ bildirim({tur:d.tur==='hata'?'hata':'uygulama',baslik:d.baslik||'',metin:d.metin||'',ipucu:d.id!==S.on?'Sayfaya gitmek için tıkla':'',tik:d.id!==S.on?()=>ac(d.id):null,sure:d.tur==='hata'?7000:5000})}
+
+/* ---------- görünüm: tema, otomatik gece modu, mavi ışık filtresi ---------- */
+let G0=Object.assign({tema:'acik',gece:'kapali',sicak:50,konum:null},(()=>{try{return JSON.parse(localStorage.getItem(LG)||'{}')}catch(e){return{}}})());
+try{const t=localStorage.getItem('asorti-tema');if(!localStorage.getItem(LG)&&t)G0.tema=t==='dark'?'koyu':'acik'}catch(e){}
+function kaydet(){try{localStorage.setItem(LG,JSON.stringify(G0))}catch(e){}}
+/* konum: gün doğumu / batımı bulunduğun ile göre hesaplanır.
+   Önce bilgisayarın konumu (Windows konum hizmeti), olmazsa internet bağlantısının konumu; istersen menüden il seçilir. */
+const ILLER=[["Adana",36.986,35.325],["Adıyaman",37.76,38.277],["Afyonkarahisar",38.757,30.539],["Ağrı",39.719,43.05],["Amasya",40.65,35.833],["Ankara",39.921,32.854],["Antalya",36.887,30.703],["Artvin",41.183,41.829],["Aydın",37.848,27.844],["Balıkesir",39.647,27.888],["Bilecik",40.144,29.975],["Bingöl",38.886,40.497],["Bitlis",38.402,42.108],["Bolu",40.733,31.611],["Burdur",37.725,30.289],["Bursa",40.183,29.068],["Çanakkale",40.146,26.403],["Çankırı",40.597,33.621],["Çorum",40.55,34.954],["Denizli",37.783,29.097],["Diyarbakır",37.916,40.236],["Edirne",41.676,26.559],["Elazığ",38.675,39.223],["Erzincan",39.747,39.491],["Erzurum",39.906,41.273],["Eskişehir",39.774,30.519],["Gaziantep",37.063,37.379],["Giresun",40.917,38.385],["Gümüşhane",40.462,39.476],["Hakkari",37.577,43.738],["Hatay",36.203,36.16],["Isparta",37.764,30.555],["Mersin",36.798,34.63],["İstanbul",41.006,28.976],["İzmir",38.419,27.128],["Kars",40.607,43.095],["Kastamonu",41.377,33.777],["Kayseri",38.722,35.487],["Kırklareli",41.737,27.224],["Kırşehir",39.146,34.161],["Kocaeli",40.765,29.941],["Konya",37.873,32.492],["Kütahya",39.42,29.986],["Malatya",38.349,38.319],["Manisa",38.613,27.433],["Kahramanmaraş",37.581,36.928],["Mardin",37.313,40.735],["Muğla",37.215,28.364],["Muş",38.732,41.49],["Nevşehir",38.625,34.715],["Niğde",37.97,34.676],["Ordu",40.985,37.88],["Rize",41.025,40.52],["Sakarya",40.773,30.404],["Samsun",41.295,36.332],["Siirt",37.927,41.942],["Sinop",42.027,35.151],["Sivas",39.75,37.015],["Tekirdağ",40.978,27.511],["Tokat",40.323,36.552],["Trabzon",41.005,39.73],["Tunceli",39.106,39.548],["Şanlıurfa",37.16,38.792],["Uşak",38.674,29.406],["Van",38.501,43.395],["Yozgat",39.822,34.808],["Zonguldak",41.453,31.788],["Aksaray",38.371,34.027],["Bayburt",40.255,40.221],["Karaman",37.181,33.219],["Kırıkkale",39.841,33.506],["Batman",37.884,41.128],["Şırnak",37.522,42.457],["Bartın",41.635,32.337],["Ardahan",41.11,42.704],["Iğdır",39.922,44.047],["Yalova",40.658,29.27],["Karabük",41.196,32.623],["Kilis",36.717,37.115],["Osmaniye",37.073,36.251],["Düzce",40.839,31.16]];
+const SICAK0=50;
+let KONUM={ad:'İstanbul',lat:41.006,lon:28.976};
+function enYakin(lat,lon){let b=null,bd=1e9;for(const [ad,a,o] of ILLER){const d=(a-lat)**2+((o-lon)*Math.cos(lat*Math.PI/180))**2;if(d<bd){bd=d;b={ad,lat:a,lon:o}}}return b}
+function konumAyarla(k,kaynak){if(!k)return;KONUM={ad:k.ad,lat:k.lat,lon:k.lon};G0.konum={ad:k.ad,lat:k.lat,lon:k.lon,kaynak,t:Date.now()};kaydet();uygula()}
+let konumAraniyor=false;
+async function konumBul(zorla){const k=G0.konum;if(k&&k.kaynak==='elle'&&!zorla){KONUM=k;return}
+ if(k&&!zorla&&Date.now()-k.t<7*864e5){KONUM=k;return}
+ if(konumAraniyor)return;konumAraniyor=true;$('konNot').textContent='Konum bulunuyor…';
+ const gps=await new Promise(res=>{if(!navigator.geolocation)return res(null);navigator.geolocation.getCurrentPosition(p=>res(p.coords),()=>res(null),{timeout:9000,maximumAge:864e5})});
+ if(gps){const e=enYakin(gps.latitude,gps.longitude);konumAyarla({ad:e.ad,lat:gps.latitude,lon:gps.longitude},'gps')}
+ else{try{const j=await (await fetch('/konum',{cache:'no-store'})).json();if(j&&isFinite(j.lat)&&isFinite(j.lon)){const e=enYakin(+j.lat,+j.lon);konumAyarla({ad:e.ad,lat:+j.lat,lon:+j.lon},'ip')}else throw 0}
+  catch(e){if(k)KONUM=k;$('konNot').textContent='Konum bulunamadı; listeden ilini seçebilirsin.'}}
+ konumAraniyor=false;uygula()}
+function konumListesi(){const s=$('konSec');s.innerHTML='<option value="">📍 Otomatik bul</option>'+ILLER.map(([ad])=>'<option>'+ad+'</option>').join('')}
+konumListesi();
+$('konSec').onchange=e=>{const v=e.target.value;if(!v){G0.konum=null;kaydet();konumBul(true);return}const i=ILLER.find(x=>x[0]===v);if(i)konumAyarla({ad:i[0],lat:i[1],lon:i[2]},'elle')};
+function gunes(t){const r=Math.PI/180,jd=t.getTime()/864e5+2440587.5,n=Math.round(jd-2451545.0009-KONUM.lon/360),J=n+KONUM.lon/-360,
+  M=(357.5291+0.98560028*J)%360,C=1.9148*Math.sin(M*r)+0.02*Math.sin(2*M*r)+0.0003*Math.sin(3*M*r),L=(M+C+282.9372)%360,
+  Jt=2451545.0009+J+0.0053*Math.sin(M*r)-0.0069*Math.sin(2*L*r),d=Math.asin(Math.sin(L*r)*Math.sin(23.4397*r)),
+  w=Math.acos((Math.sin(-0.833*r)-Math.sin(KONUM.lat*r)*Math.sin(d))/(Math.cos(KONUM.lat*r)*Math.cos(d)))/r,tj=j=>new Date((j-2440587.5)*864e5);
+ return{dogus:tj(Jt-w/360),batis:tj(Jt+w/360)}}
+const saat=d=>String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+function gecemi(){const g=gunes(new Date()),s=new Date();return s<g.dogus||s>=g.batis}
+let sonTema='';
+function temaYolla(f,t){try{f.contentWindow.postMessage({t:'tema',v:t},'*')}catch(e){}}
+/* açık ↔ koyu geçişi: ekran birden kararmasın / aydınlanmasın, yarım saniyede yumuşakça geçsin */
+let gecis=null;   // yumuşak geçiş sürüyor: bu yarım saniyede sayfa tıklamaları ekranın resmine gider
+function temaGec(t,yumusak){const yap=()=>{document.documentElement.dataset.theme=t;
+  document.querySelectorAll('#sayfalar iframe').forEach(f=>{try{f.contentDocument.documentElement.dataset.theme=t}catch(e){}temaYolla(f,t)})};
+ if(gecis){try{gecis.skipTransition()}catch(e){}}
+ if(yumusak&&document.startViewTransition&&!document.hidden){try{const g=document.startViewTransition(yap);gecis=g;g.finished.catch(()=>{}).then(()=>{if(gecis===g)gecis=null});return}catch(e){}}
+ yap()}
+/* geçiş sırasındaki tıklama boşa gitmesin (örn. Açık'tan hemen sonra Koyu): geçiş hemen bitirilir, tıklama altındaki düğmeye iletilir.
+   Yoksa tıklama boşluğa gitmiş sayılıyor ve ayarlar menüsü kapanıyordu */
+document.addEventListener('click',e=>{const g=gecis;if(!g||!e.isTrusted||e.target!==document.documentElement)return;
+ e.stopImmediatePropagation();e.preventDefault();const x=e.clientX,y=e.clientY;try{g.skipTransition()}catch(_){}
+ g.finished.catch(()=>{}).then(()=>requestAnimationFrame(()=>{const el=document.elementFromPoint(x,y);if(el&&el!==document.documentElement)el.click()}))},true);
+function uygula(){const gn=gunes(new Date()),gc=gecemi(),t=G0.tema==='oto'?(gc?'dark':'light'):(G0.tema==='koyu'?'dark':'light');
+ if(t!==sonTema){const ilk=!sonTema;sonTema=t;try{localStorage.setItem('asorti-tema',t)}catch(e){}temaGec(t,!ilk);fetch('/tema?v='+t,{method:'POST',body:'{}'}).catch(()=>{})}   // açılış ekranı da bu görünümle açılsın
+ const filtre=G0.gece==='acik'||(G0.gece==='oto'&&gc);$('gece').style.opacity=filtre?(G0.sicak/100*0.42).toFixed(3):'0';
+ document.querySelectorAll('#tmSeg button').forEach(b=>b.classList.toggle('on',b.dataset.v===G0.tema));
+ document.querySelectorAll('#gcSeg button').forEach(b=>b.classList.toggle('on',b.dataset.v===G0.gece));
+ $('sicak').value=G0.sicak;$('sicak').disabled=G0.gece==='kapali';
+ $('tmNot').textContent=G0.tema==='oto'?'Gün doğumunda açık, gün batımında koyu olur. Bugün ☀ '+saat(gn.dogus)+' · ☾ '+saat(gn.batis):G0.tema==='koyu'?'Koyu görünüm hep açık.':'Açık görünüm hep açık.';
+ const k=G0.konum;$('konSec').value=k&&k.kaynak==='elle'?k.ad:'';
+ if(!konumAraniyor)$('konNot').textContent=k?(k.kaynak==='elle'?k.ad+' (elle seçildi)':k.ad+' · otomatik bulundu'+(k.kaynak==='ip'?' (internet bağlantısından)':'')):'Konum henüz bulunmadı: İstanbul saatleri kullanılıyor.';
+ $('gcNot').textContent=G0.gece==='oto'?'Gün batımından ('+saat(gn.batis)+') gün doğumuna kadar ekran sarı tona döner.':G0.gece==='acik'?'Ekran sarı tonda; akşamları gözü daha az yorar.':'Ekran renkleri olduğu gibi.'}
+document.querySelectorAll('#tmSeg button').forEach(b=>b.onclick=()=>{G0.tema=b.dataset.v;kaydet();uygula();if(G0.tema==='oto')konumBul()});
+document.querySelectorAll('#gcSeg button').forEach(b=>b.onclick=()=>{G0.gece=b.dataset.v;kaydet();uygula();if(G0.gece==='oto')konumBul()});
+$('sicak').oninput=e=>{G0.sicak=+e.target.value;kaydet();uygula()};
+$('sicak').ondblclick=()=>{G0.sicak=SICAK0;kaydet();uygula()};
+document.addEventListener('load',e=>{if(e.target.tagName==='IFRAME')temaYolla(e.target,document.documentElement.dataset.theme)},true);
+if(G0.konum)KONUM=G0.konum;
+uygula();setInterval(uygula,60000);
+if(G0.tema==='oto'||G0.gece==='oto')konumBul();
+function menu(on){$('menu').classList.toggle('on',on);$('ayar').classList.toggle('acik',on);if(on){exGoster();gbGoster()}}
+/* Excel kayıt klasörü (sunucu kullanici.json'da tutar; sayfalara da haber verilir) */
+function exYaz(j){const e=$('exYol');if(!j||!j.klasor){e.textContent='Seçilmedi (ilk kaydette sorulur)';e.className='yol bos';$('exAc').disabled=true;return}
+ e.textContent=j.klasor+(j.var?'':'  (klasör bulunamadı)');e.className='yol';e.title=j.klasor;$('exAc').disabled=!j.var}
+async function exGoster(){try{exYaz(await (await fetch('/excel/klasor',{cache:'no-store'})).json())}catch(e){$('exYol').textContent='Okunamadı'}}
+$('exSec').onclick=async e=>{e.stopPropagation();const b=$('exSec');b.disabled=true;b.textContent='Pencere açıldı…';
+ try{const j=await (await fetch('/excel/klasor-sec',{method:'POST',body:'{}',cache:'no-store'})).json();exYaz(j);
+  if(!j.iptal)document.querySelectorAll('#sayfalar iframe').forEach(f=>{try{f.contentWindow.postMessage({t:'exKlasor',klasor:j.klasor},'*')}catch(x){}})}catch(x){}
+ b.disabled=false;b.textContent='Klasör seç…'};
+$('exAc').onclick=async e=>{e.stopPropagation();try{await fetch('/excel/ac?ad=&nasil=klasor',{method:'POST',body:'{}'})}catch(x){}};
+/* Gerber bağlantısı: AccuMark, müşteri klasörleri ve OTOPASTAL nerede (sunucu bilgisayarı tarar; ayarlar ancak "Bulunanları kullan" ile değişir) */
+const gbHost=q=>{const m=/^\\\\([^\\]+)\\/.exec(q||'');return m?m[1]:''};
+function gbOzetYaz(a){const o=$('gbOzet'),al=$('gbAlt');
+ if(!a){o.textContent='Okunamadı';o.className='bos';al.textContent='';return}
+ if(!a.gerber){o.textContent='Gerber kapalı · sadece asorti';o.className='bos';al.textContent='Bu bilgisayara AccuMark kurulduysa "Otomatik bul" ile açılır.';return}
+ const h=String(a.surucu||'').toUpperCase(),host=gbHost(a.kuyruk),st=(a.depo||a.userroot||'C:\\userroot')+'\\storage';o.className='';
+ o.textContent=a.otopastal==='ayri'?'OTOPASTAL ayrı bilgisayarda':a.otopastal==='ayni'?'OTOPASTAL bu bilgisayarda':'Gerber açık · OTOPASTAL yok';
+ al.textContent=a.otopastal==='ayri'?[host,h?h+' harfi':'',st].filter(Boolean).join(' · '):a.otopastal==='ayni'?st:'Pastallar Gerber\'de oluşur, yerleştirmeyi Gerber\'de yaparsın.'}
+async function gbGoster(){try{const j=await (await fetch('/gerber/tara',{cache:'no-store'})).json();gbOzetYaz(j.ayar);return j}catch(e){gbOzetYaz(null);return null}}
+function gbSatir(c,ik,t){return '<li class="'+c+'"><span class="i">'+ik+'</span><span>'+t+'</span></li>'}
+const gbEsc=t=>String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+/* sonuç listesi 5 sn sonra yumuşakça kapanır; eksik varsa yerinde açılıp kapanan kısa bir satır kalır */
+let gbZam=null;
+const gbOk='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>';
+function gbDaralt(kalsin){const n=$('gbNot'),ac=n.querySelector('.gbAc');if(!ac)return;
+ if(ac.matches(':hover')){gbZam=setTimeout(()=>gbDaralt(kalsin),1500);return}   // fare listenin üstündeyken kapanmasın
+ ac.classList.add('kapali');const k=n.querySelector('.gbKisa');if(k)k.setAttribute('aria-expanded','false');
+ if(!kalsin)setTimeout(()=>{if(ac.isConnected&&ac.classList.contains('kapali'))n.innerHTML=''},500)}
+function gbGoster2(n,ust,ic,kalsin){clearTimeout(gbZam);
+ n.innerHTML=ust+'<div class="gbAc kapali"><div>'+ic+'</div></div>';const ac=n.querySelector('.gbAc'),k=n.querySelector('.gbKisa');
+ requestAnimationFrame(()=>requestAnimationFrame(()=>ac.classList.remove('kapali')));
+ if(k)k.onclick=ev=>{ev.stopPropagation();clearTimeout(gbZam);const acik=!ac.classList.toggle('kapali');k.setAttribute('aria-expanded',String(acik))};
+ gbZam=setTimeout(()=>gbDaralt(kalsin),5000)}
+function gbSonuc(j){const r=j.rapor||{},a=j.ayar||{},o=j.oneri||r.oneri||{},n=$('gbNot'),L=[],eks=[];
+ if(r.hata){gbGoster2(n,'','<ul class="gbl">'+gbSatir('no','✖','Tarama hata verdi: '+gbEsc(r.hata))+'</ul>',false);return}
+ const uy=(kisa,c,ik,t)=>{eks.push(kisa);L.push(gbSatir(c,ik,t))};
+ const am=r.accumark||{},ur=r.userroot||{},ku=r.kuyruk||{},ci=r.cihaz||{},pa=r.paylasim||{},kur=j.kurulum?' <span class="m">(kurulum bunu kendisi yapar: '+gbEsc(j.kurulum)+')</span>':'',gv=!!(am.yol||o.accumark);
+ if(am.yol)L.push(gbSatir('ok','✔','<span title="'+gbEsc(am.yol)+'">AccuMark '+gbEsc(am.surum||'')+'</span>'));
+ else if(o.accumark)L.push(gbSatir('ok','✔','<span title="'+gbEsc(o.accumark)+'">AccuMark</span> <span class="m">(ayarlardaki yerinde)</span>'));
+ else uy('AccuMark','no','✖','AccuMark bulunamadı');
+ if(gv){if(ur.alan)L.push(gbSatir('ok','✔','<b>'+ur.alan+'</b> müşteri klasörü <span class="m">'+gbEsc(ur.depo)+'\\storage</span>'));else uy('müşteri klasörleri','uy','!','Müşteri klasörü bulunamadı')}
+ if(gv){const pc=r.otopastal_bilgisayari||gbHost(ku.yol);
+  if(r.otopastal==='ayri')L.push(gbSatir('ok','✔','OTOPASTAL: <b>'+gbEsc(pc)+'</b> bilgisayarında, kuyruğa ulaşılıyor'));
+  else if(r.otopastal==='ayni')L.push(gbSatir('ok','✔','OTOPASTAL bu bilgisayarda'));
+  else uy('OTOPASTAL','uy','!','OTOPASTAL bulunamadı: pastallar Gerber\'de oluşur, yerleştirmeyi elle yaparsın');
+  if(r.otopastal==='ayri'&&ci.harf){const H=String(ci.harf).toUpperCase();
+   if(ci.sunucuda_baglanti_gerekli)uy('OTOPASTAL bağlantısı','uy','!','OTOPASTAL bu bilgisayarın pastallarını <b>'+H+'</b> harfiyle görmeli: OTOPASTAL\'da bir kerelik bağlantı gerekir'+kur);
+   else L.push(gbSatir('ok','✔','OTOPASTAL pastallara <b>'+H+'</b> ile ulaşıyor <span class="m">('+gbEsc(ci.kaynak)+')</span>'));
+   if(pa.gerekli)uy('disk paylaşımı','uy','!','Bu bilgisayarın '+gbEsc(ur.harf||'C')+': diski paylaşılmamış, OTOPASTAL pastallara ulaşamaz'+kur)}}
+ const ny=v=>String(v==null?'':v).toLowerCase().replace(/\\+$/,''),od=o.depo||o.userroot,ad=a.depo||a.userroot;
+ /* sadece işe yarayan farklar: Gerber kapalıyken yollar, OTOPASTAL yokken kuyruk/harf önemsiz */
+ const fark=[];if(!!o.gerber!==!!a.gerber)fark.push('gerber');
+ if(o.gerber){if(ny(o.accumark)!==ny(a.accumark))fark.push('accumark');if(ny(od)!==ny(ad))fark.push('depo');if(ny(o.otopastal)!==ny(a.otopastal))fark.push('otopastal');
+  if(o.otopastal!=='yok'&&ny(o.kuyruk)!==ny(a.kuyruk))fark.push('kuyruk');if(o.otopastal==='ayri'&&ny(o.surucu)!==ny(a.surucu))fark.push('surucu')}
+ L.push(fark.length?gbSatir('uy','↻','Şu anki ayarlardan farklı: '+fark.map(k=>({gerber:'Gerber',accumark:'AccuMark yeri',depo:'müşteri klasörleri',kuyruk:'OTOPASTAL kuyruğu',otopastal:'OTOPASTAL',surucu:'sürücü harfi'})[k]).join(', ')):gbSatir('ok','✔','Şu anki ayarlar bulunanlarla aynı'));
+ const sorun=eks.length||fark.length;
+ const ust=sorun?'<button type="button" class="gbKisa" aria-expanded="true" title="Ayrıntıları aç / kapat"><span class="i">'+(eks.length?'!':'↻')+'</span><span class="t">'+(eks.length?'Eksik: '+gbEsc(eks.join(', ')):'Bulunanlar şu anki ayarlardan farklı')+'</span>'+gbOk+'</button>':'';
+ gbGoster2(n,ust,'<ul class="gbl">'+L.join('')+'</ul>',!!sorun);$('gbUy').style.display=fark.length?'':'none'}
+$('gbBul').onclick=async e=>{e.stopPropagation();const b=$('gbBul'),n=$('gbNot');clearTimeout(gbZam);b.disabled=true;b.textContent='Aranıyor…';$('gbUy').style.display='none';
+ const yaz=s=>{n.innerHTML='<div class="not">Bu bilgisayar ve ağdaki bilgisayarlar taranıyor…'+(s?' '+s+' sn':'')+'</div>'};yaz(0);
+ let bas=false;try{bas=(await (await fetch('/gerber/tara',{method:'POST',body:'{}',cache:'no-store'})).json()).basladi}catch(x){}
+ let j=null;const t0=Date.now();
+ for(let i=0;i<240;i++){await bekle(1000);try{j=await (await fetch('/gerber/tara',{cache:'no-store'})).json();if(!j.calisiyor&&(j.rapor||Date.now()-t0>4000))break;yaz(Math.round((Date.now()-t0)/1000))}catch(x){}}
+ b.disabled=false;b.textContent='Otomatik bul';
+ if(!j||!j.rapor){n.innerHTML='<div class="not">'+(bas?'Tarama sonuç vermedi.':'Tarama başlatılamadı.')+' Tekrar dene.</div>';return}
+ gbOzetYaz(j.ayar);gbSonuc(j)};
+$('gbUy').onclick=async e=>{e.stopPropagation();const b=$('gbUy');b.disabled=true;
+ try{const j=await (await fetch('/gerber/uygula',{method:'POST',body:'{}',cache:'no-store'})).json();
+  if(!j.ok)throw new Error(j.hata||'bilinmeyen hata');gbOzetYaz(j.ayar);b.style.display='none';
+  gbGoster2($('gbNot'),'','<div class="not" style="color:var(--ok)">✓ Bulunan ayarlar kullanılıyor, Gerber köprüsü yeniden başladı.</div>',false);
+  document.querySelectorAll('#sayfalar iframe').forEach(f=>{try{f.contentWindow.postMessage({t:'oto',v:j.ayar.gerber?j.ayar.otopastal:'kapali'},'*')}catch(x){}});nabiz()}
+ catch(x){alert('Uygulanamadı: '+x.message)}b.disabled=false};
+$('ayar').onclick=e=>{e.stopPropagation();menu(!$('menu').classList.contains('on'))};
+document.addEventListener('click',e=>{if(!$('menu').contains(e.target))menu(false)});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')menu(false)});
+window.addEventListener('blur',()=>menu(false));
+
+/* ---------- sunucuya "pencere açık" haberi: pencere kapanınca köprü ve Batch de kapanır ---------- */
+/* Arka plandaki program yeniden başlarsa (güncelleme vb.) sayfa bunu kimliğinden anlar ve kendini tazeler.
+   Kısa kopmalarda kırmızı uyarı çıkmaz; sadece uzun süre hiç cevap gelmezse çıkar. */
+let guncelleniyor=false,yenileniyor=false,sunucuId=null,kopukBas=0,hizliT=null,yaziKilit=0;
+const bekle=ms=>new Promise(r=>setTimeout(r,ms));
+function durumYaz(c,t,ipucu){const d=$('durum');d.className=c;$('durumYazi').textContent=t;d.title=ipucu||'Gerber köprüsünün durumu'}
+function sayfalarKaydetsin(){document.querySelectorAll('#sayfalar iframe').forEach(f=>{try{f.contentWindow.postMessage({t:'kaydet'},'*')}catch(e){}})}
+window.kapanmadan=()=>sayfalarKaydetsin();   // uygulama penceresi kapanırken sayfalar son hallerini kaydetsin
+function tazele(){if(yenileniyor)return;yenileniyor=true;durumYaz('bekle','Yenileniyor…');sayfalarKaydetsin();setTimeout(()=>location.reload(),300)}
+async function nabiz(){if(yenileniyor)return;
+ try{const r=await fetch('/nabiz',{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);const j=await r.json();
+  kopukBas=0;clearTimeout(hizliT);
+  if(j.id&&sunucuId&&j.id!==sunucuId&&!guncelleniyor){tazele();return}   // program yeniden başlamış: sayfayı kendiliğinden tazele
+  if(j.id)sunucuId=j.id;
+  if(guncelleniyor||Date.now()<yaziKilit)return;
+  if(j.gerber===false)durumYaz('','Sadece asorti');
+  else durumYaz(j.kopru?'ok':'bad',j.kopru?'Gerber bağlı':'Gerber köprüsü kapalı')}
+ catch(e){if(!kopukBas)kopukBas=Date.now();
+  if(guncelleniyor)durumYaz('bekle','Güncelleniyor…');
+  else if(Date.now()-kopukBas<25000)durumYaz('bekle','Yeniden bağlanıyor…','Arka plandaki programa ulaşılamadı, tekrar deneniyor. Gelince sayfa kendiliğinden yenilenir.');
+  else durumYaz('bad','Bağlantı kurulamadı: pencereyi kapatıp yeniden aç','Arka plandaki program 25 saniyedir cevap vermiyor. Pencereyi kapatıp masaüstündeki Asorti Aracı simgesinden aç. Çalışma sayfaların kayıtlı.');
+  clearTimeout(hizliT);hizliT=setTimeout(nabiz,1000)}}
+/* güncellemeden sonra sayfa açılınca kısa bir "güncellendi" yazısı. Uygulama yeni haliyle yeniden açıldıysa
+   sayfanın oturumu da yenidir: hedef sürüm diskte (localStorage) tutulur, açılan sürüm o ise yazılır */
+function guncellendiYaz(g){yaziKilit=Date.now()+6000;durumYaz('ok','v'+g+' sürümüne güncellendi');setTimeout(nabiz,6100)}
+try{const g=sessionStorage.getItem('asorti-guncellendi');if(g){sessionStorage.removeItem('asorti-guncellendi');try{localStorage.removeItem('asorti_guncelleme')}catch(e){}guncellendiYaz(g)}}catch(e){}
+try{const h=localStorage.getItem('asorti_guncelleme');if(h){localStorage.removeItem('asorti_guncelleme');fetch('/surum',{cache:'no-store'}).then(r=>r.json()).then(j=>{if(j&&j.surum===h)guncellendiYaz(h)}).catch(()=>{})}}catch(e){}
+nabiz();setInterval(nabiz,5000);
+window.addEventListener('pagehide',()=>{try{navigator.sendBeacon('/kapaniyor','x')}catch(e){}});
+window.addEventListener('beforeunload',e=>{if(yenileniyor)return;if(Object.values(info).some(d=>d.busy)){e.preventDefault();e.returnValue=''}});
+
+/* ---------- güncelleme: GitHub'da yeni sürüm varsa üstte "Güncelle" çıkar ---------- */
+let G=null;
+async function surumYaz(){try{const j=await (await fetch('/surum',{cache:'no-store'})).json();$('surum').textContent=j.surum?'Asorti Aracı v'+j.surum:'';$('denetle').style.display=j.guncelleme?'':'none';return j}catch(e){return null}}
+async function gunKontrol(taze){try{const j=await (await fetch('/guncelleme'+(taze?'?taze=1':''),{cache:'no-store'})).json();
+  if(j.var){G=j;$('gunYazi').innerHTML='Yeni sürüm <b>v'+j.yeni+'</b>';$('gun').classList.add('on')}else{G=null;$('gun').classList.remove('on')}return j}catch(e){return{hata:e.message}}}
+$('denetle').onclick=async()=>{const b=$('denetle');b.textContent='Denetleniyor…';const j=await gunKontrol(true);b.textContent=j&&j.hata?'Ulaşılamadı, tekrar dene':j&&j.var?'Yeni sürüm var ↑':'Güncel ✓';setTimeout(()=>b.textContent='Güncellemeleri denetle',4000)};
+$('gunNot').onclick=()=>{if(G)alert('v'+G.yeni+(G.tarih?' · '+G.tarih:'')+'\n\n'+((G.notlar||[]).map(x=>'• '+x).join('\n')||'Not yazılmamış.'))};
+$('gunBtn').onclick=async()=>{if(!G)return;
+  if(Object.values(info).some(d=>d.busy)){alert('Gerber\'e gönderilen pastallar var. Onlar bitince güncelle.');return}
+  if(!confirm('Asorti Aracı v'+G.yeni+' sürümüne güncellensin mi?\n\nÇalışma sayfaların ve ayarların korunur. Pencere birkaç saniye içinde kendiliğinden yenilenir, kapatıp açman gerekmez.'))return;
+  const b=$('gunBtn'),hedef=G.yeni,eskiId=sunucuId;
+  const birak=m=>{try{localStorage.removeItem('asorti_guncelleme')}catch(e){}guncelleniyor=false;b.disabled=false;b.textContent='Güncelle';nabiz();if(m)alert(m)};
+  b.disabled=true;b.textContent='Güncelleniyor…';guncelleniyor=true;durumYaz('bekle','Güncelleniyor…');
+  sayfalarKaydetsin();
+  let hata=null;
+  try{localStorage.setItem('asorti_guncelleme',hedef)}catch(e){}
+  try{const j=await (await fetch('/guncelle',{method:'POST',body:'{}',cache:'no-store'})).json();if(!j.ok)hata=j.hata||'bilinmeyen hata'}
+  catch(e){/* cevap yolda kaybolduysa güncelleme yine de olmuş olabilir: aşağıda yeni programın açılmasına bakılır */}
+  if(hata){birak(/^Güncellenemedi/.test(hata)?hata:'Güncellenemedi: '+hata);return}
+  /* Yeni sürümün programı açılana kadar bekle. Sayfa ancak yeni program cevap verince yenilenir;
+     boşlukta yenilenirse tarayıcının "bağlanılamadı" sayfası açılırdı. */
+  await bekle(800);const t0=Date.now();let yeniAcik=false,surum=null;
+  while(Date.now()-t0<90000){
+    try{const r=await fetch('/nabiz',{cache:'no-store'});if(r.ok){const j=await r.json();
+      if(eskiId?(j.id&&j.id!==eskiId):true){const v=await (await fetch('/surum',{cache:'no-store'})).json();surum=v.surum;
+        if(eskiId||surum===hedef){yeniAcik=true;break}}}}catch(e){}
+    if(!eskiId&&Date.now()-t0>20000&&surum)break;
+    await bekle(400)}
+  if(!yeniAcik){if(surum)birak('Güncelleme tamamlanamadı. Birazdan tekrar dene.');else birak();return}   // program hiç açılmadıysa nabız durumu gösterir; açılınca sayfa kendini tazeler
+  try{if(surum===hedef)sessionStorage.setItem('asorti-guncellendi',hedef)}catch(e){}
+  yenileniyor=true;sayfalarKaydetsin();setTimeout(()=>location.reload(),200)};
+/* yeni sürüm denetimi internete çıkar: açılışta sayfalar yüklenirken araya girmesin diye birkaç saniye sonra yapılır */
+surumYaz().then(j=>{if(j&&j.guncelleme){setTimeout(()=>gunKontrol(false),6000);setInterval(()=>gunKontrol(false),2*3600*1000)}});
+
+/* açılışta önce görünen sayfa yüklenir, diğerleri hemen ardından (arkadaki Gerber işleri de kaldığı yerden sürer) */
+if(!S.list.length)yeni();else{if(!S.list.includes(S.on))S.on=S.list[0];ac(S.on);
+ const digerleri=()=>S.list.forEach(frame),f0=document.querySelector('#sayfalar iframe[data-id="'+S.on+'"]');
+ if(f0&&!f0.dataset.hazir&&S.list.length>1){const t=setTimeout(digerleri,1500);f0.addEventListener('load',()=>{clearTimeout(t);setTimeout(digerleri,120)},{once:true})}else digerleri()}
+/* masaüstü simgesinden açılınca gelen açılış ekranı, görünen sayfa yüklenip ekrana çizilince yumuşakça kaybolur */
+(()=>{const f=document.querySelector('#sayfalar iframe[data-id="'+S.on+'"]');let gitti=false;
+ const gonder=()=>{if(gitti)return;gitti=true;fetch('/hazir',{method:'POST',body:'{}'}).catch(()=>{})},
+  bildir=()=>{requestAnimationFrame(()=>requestAnimationFrame(gonder));setTimeout(gonder,250)},
+  yazi=()=>{const p=[document.fonts.ready];try{p.push(f.contentDocument.fonts.ready)}catch(e){}return Promise.race([Promise.all(p),new Promise(r=>setTimeout(r,800))])},
+  sonra=()=>yazi().then(()=>setTimeout(bildir,40),bildir);
+ if(!f)return bildir();
+ if(f.dataset.hazir)sonra();else{const t=setTimeout(bildir,4000);f.addEventListener('load',()=>{clearTimeout(t);sonra()},{once:true})}})();
+</script></body></html>

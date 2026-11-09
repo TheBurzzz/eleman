@@ -1,0 +1,34 @@
+# Elle başlatılan bakım işleri. Claude oturumları git vekilinden dal silemiyor, sürüm başlığı değiştiremiyor;
+# bu iş GitHub'ın kendi anahtarıyla yapar. Başlatmak: Actions → Bakım → Run workflow (ya da API: workflow_dispatch).
+name: Bakım
+on:
+  workflow_dispatch:
+    inputs:
+      dal_sil:
+        description: "Silinecek dal (main ve eleman silinmez)"
+        required: false
+        default: ""
+      surum_basligi:
+        description: "Sürüm başlığı: etiket|yeni başlık  (ör. v2.0.4|Asorti Aracı v2.0.4)"
+        required: false
+        default: ""
+permissions:
+  contents: write
+jobs:
+  bakim:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dal sil
+        if: ${{ inputs.dal_sil != '' && inputs.dal_sil != 'main' && inputs.dal_sil != 'eleman' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DAL: ${{ inputs.dal_sil }}
+          DEPO: ${{ github.repository }}
+        run: gh api -X DELETE "repos/$DEPO/git/refs/heads/$DAL"
+      - name: Sürüm başlığı
+        if: ${{ inputs.surum_basligi != '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SB: ${{ inputs.surum_basligi }}
+          DEPO: ${{ github.repository }}
+        run: gh release edit "${SB%%|*}" --repo "$DEPO" --title "${SB#*|}"

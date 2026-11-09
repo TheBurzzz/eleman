@@ -45,6 +45,5 @@ Bütün sürümler sağdaki **Releases** bölümünde: her birinin altında **So
 Kurulum ayarlara ve çalışma sayfalarına dokunmaz; program sonra yine en yeni sürümü önerir.
 
 ## Dallar
-- **`eleman`**: Eleman (en yeni sürüm).
-- **`main`**: iş bilgisayarındaki sürüm; Eleman orada denenip onaylanınca buraya geçer.
-- **`exe-deneme`**: Asorti Aracı'nın deneme dalı.
+- **`main`**: yayındaki Eleman. Kurulu programlar güncellemeyi buradan alır.
+- **`eleman`**: geliştirme dalı. Yenilikler önce burada denenir, sonra `main`'e geçer.
