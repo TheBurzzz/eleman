@@ -253,6 +253,13 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
     sığmazsa model kısalır); köprü eski denemeleri silerken aynı kısaltmayla da arar. Kısaltınca iki ad aynı olursa gönderilmez,
     uyarı çıkar. Adı 20'ye sığanlar eskisiyle aynı (önceki işlerin adları değişmez).
 
+- 2026-11-09 öğleden sonra (Asorti sohbeti, kullanıcının isteğiyle ÖT'de): **Eleman 3.2.4**, ÖT imzası AA gibi ("öt daki imzam
+  aa gibi değil. aa gibi olsun"). `kaynak/olcu/src.html`: imza `<main>`'in içinden çıktı, `</main>`'den sonra `<footer class="imza">`
+  (AA'daki gibi); `.gomulu body{display:flow-root}`, `.gomulu main{min-height:calc(100vh - 94px);margin-bottom:22px}`; yan yana
+  görünümde imza da içerikle aynı sol boşluğu alır. `derle.py` ile yeniden üretildi (değişiklikten önce derleme, depodakiyle
+  bayt bayt aynıydı). Kabuk içinde ölçüldü: iki uygulamada da imza pencerenin dibinden 20,8 px yukarıda (1920×1048 ve
+  1366×700); ÖT'nin boş sayfadaki 14 px kaydırması kalktı; uzun sayfada imza içeriğin hemen altında.
+
 ## Sıradaki işler
 0. **Sürüm arşivi = GitHub Releases.** 32 sürüm (ilk-deneme, v1.0.0–v1.1.22, v2.0.0–v2.0.4) bir kerelik GitHub Actions işiyle
    taşındı, `surum-v*`, `arsiv`, `surum-test` dalları silindi (dallar: eleman, main, exe-deneme). Bu oturumlardan etiket ve

@@ -1,8 +1,7 @@
 {
- "surum": "3.2.3",
+ "surum": "3.2.4",
  "tarih": "2026-11-09",
  "notlar": [
-  "Gerber · pastal adı 20 harfe sığmazsa senin elle yaptığın gibi kısalır: URT → UR → U (MODEL-URT1 → MODEL-UR1 → MODEL-U1, MODEL-URT-C → MODEL-UR-C → MODEL-U-C). U ile de sığmazsa model adının sonu kısalır; adlar Gerber bölümünde görünür",
-  "Gerber · tek pastallı işlerde (ek asorti tabloları) pastal oluştuğu halde «Pastal oluşmadı» çıkması düzeltildi; köprü Batch'i pastal yazarken kapatmıyor"
+  "Ölçü Tablosu · «Created by Şamil Yeşil» imzası Asorti Aracı'ndaki gibi pencerenin en altında; boş sayfada gereksiz kaydırma da kalktı"
  ]
 }

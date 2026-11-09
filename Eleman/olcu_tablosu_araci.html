@@ -62,7 +62,8 @@ html[data-theme=dark] .tgl{background:var(--acc)}html[data-theme=dark] .tgl .k{l
 .gomulu header.top .logo,.gomulu header.top .ttl,.gomulu header.top .tgl,.gomulu header.top .cr{display:none}
 .imza{display:none}.gomulu .imza{display:block;text-align:center;font-size:11.5px;letter-spacing:.3px;color:var(--mut);padding:2px 0 18px;user-select:none}.gomulu .imza b{font-weight:600}
 main{max-width:1180px;margin:22px auto 40px;padding:0 20px}
-.gomulu main{margin-top:14px;min-height:calc(100vh - 80px)}
+/* imza Asorti'deki gibi: içerik kısaysa pencerenin dibinde, uzunsa sayfanın en altında */
+.gomulu body{display:flow-root}.gomulu main{margin-top:14px;min-height:calc(100vh - 94px);margin-bottom:22px}
 /* kartlar */
 .card{background:var(--glass);border:1px solid var(--gb);box-shadow:var(--hi),var(--sh);border-radius:26px;padding:20px 24px;margin:0 0 18px;animation:rise .35s ease-out both}
 @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
@@ -267,7 +268,7 @@ html[data-theme=dark] .musteriler .chip .mLogo img{mix-blend-mode:normal;backgro
 html:not(.gomulu) #kpanel{top:calc(var(--stk,96px) - 4px)}
 #kpanel[hidden]{display:none}
 @keyframes kpGir{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
-html.yanyana main{max-width:none;margin-left:calc(var(--kpw,40vw) + 32px);margin-right:16px}
+html.yanyana main,html.yanyana .imza{max-width:none;margin-left:calc(var(--kpw,40vw) + 32px);margin-right:16px}
 /* yan yanayken tablo daralır: kağıttaki kesit sütunu (solda kağıt zaten açık) ve ↑ ↓ gizlenir, ad sütunları kalan yeri paylaşır */
 html.yanyana #tbl col:nth-child(3){width:92px!important}
 html.yanyana #tbl col:nth-child(4){width:auto!important}html.yanyana #tbl col:nth-child(5){width:30%!important}
@@ -391,8 +392,8 @@ html.yanyana .card{padding-left:20px;padding-right:20px}
       <div class="durum"><i id="syncDot2" class="st new"></i><span id="memInfo"></span></div>
     </section>
   </div>
-  <p class="imza">Created by <b>Şamil Yeşil</b></p>
 </main>
+<footer class="imza">Created by <b>Şamil Yeşil</b></footer>
 
 <img id="zoom" class="hidden" alt="">
 <div class="modal hidden" id="prevModal"><div class="box" style="max-width:96vw;width:1180px;max-height:94vh;overflow:auto;padding:16px">
