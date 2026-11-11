@@ -168,6 +168,11 @@ function yeniO(){const id=yeniId();SO.list.push(id);girisO=id;acO(id)}
 /* kapanan sekmenin bu bilgisayardaki tablosu da silinir (Ölçü'nün deposu: taslak-<sekme>) */
 function olcuTaslakSil(id){try{const q=indexedDB.open('olcu-tablosu-araci',1);q.onupgradeneeded=()=>q.result.createObjectStore('kv');
  q.onsuccess=()=>{try{q.result.transaction('kv','readwrite').objectStore('kv').delete('taslak-'+id)}catch(e){}}}catch(e){}}
+/* açılışta: sekmesi kalmamış tablolar silinir (3.2.4'e kadar kapatılan sekmenin kaydedilmemiş tablosu, sayfa kapanırken yeniden
+   yazılabiliyordu; her biri taranan kağıdın görüntüsünü de tuttuğu için zamanla yer kaplardı) */
+(function(){try{const q=indexedDB.open('olcu-tablosu-araci',1);q.onupgradeneeded=()=>q.result.createObjectStore('kv');
+ q.onsuccess=()=>{try{const st=q.result.transaction('kv','readwrite').objectStore('kv'),r=st.getAllKeys();
+  r.onsuccess=()=>{for(const k of r.result||[])if(typeof k==='string'&&k.startsWith('taslak-')&&!SO.list.includes(k.slice(7)))st.delete(k)}}catch(e){}}}catch(e){}})();
 function kapatO(id){const i=SO.list.indexOf(id);if(i<0)return;const d=infoO[id]||{},f=document.querySelector('#sayfalarO iframe[data-id="'+id+'"]');
  if(d.busy){alert((d.ad||'Bu sayfa')+' şu an kağıt okuyor ya da kaydediyor. Bitince kapat.');return}
  if(d.degisti&&!confirm((d.ad?d.ad+' tablosu':'Bu sayfa')+' kapatılsın mı?\nKaydedilmemiş tablo silinir (Excel\'e kaydettiklerin durur).'))return;

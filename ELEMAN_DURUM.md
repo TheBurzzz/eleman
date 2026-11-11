@@ -260,6 +260,35 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
   bayt bayt aynıydı). Kabuk içinde ölçüldü: iki uygulamada da imza pencerenin dibinden 20,8 px yukarıda (1920×1048 ve
   1366×700); ÖT'nin boş sayfadaki 14 px kaydırması kalktı; uzun sayfada imza içeriğin hemen altında.
 
+- 2026-11-11 sabah (Eleman sohbeti): **Eleman 3.2.5**, genel tarama (kullanıcı: "uygulamayı güzelce tara, oluşabilecek hataları önle,
+  ÖT'nin ortak hafızası için geliştirme düşün"). İş bilgisayarı kayıtlarında (9–11 Kasım) program hatası yok; Ölçü Tablosu iş
+  bilgisayarındaki Eleman'da henüz hiç kullanılmamış (`olcu_klasorler` yok, ortak hafıza 3 Kasım'dan beri 4 kayıtta).
+  - **Ortak hafıza eşitlemesi (`kaynak/olcu/src.html`, `syncNow`) yeniden**: birden çok Ölçü sekmesi aynı sırayı (`ota_bekleyen`)
+    aynı anda gönderiyordu → kayıtlar iki-üç kez sayılıyordu (3 sekmede 9 kayıt uzakta 19 yerine 22–27 `saves`), sıradan
+    `slice(q.length)` ile düşüldüğü için yeni kayıt kaybolabiliyordu. Şimdi: her deltanın `id`'si var; ortak hafıza son 400
+    uygulananı `uyg`'da tutar (aynı delta bir kez işlenir: çift gönderim, cevabı kaybolan PUT); sıradan kimlikle düşülür
+    (`siradanDus`); sekmeler `navigator.locks` ("ota-esitle", şablonlar "ota-sablon") ile sırayla eşitler; başka sekme son 20 sn'de
+    eşitlediyse ve sıra boşsa GitHub'a gidilmez (`ota_son_esit` = {t,d}); `storage` olayıyla öbür sekmelerin hafızası ve göstergesi
+    yenilenir. Eski sürümler (≤3.2.4) `uyg`'u bozmadan geri yazar. **"Sıradaki işler 3" bitti.**
+  - `ghGet`: 1 MB'ı geçen dosyada GitHub `content`'i boş verir → eskiden boş hafıza sanılırdı; şimdi `git/blobs/<sha>`'dan okunur,
+    bozuk JSON'da eşitleme durur (üstüne yazılmaz). Dosya hiç yoksa (404) ve bu bilgisayar bir şey biliyorsa geri yükler
+    (eskiden yalnız 20+ kayıtta; azsa yerel hafıza da siliniyordu).
+  - `learn`: ölçü aralığı (`typ`) yalnız bilinen aralığın 0,5–2 katı içindeki değerle genişler (virgülsüz 525 gibi bir değer
+    bütün bilgisayarlarda "tuhaf değer" uyarısını kalıcı kapatıyordu). `sablonEsitle` başta `CUSTOM`'ı IndexedDB'den tazeler.
+  - Kapatılan Ölçü sekmesinin taslağı sayfa kapanırken yeniden yazılıyordu (taranan kağıt görüntüleriyle IndexedDB'de kalıyordu):
+    `sekmeKapandi()` (iframe `data-sil`) ile yazılmaz; kabuk açılışta sekmesi olmayan `taslak-*` kayıtlarını siler.
+  - `Sunucu.cs` `Isle`: `Origin` başlığı varsa ve `http://localhost:<port>` değilse 403 (tarayıcıdaki başka bir site
+    `/excel/kaydet`, `/kopru/gelen` gibi adreslere POST gönderemesin). Programın sayfası kendi adresini, betikler (hizli_ac.vbs,
+    Program.cs) hiç göndermez. **Yeni bir sayfa / iframe eklenirse `sandbox` ya da `data:` adresi kullanılmamalı** (Origin `null` olur).
+  - Ölçü ayarları: "Son eşitleme" satırı; Hakkında'da Eleman'ın sürümü.
+  - Denemeler (Eleman sohbeti, `/home/claude/is/tarama`: gerçek C# sunucusu mono'da + Chrome + sha denetimli sahte GitHub):
+    `t_yaris.py` (3 sekme yarışı, düzeltmeden önce 3/3 hatalı, sonra 4/4), `t_hafiza.py` (1 MB üstü, silinen dosya, kaybolan cevap,
+    403, internetsiz, eski sıra, iki bilgisayar: 8/8), `t_sekme.py` (uyuma, kapatma, yeniden açılış, sahipsiz taslak: 5/5),
+    `t_genel.py` (kağıt oku → kaydet → öğren), `t_asorti.py` (sipariş → hesap → Excel), `t_typ.py`. ESLint `no-undef`: temiz.
+  - **Öneriler (yapılmadı, kullanıcıya sunuldu):** öğrenilenleri görme / silme ekranı (silme `sil` deltasıyla herkese yayılır);
+    paylaşılan klasördeki elle yapılmış tablolardan toplu öğrenme (yalnız okuma); el yazısı modeli hâlâ yok (0 örnek toplandı);
+    main'e çıkmadan önce deneme kanalı; ⚙'de Ölçü ayarları; ana sayfada son işler.
+
 ## Sıradaki işler
 0. **Sürüm arşivi = GitHub Releases.** 32 sürüm (ilk-deneme, v1.0.0–v1.1.22, v2.0.0–v2.0.4) bir kerelik GitHub Actions işiyle
    taşındı, `surum-v*`, `arsiv`, `surum-test` dalları silindi (dallar: eleman, main, exe-deneme). Bu oturumlardan etiket ve
@@ -276,7 +305,7 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
    (SunucuOlcu.cs: OlcuSablonIndir). Bu klasör çalışan Ölçü Tablosu'nun okuduğu `olcu-tablosu/sablonlar/` değildir, ona karışmaz.
    Claude'un GitHub uygulaması artık `eleman-hafiza`'ya da erişebiliyor.
 2. ✓ Masaüstü kısayolunun adı ve simgesi "Eleman" (kurulum ve güncelleme).
-3. Ölçü: birden çok sekme açıkken ortak hafıza eşitlemesini tek sekme yapsın.
+3. ✓ (3.2.5) Ölçü: birden çok sekme açıkken eşitleme sırayla, kayıtlar kimlikli (çift sayım yok).
 4. ⚙ menüsünde Ölçü'nün ayarları (şimdilik düğme Ölçü'nün kendi ayar penceresini açıyor).
 5. ✓ 9 Kasım 2026: kullanıcı "programı tamamen Eleman'a çevirelim" dedi; 3.2.0 main'e geçti, iş bilgisayarı güncellemeyle Eleman'a geçer.
 6. El yazısı okuma modeli (Eleman'ın ilk sürümünde olacak).

@@ -1,7 +1,10 @@
 {
- "surum": "3.2.4",
- "tarih": "2026-11-09",
+ "surum": "3.2.5",
+ "tarih": "2026-11-11",
  "notlar": [
-  "Ölçü Tablosu · «Created by Şamil Yeşil» imzası Asorti Aracı'ndaki gibi pencerenin en altında; boş sayfada gereksiz kaydırma da kalktı"
+  "Ölçü Tablosu · ortak hafıza daha sağlam: birkaç sayfa aynı anda açıkken öğrenilenler iki kez sayılmıyor ya da kaybolmuyor; bağlantı tam gönderirken kopsa da kayıt bir kez işleniyor",
+  "Ölçü Tablosu · yanlış yazılmış bir ölçü (virgülü unutulmuş 525 gibi) artık \"bu değer tuhaf\" uyarısını bozmuyor; ortak hafıza dosyası silinir ya da çok büyürse bu bilgisayardaki kopya korunuyor",
+  "Ölçü Tablosu · kapatılan sayfanın kaydedilmemiş tablosu arkada yer tutmuyor; ayarlarda son eşitleme zamanı görünüyor",
+  "Güvenlik · tarayıcıda açık başka bir site Eleman'a istek gönderemiyor (Excel klasörüne dosya yazdıramaz, Gerber'e iş gönderemez)"
  ]
 }

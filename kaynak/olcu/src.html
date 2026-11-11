@@ -487,7 +487,7 @@ const TYP=new Map(Object.entries(TYP0||{}).map(([k,v])=>[normEn(k),v]));
 function plaus(en,v){if(typeof v!=="number")return {v,ok:true};const t=TYP.get(normEn(en));if(!t)return {v,ok:true};const [lo,hi]=t;const inR=x=>x>=lo*.6&&x<=hi*1.5;if(inR(v))return {v,ok:true};if(inR(v/10))return {v:Math.round(v)/10,ok:false};return {v,ok:false}}
 /* ---------------- öğrenen hafıza: her kayıtta kendiliğinden güncellenir ---------------- */
 const MEM_KEY="ota_hafiza";
-function memNorm(m){m=m||{};m.names=m.names||{};m.tr=m.tr||{};m.qual=m.qual||{};m.fibers=m.fibers||[];m.typ=m.typ||{};m.extra=m.extra||{};m.ignore=m.ignore||[];m.saves=m.saves||0;return m}
+function memNorm(m){m=m||{};m.names=m.names||{};m.tr=m.tr||{};m.qual=m.qual||{};m.fibers=m.fibers||[];m.typ=m.typ||{};m.extra=m.extra||{};m.ignore=m.ignore||[];m.uyg=m.uyg||[];m.saves=m.saves||0;return m}
 let MEM=memNorm(LS.get(MEM_KEY,null)||{names:LS.get("ota_ogrenilen",{})});
 function memSave(){LS.set(MEM_KEY,MEM)}
 /* ---------------- ortak hafıza (GitHub): her bilgisayar aynı hafızayı kullanır ---------------- */
@@ -504,7 +504,13 @@ const b64d=b=>new TextDecoder().decode(Uint8Array.from(atob(b.replace(/\s/g,""))
 async function ghGet(){
   const r=await fetch(`https://api.github.com/repos/${SYNC.owner}/${SYNC.repo}/contents/${SYNC.path}?t=${Date.now()}`,{headers:{Authorization:"Bearer "+SYNC.token,Accept:"application/vnd.github+json"},cache:"no-store"});
   if(r.status===404)return {mem:memNorm({}),sha:null};if(!r.ok)throw new Error("GitHub "+r.status);
-  const j=await r.json();return {mem:memNorm(JSON.parse(b64d(j.content)||"{}")),sha:j.sha};
+  const j=await r.json();let c=j.content||"";
+  if(!c.replace(/\s/g,"")&&j.size>0){ // 1 MB'tan büyük dosyada GitHub içeriği boş verir: blob adresinden alınır (boş hafıza sanılıp üstüne yazılmasın)
+    const b=await fetch(`https://api.github.com/repos/${SYNC.owner}/${SYNC.repo}/git/blobs/${j.sha}`,{headers:{Authorization:"Bearer "+SYNC.token,Accept:"application/vnd.github+json"},cache:"no-store"});
+    if(!b.ok)throw new Error("GitHub "+b.status);c=(await b.json()).content||"";if(!c.replace(/\s/g,""))throw new Error("GitHub: hafıza okunamadı")}
+  let mem;try{mem=JSON.parse(b64d(c)||"{}")}catch(e){throw new Error("GitHub: hafıza dosyası bozuk")}
+  if(!mem||typeof mem!=="object"||Array.isArray(mem))throw new Error("GitHub: hafıza dosyası bozuk");
+  return {mem:memNorm(mem),sha:j.sha};
 }
 async function ghPut(mem,sha){
   const r=await fetch(`https://api.github.com/repos/${SYNC.owner}/${SYNC.repo}/contents/${SYNC.path}`,{method:"PUT",headers:{Authorization:"Bearer "+SYNC.token,Accept:"application/vnd.github+json","Content-Type":"application/json"},
@@ -520,46 +526,65 @@ function applyDelta(m,d){
   m.saves=(m.saves||0)+(d.saves||0);return m;
 }
 const pending=()=>LS.get("ota_bekleyen",[]);
+/* Her kaydın (delta) bir kimliği vardır. Ortak hafıza son uygulananların kimliklerini tutar (uyg): aynı kayıt iki kez
+   gönderilse de (bağlantı tam yazarken koptu, iki sekme aynı anda gönderdi) bir kez sayılır. Sıradan da kimliğiyle düşülür. */
+const deltaId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+function deltaUygula(mem,q){let n=0;for(const d of q){if(d.id&&mem.uyg.includes(d.id))continue;applyDelta(mem,d);if(d.id)mem.uyg.push(d.id);n++}
+  if(mem.uyg.length>400)mem.uyg=mem.uyg.slice(-400);return n}
+function siradanDus(q){const ids=new Set(q.map(d=>d.id));const rest=pending().filter(d=>!ids.has(d.id));LS.set("ota_bekleyen",rest);return rest}
+const tumHafiza=saves=>({id:deltaId(),names:MEM.names,tr:MEM.tr,qual:MEM.qual,extra:MEM.extra,typ:MEM.typ,fibers:MEM.fibers,ignore:MEM.ignore,saves});
 /* eşitleme: aynı anda tek eşitleme çalışır; çalışırken gelen istek bitince bir kez daha yapılır.
-   Gönderilen kayıtlar sıradan tek tek düşülür: gönderme sürerken yapılan yeni kayıt kaybolmaz. */
+   Eleman'da her Ölçü sekmesi ayrı sayfadır ama hafıza ve sıra ortaktır: sekmeler sırayla eşitler (tarayıcı kilidi "ota-esitle").
+   Başka bir sekme az önce eşitlediyse ve gönderilecek bir şey yoksa GitHub'a yeniden gidilmez, onun sonucu alınır. */
 let SYNC_BUSY=false,SYNC_AGAIN=false;
-async function syncNow(){
+const kilitle=(ad,is)=>(navigator.locks&&navigator.locks.request)?navigator.locks.request(ad,is):is();
+function hafizaYenile(){const m=LS.get(MEM_KEY,null);if(m){MEM=memNorm(m);memApply()}}
+async function syncNow(zorla){
   if(!syncOn()){SYNC_STATE="off";memInfo();return}
   if(SYNC_BUSY){SYNC_AGAIN=true;return}
   SYNC_BUSY=true;
-  try{
+  try{await kilitle("ota-esitle",async()=>{
+    hafizaYenile();   // başka sekmenin öğrendiği / eşitlediği
     let q=pending();
-    if(!LS.get("ota_seeded",false)&&((MEM.saves||0)>0||Object.keys(MEM.names).length)){q=[{names:MEM.names,tr:MEM.tr,qual:MEM.qual,extra:MEM.extra,typ:MEM.typ,fibers:MEM.fibers,ignore:MEM.ignore,saves:MEM.saves||0}];LS.set("ota_bekleyen",q)}
+    if(q.some(d=>!d.id)){q.forEach(d=>{if(!d.id)d.id=deltaId()});LS.set("ota_bekleyen",q)}
+    const son=LS.get("ota_son_esit",null);
+    if(zorla!==true&&!q.length&&son&&Date.now()-son.t<20000&&(son.d==="ok"||son.d==="salt")){SYNC_STATE=son.d;if(son.d==="salt")SYNC.salt=true;return}
+    if(!LS.get("ota_seeded",false)&&((MEM.saves||0)>0||Object.keys(MEM.names).length)){q=[tumHafiza(MEM.saves||0)];LS.set("ota_bekleyen",q)}
     if(SYNC.salt){
-      const {mem}=await ghGet();for(const d of q)applyDelta(mem,d);MEM=mem;
-      if(q.length>40)LS.set("ota_bekleyen",[deltaBirlestir(q)]);
+      const {mem}=await ghGet();deltaUygula(mem,q);MEM=mem;
+      if(q.length>40)LS.set("ota_bekleyen",[{id:deltaId(),...deltaBirlestir(q)}]);
       LS.set("ota_seeded",true);memSave();memApply();SYNC_STATE="salt";
-      sablonEsitle().catch(e=>console.warn(e));
     }else{
     let done=false,geri=null;
     for(let tries=0;tries<4&&!done;tries++){
       const {mem,sha}=await ghGet();
-      // ortak hafıza silinmiş ya da bozulmuşsa (bu bilgisayarın bildiğinin yarısından azı kalmışsa) bu bilgisayardaki kopyayla geri yüklenir
+      // ortak hafıza silinmiş ya da bozulmuşsa (dosya yok, ya da bu bilgisayarın bildiğinin yarısından azı kalmış) bu bilgisayardaki kopyayla geri yüklenir
       const bil=(MEM.saves||0)-q.reduce((s,d)=>s+(d.saves||0),0),uzak=mem.saves||0;
-      if(!geri&&bil>=20&&uzak<bil/2){geri={names:MEM.names,tr:MEM.tr,qual:MEM.qual,extra:MEM.extra,typ:MEM.typ,fibers:MEM.fibers,ignore:MEM.ignore,saves:bil-uzak};console.warn("ortak hafıza bu bilgisayardaki kopyayla geri yükleniyor",uzak,bil)}
-      if(!q.length&&!geri){for(const d of pending())applyDelta(mem,d);MEM=mem;done=true;break}
-      if(geri)applyDelta(mem,geri);
-      for(const d of q)applyDelta(mem,d);
+      if(!geri&&((bil>=20&&uzak<bil/2)||(!sha&&bil>0))){geri=tumHafiza(bil-uzak);console.warn("ortak hafıza bu bilgisayardaki kopyayla geri yükleniyor",uzak,bil)}
+      const yeniQ=q.filter(d=>!mem.uyg.includes(d.id));
+      if(!yeniQ.length&&!geri){siradanDus(q);deltaUygula(mem,pending());MEM=mem;done=true;break}   // gönderilecek yok (ya da hepsi zaten işlenmiş)
+      if(geri)deltaUygula(mem,[geri]);
+      deltaUygula(mem,q);
       if(await ghPut(mem,sha)){
         // bu arada yeni kayıt geldiyse onu yerel hafızaya da işle (sırada kalır, bir sonraki turda gider)
-        const rest=pending().slice(q.length);for(const d of rest)applyDelta(mem,d);
-        MEM=mem;LS.set("ota_bekleyen",rest);done=true;break}
+        const rest=siradanDus(q);const yerel=JSON.parse(JSON.stringify(mem));deltaUygula(yerel,rest);
+        MEM=memNorm(yerel);done=true;break}
       await new Promise(r=>setTimeout(r,400+Math.random()*600));
     }
     if(!done)throw new Error("GitHub: hafıza yazılamadı (çakışma)");
-    LS.set("ota_seeded",true);memSave();memApply();SYNC_STATE="ok";syncSamples();
-    sablonEsitle().catch(e=>console.warn(e));
+    LS.set("ota_seeded",true);memSave();memApply();SYNC_STATE="ok";
     }
-  }catch(e){console.warn(e);if(e&&e.salt)SYNC_AGAIN=true;else SYNC_STATE="err"}
+    LS.set("ota_son_esit",{t:Date.now(),d:SYNC_STATE});
+    if(SYNC_STATE==="ok")syncSamples();
+    sablonEsitle().catch(e=>console.warn(e));
+  })}catch(e){console.warn(e);if(e&&e.salt)SYNC_AGAIN=true;else SYNC_STATE="err"}
   finally{SYNC_BUSY=false}
   memInfo();
   if(SYNC_AGAIN||(SYNC_STATE==="ok"&&pending().length)){SYNC_AGAIN=false;setTimeout(syncNow,300)}
 }
+/* başka bir Ölçü sekmesi öğrendi / eşitledi: bu sekmenin hafızası ve göstergesi de yenilensin */
+window.addEventListener("storage",e=>{if(e.key===MEM_KEY){hafizaYenile();memInfo()}else if(e.key==="ota_bekleyen")memInfo()
+  else if(e.key==="ota_son_esit"&&e.newValue&&!SYNC_BUSY){try{const d=JSON.parse(e.newValue).d;if(d==="ok"||d==="salt"){SYNC_STATE=d;memInfo()}}catch(x){}}});
 /* ---------------- el yazısı defteri: okunamayan yazıların görüntüsü + senin yazdığın doğru metin ---------------- */
 const HWQ={async get(){try{return (await IDB.get("hw_kuyruk"))||[]}catch(e){return []}},async set(v){try{await IDB.set("hw_kuyruk",v)}catch(e){}}};
 let HW_WAIT=0;
@@ -799,7 +824,11 @@ function sablonKayip(yok){const esit=CUSTOM.filter(c=>!c.bekliyor&&c.sha),kayip=
   CUSTOM=CUSTOM.filter(c=>!kayip.includes(c));return true}
 async function sablonEsitle(){
   if(!syncOn()||SAB_BUSY)return;SAB_BUSY=true;
-  try{
+  try{await kilitle("ota-sablon",async()=>{
+    // aynı bilgisayardaki başka bir Ölçü sekmesi müşteri eklemiş / kaldırmış olabilir: önce bu sekmenin listesini tazele
+    // (yoksa eski listeyle kaydedip onun eklediğini silerdi)
+    {const iz=l=>JSON.stringify(l.map(c=>[c.slug,c.t,c.sha,!!c.bekliyor,!!c.silindi]));const once=iz(CUSTOM);let l=null;try{l=await IDB.get("sablonlar")}catch(e){}
+     if(Array.isArray(l)&&iz(l)!==once){CUSTOM=l;custsYenile();ayarCiz()}}
     const dir=SYNC.dir+"/sablonlar";let degisti=false;
     for(const c of CUSTOM.filter(x=>x.bekliyor&&!SYNC.salt)){
       const path=`${dir}/${c.slug}.json`;
@@ -818,7 +847,7 @@ async function sablonEsitle(){
       const var_=new Set(list.map(f=>f.name.replace(/\.json$/,"")));degisti=sablonKayip(c=>!var_.has(c.slug))||degisti}
     else if(r.status===404)degisti=sablonKayip(()=>true)||degisti;
     if(degisti){await customKaydet();custsYenile();ayarCiz()}
-  }finally{SAB_BUSY=false}
+  })}finally{SAB_BUSY=false}
 }
 
 let LAST_SIZE=null; // kağıttan okunan numune bedeni
@@ -1376,7 +1405,7 @@ $("#custEkle").onclick=()=>sablonEkle();
 
 /* her kayıtta öğren: kağıtta okunan ad -> düzeltilmiş ad, Türkçe tercihleri, yeni ölçüler ve yerleri, kumaş, ölçü aralıkları */
 function learn(){
-  const D={names:{},tr:{},qual:{},extra:{},typ:{},fibers:[],ignore:DELETED_UNREAD.map(normEn).filter(k=>k.replace(/[^A-Z]/g,"").length>=8),saves:1};DELETED_UNREAD=[];
+  const D={names:{},tr:{},qual:{},extra:{},typ:{},fibers:[],ignore:DELETED_UNREAD.map(normEn).filter(k=>k.replace(/[^A-Z]/g,"").length>=8),saves:1,id:deltaId()};DELETED_UNREAD=[];
   ROWS.forEach((r,idx)=>{
     if(!r.en)return;const k=normEn(r.en);
     let after="";for(let j=idx-1;j>=0;j--){const t=TPLKEY.get(normEn(ROWS[j].en));if(t){after=t.key;break}}
@@ -1385,12 +1414,14 @@ function learn(){
     const d=DICT.get(k);if(r.tr&&(!d||trFor(r.en,d.tr)!==r.tr))D.tr[k]=r.tr;
     if(!TPLKEY.has(k)){D.extra[k]={en:r.en,tr:r.tr||(d&&d.tr)||"",grp:r.grp||"",after:pos};
       if(d&&d.tpl){if(pos)d.after=pos}else DICT.set(k,{en:r.en,tr:r.tr||(d&&d.tr)||"",after:pos,grp:r.grp||"",n:Math.max((d&&d.n)||0,1)})}
-    if(typeof r.m==="number")D.typ[k]=[r.m,r.m];
+    // ölçü aralığı: bilinen aralığın çok dışındaki değer (virgül unutulmuş 525, yanlış satır) aralığı genişletmez;
+    // yoksa bir yazım hatası bütün bilgisayarlarda o ölçünün "bu değer tuhaf" uyarısını kalıcı olarak kapatırdı
+    if(typeof r.m==="number"&&isFinite(r.m)&&r.m>0){const t=TYP.get(k);if(!t||(r.m>=t[0]*.5&&r.m<=t[1]*2))D.typ[k]=[r.m,r.m]}
   });
   const qf=$("#fQual").value.trim();
   if(qf){if(LAST_QUAL_RAW)D.qual[qKey(LAST_QUAL_RAW)]=qf;
     for(const w of qf.toUpperCase().match(/[A-ZÄÖÜİ]{4,}/g)||[])if(!FIBERS.includes(w))D.fibers.push(w)}
-  applyDelta(MEM,D);memSave();memApply();
+  deltaUygula(MEM,[D]);memSave();memApply();
   // el yazısı defteri: aynı satır ikinci kayıtta tekrar gönderilmez
   const yeni=ROWS.filter(r=>r.hw&&!r.ornek&&(r.tr||r.en)&&(r.wasUnread||r.trTyped||r.enTyped));
   const smp=yeni.map(r=>({id:Math.random().toString(36).slice(2,8),t:Date.now(),img:r.hw,en:r.en,tr:r.tr,m:r.m===""?null:r.m,tur:r.wasUnread?"satir":"turkce",musteri:CUR?CUR.name:"",model:artUp($("#fArt").value.trim())}));
@@ -1746,7 +1777,7 @@ $("#pageModal").onclick=e=>{if(e.target.id==="pageModal")$("#pageModal").classLi
 let DEGISTI=false,TASLAK_T=0;
 function degisti(){DEGISTI=true;taslakZamanla();durumBildir()}
 function taslakZamanla(){clearTimeout(TASLAK_T);TASLAK_T=setTimeout(taslakYaz,1200)}
-async function taslakYaz(zorla){clearTimeout(TASLAK_T);if(!CUR||!ROWS.length||(!DEGISTI&&!zorla))return;
+async function taslakYaz(zorla){clearTimeout(TASLAK_T);if(!CUR||!ROWS.length||(!DEGISTI&&!zorla)||sekmeKapandi())return;
   try{await IDB.set(TASLAK_K,{v:1,ts:Date.now(),degisti:DEGISTI,cust:CUR.name,art:$("#fArt").value,qual:$("#fQual").value,date:$("#fDate").value,fname:$("#fnameIn").value,nameEdited,rows:ROWS,sz:SZ,lastSize:LAST_SIZE,scanned:LAST_SCANNED,qualRaw:LAST_QUAL_RAW,pages:PAGES,deleted:DELETED_UNREAD})}catch(e){console.warn(e)}}
 async function taslakSil(){clearTimeout(TASLAK_T);$("#taslakBar").innerHTML="";try{await IDB.del(TASLAK_K)}catch(e){}}
 async function taslakSor(){let d=null;try{d=await IDB.get(TASLAK_K)}catch(e){}
@@ -1770,7 +1801,8 @@ async function taslakAc(d,sessiz){
 /* Eleman'ın Ölçü sekmesi: sekmenin tablosu sormadan, sessizce geri gelir */
 async function taslakDevam(){let d=null;try{d=await IDB.get(TASLAK_K)}catch(e){}
   if(!d||!d.rows||!d.rows.length||!CUSTS.some(x=>x.name===d.cust))return;await taslakAc(d,true)}
-window.addEventListener("pagehide",()=>{if(DEGISTI)taslakYaz()});
+const sekmeKapandi=()=>{try{return !!(GOMULU&&window.frameElement&&window.frameElement.dataset.sil)}catch(e){return false}};   // Eleman'da sekmesi kapatıldı: taslağı da silindi, yeniden yazılmaz
+window.addEventListener("pagehide",()=>{if(DEGISTI&&!sekmeKapandi())taslakYaz()});
 /* tarayıcıda: kaydedilmemiş tabloyla sekme kapatılırken sor (Eleman penceresinde pencere kendi sorar) */
 if(!KHTTP&&!GOMULU)window.addEventListener("beforeunload",e=>{if(DEGISTI&&ROWS.length){taslakYaz();e.preventDefault();e.returnValue=""}});
 
@@ -1801,7 +1833,7 @@ async function ayarCiz(){if($("#ayarModal").classList.contains("hidden"))return;
     <div class="kl" title="${esc(k?k.yol:"")}">${k?`<span class="muted">Klasör:</span> <b>${esc(EXE?k.yol:k.ad)}</b>`:'<span class="muted">Klasör: ilk kayıtta sorulacak</span>'}</div>
     <div class="bt"><button type="button" class="exb" data-m="klasor" data-n="${esc(c.name)}">${k?"Klasörü değiştir":"Klasör seç"}</button><button type="button" class="exb" data-m="sablon" data-n="${esc(c.name)}">Şablonu değiştir</button>${(c.eklenen||c.degisti)?`<button type="button" class="exb" data-m="kaldir" data-n="${esc(c.name)}" style="color:var(--red)">${c.degisti?"Asıl şablona dön":"Kaldır"}</button>`:""}</div></div>`).join("");
   taraAyarCiz();hafizaCiz();
-  $("#hakkinda").innerHTML=`<span>Program</span><span>Ölçü Tablosu Aracı</span><span>Sürüm</span><span>${SURUM} · ${SURUM_TARIH}</span><span>Çalıştığı yer</span><span>${EXE?"Eleman programı":"Tarayıcı (tek dosya)"}${GOMULU?" · sekme":""}</span><span>Tasarım</span><span>Created by <b>Şamil Yeşil</b></span>`}
+  $("#hakkinda").innerHTML=`<span>Program</span><span>Ölçü Tablosu Aracı</span><span>Sürüm</span><span>${EXE&&EXE_DURUM&&EXE_DURUM.surum?"Eleman "+esc(EXE_DURUM.surum):SURUM+" · "+SURUM_TARIH}</span><span>Çalıştığı yer</span><span>${EXE?"Eleman programı":"Tarayıcı (tek dosya)"}${GOMULU?" · sekme":""}</span><span>Tasarım</span><span>Created by <b>Şamil Yeşil</b></span>`}
 $("#mList").onclick=async e=>{const b=e.target.closest("[data-m]");if(!b)return;const n=b.dataset.n;
   if(b.dataset.m==="klasor"){if(await PLAT.klasorSec(n)){if(CUR&&CUR.name===n)await showDir();ayarCiz()}}
   if(b.dataset.m==="sablon")sablonEkle(n);
@@ -1809,9 +1841,9 @@ $("#mList").onclick=async e=>{const b=e.target.closest("[data-m]");if(!b)return;
 function hafizaCiz(){const el=$("#hafizaInfo");if(!el||$("#ayarModal").classList.contains("hidden"))return;
   const pq=pending().length,n=Object.keys(MEM.names).length+Object.keys(MEM.extra).length,sb=CUSTOM.some(c=>c.bekliyor);
   const durum=SYNC_STATE==="salt"?"Yalnız okuma ✓ (müşteriler ve öğrenilenler gelir; burada yaptıkların bu bilgisayarda kalır)":SYNC_STATE==="ok"?"Bağlı ✓":SYNC_STATE==="err"?"Şu an ulaşılamıyor (internet?)":"Ayarlanmadı: sadece bu bilgisayar öğreniyor";
-  el.innerHTML=`<div class="kv"><span>Durum</span><span>${durum}</span><span>Öğrenilen</span><span>${MEM.saves||0} kayıt · ${n} ölçü adı · ${Object.keys(MEM.tr).length} Türkçe tercih · ${Object.keys(MEM.qual).length} kumaş düzeltmesi</span><span>El yazısı defteri</span><span>${LS.get("ota_hw_toplam",0)} örnek${HW_WAIT?` · ${HW_WAIT} gönderilmeyi bekliyor`:""}</span><span>Gönderilmeyi bekleyen</span><span>${pq} kayıt${sb?" · şablon değişikliği":""}</span></div>`
-   +(SYNC_STATE==="ok"&&!pq&&!HW_WAIT&&!sb?'<div class="okline">✓ Bu bilgisayarda öğrenilen her şey ortak hafızada. Eleman programına geçerken hiçbir şey kaybolmaz.</div>':"")}
-$("#esitleBtn").onclick=async()=>{const b=$("#esitleBtn");b.disabled=true;try{await syncNow();await syncSamples();await sablonEsitle().catch(()=>{})}finally{b.disabled=false;hafizaCiz()}};
+  el.innerHTML=`<div class="kv"><span>Durum</span><span>${durum}</span><span>Öğrenilen</span><span>${MEM.saves||0} kayıt · ${n} ölçü adı · ${Object.keys(MEM.tr).length} Türkçe tercih · ${Object.keys(MEM.qual).length} kumaş düzeltmesi</span><span>El yazısı defteri</span><span>${LS.get("ota_hw_toplam",0)} örnek${HW_WAIT?` · ${HW_WAIT} gönderilmeyi bekliyor`:""}</span><span>Gönderilmeyi bekleyen</span><span>${pq} kayıt${sb?" · şablon değişikliği":""}</span><span>Son eşitleme</span><span>${(s=>s&&s.t?new Date(s.t).toLocaleString("tr-TR",{day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"}):"henüz yapılmadı")(LS.get("ota_son_esit",null))}</span></div>`
+   +(SYNC_STATE==="ok"&&!pq&&!HW_WAIT&&!sb?`<div class="okline">✓ Bu bilgisayarda öğrenilen her şey ortak hafızada${EXE?"":". Eleman programına geçerken hiçbir şey kaybolmaz"}.</div>`:"")}
+$("#esitleBtn").onclick=async()=>{const b=$("#esitleBtn");b.disabled=true;try{await syncNow(true);await syncSamples();await sablonEsitle().catch(()=>{})}finally{b.disabled=false;hafizaCiz()}};
 
 /* ---------------- tek tuşla tarama (Eleman programında: Epson L3260, WIA) ---------------- */
 let TARAYICILAR=null,TARA_T=0;
@@ -1889,7 +1921,7 @@ initCust();
   AYAR=await PLAT.ayarAl();taraYazi();
   await customYukle();
   memApply();memInfo();HW_WAIT=(await HWQ.get()).length;memInfo();
-  syncNow();setInterval(syncNow,5*60*1000);window.addEventListener("online",syncNow);
+  syncNow();setInterval(()=>syncNow(),5*60*1000);window.addEventListener("online",()=>syncNow());
   document.addEventListener("visibilitychange",()=>{if(document.hidden){if(DEGISTI)taslakYaz()}else syncNow()});
   if(SEKMELI)await taslakDevam();else await taslakSor();
   tarayiciBak(true);

@@ -177,6 +177,15 @@ namespace AsortiAraci
             {
                 yol = Uri.UnescapeDataString(ctx.Request.Url.AbsolutePath).TrimStart('/');
                 m = ctx.Request.HttpMethod;
+                // Yalnız programın kendi sayfası: tarayıcıda açık başka bir sitenin sayfası bu adrese istek gönderemesin
+                // (Excel klasörüne dosya yazdırmak, Gerber'e iş göndermek gibi). Tarayıcılar başka siteden gelen istekte
+                // "Origin" başlığını o sitenin adresiyle gönderir; programın sayfası kendi adresini, betikler hiç göndermez.
+                string kaynakSite = ctx.Request.Headers["Origin"];
+                if (!string.IsNullOrEmpty(kaynakSite) && !string.Equals(kaynakSite, "http://localhost:" + A.Port, StringComparison.OrdinalIgnoreCase))
+                {
+                    Yanit(ctx, 403);
+                    return;
+                }
                 switch (yol)
                 {
                     case "nabiz": Nabiz(ctx); return;
