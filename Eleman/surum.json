@@ -1,10 +1,10 @@
 {
- "surum": "3.2.5",
+ "surum": "3.3.0",
  "tarih": "2026-11-11",
  "notlar": [
-  "Ölçü Tablosu · ortak hafıza daha sağlam: birkaç sayfa aynı anda açıkken öğrenilenler iki kez sayılmıyor ya da kaybolmuyor; bağlantı tam gönderirken kopsa da kayıt bir kez işleniyor",
-  "Ölçü Tablosu · yanlış yazılmış bir ölçü (virgülü unutulmuş 525 gibi) artık \"bu değer tuhaf\" uyarısını bozmuyor; ortak hafıza dosyası silinir ya da çok büyürse bu bilgisayardaki kopya korunuyor",
-  "Ölçü Tablosu · kapatılan sayfanın kaydedilmemiş tablosu arkada yer tutmuyor; ayarlarda son eşitleme zamanı görünüyor",
-  "Güvenlik · tarayıcıda açık başka bir site Eleman'a istek gönderemiyor (Excel klasörüne dosya yazdıramaz, Gerber'e iş gönderemez)"
+  "Ölçü Tablosu · geçmiş tablolardan öğrenme: seçtiğin klasördeki hazır tabloları (Excel'de elle yapılanlar dahil) yalnız okuyarak öğrenir, klasöre hiçbir şey yazmaz. Bir kez seçmek için: Ölçü Tablosu ayarları → Ortak hafıza → Geçmiş tablolardan öğrenme",
+  "Ölçü Tablosu · öğrenilenleri görebilir, arayabilir ve yanlış öğrenileni silebilirsin; silinen bütün bilgisayarlardan kalkar (Ayarlar → Ortak hafıza → Öğrenilenleri gör / sil)",
+  "Ölçü Tablosu · ortak hafızayı eski bir güne döndürebilirsin (Ayarlar → Ortak hafıza → Eski bir güne dön)",
+  "Ölçü Tablosu · neyi hangi bilgisayarın öğrettiği görünüyor"
  ]
 }

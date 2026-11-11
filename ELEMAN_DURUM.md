@@ -289,6 +289,26 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
     paylaşılan klasördeki elle yapılmış tablolardan toplu öğrenme (yalnız okuma); el yazısı modeli hâlâ yok (0 örnek toplandı);
     main'e çıkmadan önce deneme kanalı; ⚙'de Ölçü ayarları; ana sayfada son işler.
 
+- 2026-11-11 akşam (Eleman sohbeti): **Eleman 3.3.0**, ortak hafıza için dört özellik (kullanıcı: "sırasıyla 1'den 4'e kadar yap").
+  Hepsi `kaynak/olcu/src.html` + `SunucuOlcu.cs`; Ölçü ayarları → Ortak hafıza bölümünde.
+  1. **Geçmiş tablolardan öğrenme** (yalnız Eleman'da). Klasör `kullanici.json` → `olcu_havuz` (öneri: masaüstündeki
+     "Ortak Ölçü Tabloları", kullanıcı bir kez onaylar). Sunucu: `/olcu/havuz`, `/olcu/havuz-sec`, `/olcu/havuz-liste`,
+     `/olcu/havuz-dosya` — **yalnız okur, o klasöre hiçbir şey yazmaz** (kural aynen geçerli). Sayfa: `havuzOku` (şablon düzeni:
+     D sütununda MEASUREMENT başlığı; D=İngilizce, E=Türkçe, B:C birleşik=grup, F..L beden değerleri; başka düzen atlanır),
+     sayımlar bu bilgisayarda IndexedDB `havuz_ist`; `havuzTuret`: sözlükte olmayan ad ≥2 tabloda → `extra`, Türkçesi boş olana
+     ≥3 tabloda aynı Türkçe → `tr`, ≥3 tabloda geçen ölçünün %5–%95 aralığı → `typ`. Okunan dosyaların kısa özetleri ortak hafızada
+     `hv` (başka bilgisayar yeniden saymaz), sayısı `havuz`. Açılıştan 15 sn sonra, 12 saatte bir, dosya başına 30 ms arayla.
+     Not: programla gelen sözlük (`veri/dict.json`) zaten Kasım başındaki ~1200 tablodan çıkarılmıştı; bu özelliğin kazancı
+     sonradan (elle, başka bilgisayarda) yapılan tabloların da sürekli katılması. Klasörde 2299 xlsx var (11 Kasım).
+  2. **Öğrenilenleri gör / sil**: `ogrModal`; silme `sil:{alan:[anahtar]}` deltasıyla gider (`applyDelta` siler), herkesten kalkar.
+  3. **Eski bir güne dön**: `geriModal`; GitHub commit listesi (`commits?path=`), seçilen hal `ghGet(ref)` ile okunur, yeni commit
+     olarak yazılır, `donem` artar: öbür bilgisayarların "geri yükleme" koruması (yarıdan az kayıt) bu durumda çalışmaz, hale uyar.
+     Gerçek GitHub'da buradan denenemedi (vekil); anahtarın Contents iznine commit listesi dahildir.
+  4. **Kimin öğrettiği**: `/olcu/durum` → `pc` (bilgisayar adı); her delta `pc`, `t` taşır; hafızada `kay["tür:anahtar"]=[pc,t]`
+     (n ad, t Türkçe, q kumaş, x yeni ölçü, y aralık) ve `kim[pc]={n,h,t}`; commit iletisi "hafıza güncellendi (N) · PC".
+  - Denemeler: `/home/claude/is/tarama/t_yeni.py` (iş bilgisayarından kopyalanan 22 gerçek tabloyla; klasörün değişmediği özetle
+    doğrulandı) 9/9; önceki denemeler yeniden: yarış 3/3, hafıza 8/8, sekme 5/5, genel akış.
+
 ## Sıradaki işler
 0. **Sürüm arşivi = GitHub Releases.** 32 sürüm (ilk-deneme, v1.0.0–v1.1.22, v2.0.0–v2.0.4) bir kerelik GitHub Actions işiyle
    taşındı, `surum-v*`, `arsiv`, `surum-test` dalları silindi (dallar: eleman, main, exe-deneme). Bu oturumlardan etiket ve

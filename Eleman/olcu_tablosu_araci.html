@@ -234,6 +234,11 @@ html[data-theme=dark] .seg button.on{background:#6a6f7e}
 .mrow .bt{display:flex;gap:2px;flex-wrap:wrap;justify-content:flex-end}
 .tag{font-size:10.5px;font-weight:650;letter-spacing:.04em;padding:1px 8px;border-radius:999px;background:rgba(var(--accrgb),.14);color:var(--acc);margin-left:6px;vertical-align:1px}
 .kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:13px}.kv span:nth-child(odd){color:var(--mut)}
+.olist{display:flex;flex-direction:column;gap:6px;max-height:56vh;overflow:auto;margin-top:10px;padding-right:2px}
+.orow{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:7px 8px 7px 14px;border-radius:12px;background:var(--inbg);border:1px solid var(--line);font-size:13px}
+.orow .om{min-width:0;overflow-wrap:anywhere}.orow .om small{color:var(--mut)}.orow .ok2{font-size:11.5px;color:var(--mut);white-space:nowrap}
+.obas{margin:12px 2px 2px;font-size:11.5px;font-weight:650;letter-spacing:.05em;text-transform:uppercase;color:var(--mut)}
+.oara{width:100%;margin-top:6px;padding:9px 12px;border-radius:12px;border:1px solid var(--line);background:var(--inbg);color:var(--ink);font:inherit}
 .okline{margin-top:10px;font-size:13px;font-weight:550;color:var(--ok)}
 .form{display:flex;flex-direction:column;gap:12px}.form input[type=text]{width:100%}
 @media (max-width:900px){.grid3{grid-template-columns:1fr}.cr{display:none}.mrow{grid-template-columns:1fr}.mrow .bt{justify-content:flex-start}}
@@ -407,9 +412,16 @@ html.yanyana .card{padding-left:20px;padding-right:20px}
     <div class="row" style="margin-top:10px"><button class="btn sm" id="sabEkle" type="button">＋ Yeni müşteri şablonu ekle</button></div>
     <p>Eklediğin ya da değiştirdiğin şablonlar ortak hafızaya da gider: programı kullanan herkesin bilgisayarına kendiliğinden gelir.</p></section>
   <section class="sec" id="taraSec"><h3>Tarayıcı</h3><div id="taraAyar"></div></section>
-  <section class="sec"><h3>Ortak hafıza</h3><div id="hafizaInfo"></div><div class="row" style="margin-top:10px"><button class="btn sm" id="esitleBtn" type="button">Şimdi eşitle</button></div></section>
+  <section class="sec"><h3>Ortak hafıza</h3><div id="hafizaInfo"></div><div class="row" style="margin-top:10px"><button class="btn sm" id="esitleBtn" type="button">Şimdi eşitle</button><button class="btn sm" id="ogrBtn" type="button">Öğrenilenleri gör / sil…</button><button class="btn sm" id="geriBtn" type="button">Eski bir güne dön…</button></div>
+    <div id="havuzSec" class="hidden" style="margin-top:16px"><h3>Geçmiş tablolardan öğrenme</h3><div id="havuzInfo"></div><p>Program bu klasördeki (ve alt klasörlerindeki) hazır ölçü tablolarını yalnız okur; klasöre hiçbir şey yazmaz, hiçbir dosyayı değiştirmez. Elle yapılan yeni tablolar da böylece hafızaya katılır.</p></div></section>
   <section class="sec"><h3>Hakkında</h3><div id="hakkinda" class="kv"></div></section>
 </div></div>
+<div class="modal hidden" id="ogrModal"><div class="box ayar"><div class="mhead"><b>Öğrenilenler</b><button class="btn sm" id="ogrKapat" type="button">Kapat</button></div>
+  <p style="margin:6px 0 0;font-size:13px;color:var(--mut)">Yanlış öğrenilen bir şeyi ✕ ile sil: bu bilgisayardan ve ortak hafızayı kullanan bütün bilgisayarlardan kalkar.</p>
+  <input class="oara" id="ogrAra" type="search" placeholder="Ara: ölçü adı, Türkçe, bilgisayar…" autocomplete="off"><div id="ogrList" class="olist"></div></div></div>
+<div class="modal hidden" id="geriModal"><div class="box ayar"><div class="mhead"><b>Ortak hafızayı eski bir güne döndür</b><button class="btn sm" id="geriKapat" type="button">Kapat</button></div>
+  <p style="margin:6px 0 0;font-size:13px;color:var(--mut)">Hafızanın her değişikliği saklanır. Bir satırı seçersen hafıza o andaki haline döner; o andan sonra öğrenilenler bütün bilgisayarlardan kalkar. Yanlış seçersen aynı listeden daha yeni bir satıra dönebilirsin.</p>
+  <div id="geriList" class="olist"></div></div></div>
 <script>
 "use strict";
 const SURUM="1.0.0",SURUM_TARIH="6 Kasım 2026";
@@ -487,7 +499,7 @@ const TYP=new Map(Object.entries(TYP0||{}).map(([k,v])=>[normEn(k),v]));
 function plaus(en,v){if(typeof v!=="number")return {v,ok:true};const t=TYP.get(normEn(en));if(!t)return {v,ok:true};const [lo,hi]=t;const inR=x=>x>=lo*.6&&x<=hi*1.5;if(inR(v))return {v,ok:true};if(inR(v/10))return {v:Math.round(v)/10,ok:false};return {v,ok:false}}
 /* ---------------- öğrenen hafıza: her kayıtta kendiliğinden güncellenir ---------------- */
 const MEM_KEY="ota_hafiza";
-function memNorm(m){m=m||{};m.names=m.names||{};m.tr=m.tr||{};m.qual=m.qual||{};m.fibers=m.fibers||[];m.typ=m.typ||{};m.extra=m.extra||{};m.ignore=m.ignore||[];m.uyg=m.uyg||[];m.saves=m.saves||0;return m}
+function memNorm(m){m=m||{};m.names=m.names||{};m.tr=m.tr||{};m.qual=m.qual||{};m.fibers=m.fibers||[];m.typ=m.typ||{};m.extra=m.extra||{};m.ignore=m.ignore||[];m.uyg=m.uyg||[];m.kay=m.kay||{};m.kim=m.kim||{};m.hv=m.hv||[];m.havuz=m.havuz||0;m.donem=m.donem||0;m.saves=m.saves||0;return m}
 let MEM=memNorm(LS.get(MEM_KEY,null)||{names:LS.get("ota_ogrenilen",{})});
 function memSave(){LS.set(MEM_KEY,MEM)}
 /* ---------------- ortak hafıza (GitHub): her bilgisayar aynı hafızayı kullanır ---------------- */
@@ -501,8 +513,8 @@ const syncOn=()=>SYNC.token&&!/__TOKEN__/.test(SYNC.token);
 let SYNC_STATE="off";
 const b64e=str=>{const b=new TextEncoder().encode(str);let s="";for(let i=0;i<b.length;i+=0x8000)s+=String.fromCharCode.apply(null,b.subarray(i,i+0x8000));return btoa(s)};
 const b64d=b=>new TextDecoder().decode(Uint8Array.from(atob(b.replace(/\s/g,"")),c=>c.charCodeAt(0)));
-async function ghGet(){
-  const r=await fetch(`https://api.github.com/repos/${SYNC.owner}/${SYNC.repo}/contents/${SYNC.path}?t=${Date.now()}`,{headers:{Authorization:"Bearer "+SYNC.token,Accept:"application/vnd.github+json"},cache:"no-store"});
+async function ghGet(ref){
+  const r=await fetch(`https://api.github.com/repos/${SYNC.owner}/${SYNC.repo}/contents/${SYNC.path}?t=${Date.now()}${ref?"&ref="+encodeURIComponent(ref):""}`,{headers:{Authorization:"Bearer "+SYNC.token,Accept:"application/vnd.github+json"},cache:"no-store"});
   if(r.status===404)return {mem:memNorm({}),sha:null};if(!r.ok)throw new Error("GitHub "+r.status);
   const j=await r.json();let c=j.content||"";
   if(!c.replace(/\s/g,"")&&j.size>0){ // 1 MB'tan büyük dosyada GitHub içeriği boş verir: blob adresinden alınır (boş hafıza sanılıp üstüne yazılmasın)
@@ -512,17 +524,32 @@ async function ghGet(){
   if(!mem||typeof mem!=="object"||Array.isArray(mem))throw new Error("GitHub: hafıza dosyası bozuk");
   return {mem:memNorm(mem),sha:j.sha};
 }
-async function ghPut(mem,sha){
+let PC="";   // bu bilgisayarın adı (Eleman'da): kimin öğrettiği belli olsun
+async function ghPut(mem,sha,mesaj){
   const r=await fetch(`https://api.github.com/repos/${SYNC.owner}/${SYNC.repo}/contents/${SYNC.path}`,{method:"PUT",headers:{Authorization:"Bearer "+SYNC.token,Accept:"application/vnd.github+json","Content-Type":"application/json"},
-    body:JSON.stringify({message:"hafıza güncellendi ("+mem.saves+")",content:b64e(JSON.stringify(mem)),...(sha?{sha}:{})})});
+    body:JSON.stringify({message:(mesaj||"hafıza güncellendi")+" ("+mem.saves+")"+(PC?" · "+PC:""),content:b64e(JSON.stringify(mem)),...(sha?{sha}:{})})});
   if(r.status===409||r.status===422)return false;if(yazamaz(r)){const e=new Error("GitHub 403: anahtar yazamıyor, yalnız okunuyor");e.salt=true;throw e}if(!r.ok)throw new Error("GitHub "+r.status);return true;
 }
+/* Bir kaydı (delta) hafızaya işler. d.pc / d.t: öğreten bilgisayar ve zaman → m.kay["tür:anahtar"]=[pc,t] (n ad, t Türkçe, q kumaş,
+   x yeni ölçü, y aralık) ve m.kim[pc]={n kayıt, h geçmiş tablo, t son}. d.sil: silinenler (herkesten kalkar). d.hv / d.havuz: geçmiş
+   tablolardan öğrenme (okunan dosyaların kısa özetleri, sayısı). */
+const KAY_TUR={names:"n",tr:"t",qual:"q",extra:"x",typ:"y"};
 function applyDelta(m,d){
-  for(const k of ["names","tr","qual"])Object.assign(m[k],d[k]||{});
-  for(const [k,e] of Object.entries(d.extra||{})){const o=m.extra[k];m.extra[k]={...e,n:Math.max((o&&o.n)||0,0)+1}}
-  for(const [k,v] of Object.entries(d.typ||{})){const t=m.typ[k];m.typ[k]=t?[Math.min(t[0],v[0]),Math.max(t[1],v[1])]:v}
+  const iz=(tur,k)=>{if(d.pc)m.kay[tur+":"+k]=[d.pc,d.t||0]};
+  for(const k of ["names","tr","qual"])for(const [a,v] of Object.entries(d[k]||{})){m[k][a]=v;iz(KAY_TUR[k],a)}
+  for(const [k,e] of Object.entries(d.extra||{})){const o=m.extra[k];m.extra[k]={...e,n:Math.max((o&&o.n)||0,0)+1};iz("x",k)}
+  for(const [k,v] of Object.entries(d.typ||{})){const t=m.typ[k];m.typ[k]=t?[Math.min(t[0],v[0]),Math.max(t[1],v[1])]:v;if(!t||v[0]<t[0]||v[1]>t[1])iz("y",k)}
   for(const w of d.fibers||[])if(!m.fibers.includes(w))m.fibers.push(w);
   for(const t of d.ignore||[])if(!m.ignore.includes(t))m.ignore.push(t);
+  const sil=d.sil||{};
+  for(const k of ["names","tr","qual","extra","typ"])for(const a of sil[k]||[]){delete m[k][a];delete m.kay[KAY_TUR[k]+":"+a]}
+  if(sil.fibers)m.fibers=m.fibers.filter(w=>!sil.fibers.includes(w));
+  if(sil.ignore)m.ignore=m.ignore.filter(w=>!sil.ignore.includes(w));
+  for(const [k,v] of Object.entries(d.kay||{}))if(!m.kay[k])m.kay[k]=v;
+  for(const [k,v] of Object.entries(d.kim||{}))if(!m.kim[k])m.kim[k]=v;
+  for(const h of d.hv||[])if(!m.hv.includes(h))m.hv.push(h);
+  m.havuz=(m.havuz||0)+(d.havuz||0);
+  if(d.pc&&(d.saves||d.havuz)){const o=m.kim[d.pc]||{n:0,h:0,t:0};m.kim[d.pc]={n:(o.n||0)+(d.saves||0),h:(o.h||0)+(d.havuz||0),t:Math.max(o.t||0,d.t||0)}}
   m.saves=(m.saves||0)+(d.saves||0);return m;
 }
 const pending=()=>LS.get("ota_bekleyen",[]);
@@ -532,7 +559,7 @@ const deltaId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
 function deltaUygula(mem,q){let n=0;for(const d of q){if(d.id&&mem.uyg.includes(d.id))continue;applyDelta(mem,d);if(d.id)mem.uyg.push(d.id);n++}
   if(mem.uyg.length>400)mem.uyg=mem.uyg.slice(-400);return n}
 function siradanDus(q){const ids=new Set(q.map(d=>d.id));const rest=pending().filter(d=>!ids.has(d.id));LS.set("ota_bekleyen",rest);return rest}
-const tumHafiza=saves=>({id:deltaId(),names:MEM.names,tr:MEM.tr,qual:MEM.qual,extra:MEM.extra,typ:MEM.typ,fibers:MEM.fibers,ignore:MEM.ignore,saves});
+const tumHafiza=saves=>({id:deltaId(),names:MEM.names,tr:MEM.tr,qual:MEM.qual,extra:MEM.extra,typ:MEM.typ,fibers:MEM.fibers,ignore:MEM.ignore,kay:MEM.kay,kim:MEM.kim,hv:MEM.hv,havuz:MEM.havuz||0,saves});
 /* eşitleme: aynı anda tek eşitleme çalışır; çalışırken gelen istek bitince bir kez daha yapılır.
    Eleman'da her Ölçü sekmesi ayrı sayfadır ama hafıza ve sıra ortaktır: sekmeler sırayla eşitler (tarayıcı kilidi "ota-esitle").
    Başka bir sekme az önce eşitlediyse ve gönderilecek bir şey yoksa GitHub'a yeniden gidilmez, onun sonucu alınır. */
@@ -560,7 +587,8 @@ async function syncNow(zorla){
       const {mem,sha}=await ghGet();
       // ortak hafıza silinmiş ya da bozulmuşsa (dosya yok, ya da bu bilgisayarın bildiğinin yarısından azı kalmış) bu bilgisayardaki kopyayla geri yüklenir
       const bil=(MEM.saves||0)-q.reduce((s,d)=>s+(d.saves||0),0),uzak=mem.saves||0;
-      if(!geri&&((bil>=20&&uzak<bil/2)||(!sha&&bil>0))){geri=tumHafiza(bil-uzak);console.warn("ortak hafıza bu bilgisayardaki kopyayla geri yükleniyor",uzak,bil)}
+      // hafıza bilerek eski bir güne döndürüldüyse (dönem arttı) bu bilgisayarın kopyası ona uyar, geri yükleme yapılmaz
+      if(!geri&&!((mem.donem||0)>(MEM.donem||0))&&((bil>=20&&uzak<bil/2)||(!sha&&bil>0))){geri=tumHafiza(bil-uzak);console.warn("ortak hafıza bu bilgisayardaki kopyayla geri yükleniyor",uzak,bil)}
       const yeniQ=q.filter(d=>!mem.uyg.includes(d.id));
       if(!yeniQ.length&&!geri){siradanDus(q);deltaUygula(mem,pending());MEM=mem;done=true;break}   // gönderilecek yok (ya da hepsi zaten işlenmiş)
       if(geri)deltaUygula(mem,[geri]);
@@ -599,6 +627,7 @@ async function syncSamples(){if(!syncOn()||HW_BUSY||SYNC.salt)return;HW_BUSY=tru
   }catch(e){console.warn(e)}finally{HW_BUSY=false;memInfo()}}
 function hiCrop(src,y0,y1,x1){const pad=Math.max(6,(y1-y0)*.25);const sy=Math.max(0,y0-pad),sh=Math.min(src.height-sy,(y1-y0)+pad*2);const sx=Math.round(src.width*.04),sw=Math.min(src.width-sx,Math.round(x1-sx));
   const c=document.createElement("canvas");const sc=Math.min(1,1400/sw);c.width=sw*sc;c.height=sh*sc;c.getContext("2d").drawImage(src,sx,sy,sw,sh,0,0,c.width,c.height);return c.toDataURL("image/jpeg",.85)}
+const DICT_TEMEL=new Set(DICT.keys()),TYP_TEMEL=new Map([...TYP].map(([k,v])=>[k,v.slice()]));
 function memApply(){
   // öğrenilen yeni ölçüler sözlüğe; bir şablonda zaten olan ölçünün adı/Türkçesi/grubu şablondaki gibi kalır, sadece yeri öğrenilir
   for(const [k,e] of Object.entries(MEM.extra)){const d=DICT.get(k);if(d&&d.tpl){if(e.after)d.after=e.after;continue}DICT.set(k,{en:e.en,tr:e.tr,after:e.after||"",grp:e.grp||"",n:Math.max((d&&d.n)||0,e.n||1)})}
@@ -1193,6 +1222,7 @@ function headerInfo(words,lines,mh,W,limitY){
 }
 /* geçmiş tablolarındaki kumaş kelimeleri: yanlış okunan kelime en yakın doğru kelimeye çevrilir (BAUMWOLIE -> BAUMWOLLE) */
 const FIBERS=["BAUMWOLLE","COTTON","ORGANIC","VISKOSE","VISCOSE","ECOVERO","ELASTANE","POLYESTER","BIO","LENZING","GOTS","BRUSHED","SLUB","INTERLOCK","PUNTO","MILANO","MODAL","LYOCELL","TENCEL","LINEN","LEINEN","WOLLE","WOOL","NYLON","POLYAMID","POLYAMIDE","ACRYL","SEIDE","SILK","CASHMERE","GSM","DANTEL","VISKOSE","ODER","RECYCLED","RECYCELT"];
+const FIBERS_TEMEL=FIBERS.slice();
 function fixFiber(w){const u=w.toUpperCase();if(FIBERS.includes(u))return u;if(/^ELAST(H)?AN(E)?$/.test(u)||/^EL[AE]ST/.test(u))return "ELASTANE";if(u.length<4)return u;
   let best=u,bd=9;for(const f of FIBERS){const d=lev(u,f);if(d<bd){bd=d;best=f}}
   return bd<=(u.length>=7?2:1)?best:u}
@@ -1405,7 +1435,7 @@ $("#custEkle").onclick=()=>sablonEkle();
 
 /* her kayıtta öğren: kağıtta okunan ad -> düzeltilmiş ad, Türkçe tercihleri, yeni ölçüler ve yerleri, kumaş, ölçü aralıkları */
 function learn(){
-  const D={names:{},tr:{},qual:{},extra:{},typ:{},fibers:[],ignore:DELETED_UNREAD.map(normEn).filter(k=>k.replace(/[^A-Z]/g,"").length>=8),saves:1,id:deltaId()};DELETED_UNREAD=[];
+  const D={names:{},tr:{},qual:{},extra:{},typ:{},fibers:[],ignore:DELETED_UNREAD.map(normEn).filter(k=>k.replace(/[^A-Z]/g,"").length>=8),saves:1,id:deltaId(),pc:PC,t:Date.now()};DELETED_UNREAD=[];
   ROWS.forEach((r,idx)=>{
     if(!r.en)return;const k=normEn(r.en);
     let after="";for(let j=idx-1;j>=0;j--){const t=TPLKEY.get(normEn(ROWS[j].en));if(t){after=t.key;break}}
@@ -1841,9 +1871,154 @@ $("#mList").onclick=async e=>{const b=e.target.closest("[data-m]");if(!b)return;
 function hafizaCiz(){const el=$("#hafizaInfo");if(!el||$("#ayarModal").classList.contains("hidden"))return;
   const pq=pending().length,n=Object.keys(MEM.names).length+Object.keys(MEM.extra).length,sb=CUSTOM.some(c=>c.bekliyor);
   const durum=SYNC_STATE==="salt"?"Yalnız okuma ✓ (müşteriler ve öğrenilenler gelir; burada yaptıkların bu bilgisayarda kalır)":SYNC_STATE==="ok"?"Bağlı ✓":SYNC_STATE==="err"?"Şu an ulaşılamıyor (internet?)":"Ayarlanmadı: sadece bu bilgisayar öğreniyor";
-  el.innerHTML=`<div class="kv"><span>Durum</span><span>${durum}</span><span>Öğrenilen</span><span>${MEM.saves||0} kayıt · ${n} ölçü adı · ${Object.keys(MEM.tr).length} Türkçe tercih · ${Object.keys(MEM.qual).length} kumaş düzeltmesi</span><span>El yazısı defteri</span><span>${LS.get("ota_hw_toplam",0)} örnek${HW_WAIT?` · ${HW_WAIT} gönderilmeyi bekliyor`:""}</span><span>Gönderilmeyi bekleyen</span><span>${pq} kayıt${sb?" · şablon değişikliği":""}</span><span>Son eşitleme</span><span>${(s=>s&&s.t?new Date(s.t).toLocaleString("tr-TR",{day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"}):"henüz yapılmadı")(LS.get("ota_son_esit",null))}</span></div>`
+  el.innerHTML=`<div class="kv"><span>Durum</span><span>${durum}</span><span>Öğrenilen</span><span>${MEM.saves||0} kayıt · ${n} ölçü adı · ${Object.keys(MEM.tr).length} Türkçe tercih · ${Object.keys(MEM.qual).length} kumaş düzeltmesi</span><span>El yazısı defteri</span><span>${LS.get("ota_hw_toplam",0)} örnek${HW_WAIT?` · ${HW_WAIT} gönderilmeyi bekliyor`:""}</span><span>Gönderilmeyi bekleyen</span><span>${pq} kayıt${sb?" · şablon değişikliği":""}</span><span>Öğretenler</span><span>${Object.entries(MEM.kim).sort((a,b)=>(b[1].t||0)-(a[1].t||0)).map(([p,o])=>`${esc(p)} (${o.n||0} kayıt${o.h?`, ${o.h} geçmiş tablo`:""})`).join(" · ")||"henüz kayıt yok"}</span><span>Son eşitleme</span><span>${(s=>s&&s.t?new Date(s.t).toLocaleString("tr-TR",{day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"}):"henüz yapılmadı")(LS.get("ota_son_esit",null))}</span></div>`
    +(SYNC_STATE==="ok"&&!pq&&!HW_WAIT&&!sb?`<div class="okline">✓ Bu bilgisayarda öğrenilen her şey ortak hafızada${EXE?"":". Eleman programına geçerken hiçbir şey kaybolmaz"}.</div>`:"")}
+function hafizaCizEk(){if(!$("#ayarModal").classList.contains("hidden")){havuzCiz();ogrCiz()};if(typeof havuzCiz==="function"){havuzCiz();ogrCiz()}}
 $("#esitleBtn").onclick=async()=>{const b=$("#esitleBtn");b.disabled=true;try{await syncNow(true);await syncSamples();await sablonEsitle().catch(()=>{})}finally{b.disabled=false;hafizaCiz()}};
+
+/* ---------------- öğrenilenler: gör, ara, sil (silinen herkesten kalkar) ---------------- */
+const kisaTarih=t=>t?new Date(t).toLocaleDateString("tr-TR",{day:"numeric",month:"short",year:new Date(t).getFullYear()===new Date().getFullYear()?undefined:"numeric"}):"";
+function ogrSatirlar(){const L=[];const kay=(tur,k)=>{const v=MEM.kay[tur+":"+k];return v?`${v[0]||""}${v[1]?" · "+kisaTarih(v[1]):""}`:""};
+  for(const [k,e] of Object.entries(MEM.extra))L.push({g:"Yeni ölçü adları",alan:"extra",k,m:`<b>${esc(e.en||k)}</b> → ${esc(e.tr||"(Türkçesi yok)")}${e.grp?` <small>· ${esc(e.grp)}</small>`:""}`,a:[k,e.en,e.tr,e.grp].join(" "),kay:kay("x",k)});
+  for(const [k,e] of Object.entries(MEM.names))L.push({g:"Okuma düzeltmeleri (kağıtta böyle okununca → şuna çevir)",alan:"names",k,m:`<small>${esc(k)}</small> → <b>${esc(e.en||"")}</b>${e.tr?" · "+esc(e.tr):""}`,a:[k,e.en,e.tr].join(" "),kay:kay("n",k)});
+  for(const [k,v] of Object.entries(MEM.tr))L.push({g:"Türkçe tercihleri",alan:"tr",k,m:`<b>${esc(k)}</b> → ${esc(v)}`,a:k+" "+v,kay:kay("t",k)});
+  for(const [k,v] of Object.entries(MEM.qual))L.push({g:"Kumaş düzeltmeleri",alan:"qual",k,m:`<small>${esc(k)}</small> → <b>${esc(v)}</b>`,a:k+" "+v,kay:kay("q",k)});
+  for(const [k,v] of Object.entries(MEM.typ))L.push({g:"Ölçü aralıkları (bunun dışındaki değer \"tuhaf\" diye işaretlenir)",alan:"typ",k,m:`<b>${esc(k)}</b>: ${fmtVal(v[0])} – ${fmtVal(v[1])} cm`,a:k,kay:kay("y",k)});
+  for(const w of MEM.fibers)L.push({g:"Kumaş kelimeleri",alan:"fibers",k:w,m:esc(w),a:w,kay:""});
+  for(const w of MEM.ignore)L.push({g:"Yok sayılan yazılar",alan:"ignore",k:w,m:esc(w),a:w,kay:""});
+  return L}
+function ogrCiz(){const el=$("#ogrList");if($("#ogrModal").classList.contains("hidden"))return;
+  const q=up($("#ogrAra").value.trim());const L=ogrSatirlar().filter(x=>!q||up(x.a+" "+x.kay+" "+x.g).includes(q));
+  if(!L.length){el.innerHTML=`<div class="orow"><div class="om">${q?"Aramaya uyan bir şey yok.":"Henüz öğrenilen bir şey yok."}</div></div>`;return}
+  let h="",g="";L.forEach((x,i)=>{if(x.g!==g){g=x.g;h+=`<div class="obas">${esc(g)} · ${L.filter(y=>y.g===g).length}</div>`}
+    h+=`<div class="orow"><div class="om">${x.m}</div><span class="ok2">${esc(x.kay)}</span><button type="button" class="exb" style="color:var(--red)" data-i="${i}" title="Sil (herkesten kalkar)">✕ Sil</button></div>`});
+  el.innerHTML=h;el.onclick=async e=>{const b=e.target.closest("[data-i]");if(!b)return;const x=L[+b.dataset.i];
+    if(SYNC.salt){toast("Bu bilgisayar ortak hafızaya yazamıyor; silme yalnız burada geçerli olur.",6000)}
+    if(!(await ask(`Bu öğrenilen silinsin mi?<br><br>${x.m}<br><br>Bütün bilgisayarlardan kalkar.`,"Sil")))return;
+    ogrSil(x.alan,x.k);ogrCiz()}}
+function ogrSil(alan,k){
+  const D={id:deltaId(),pc:PC,t:Date.now(),sil:{[alan]:[k]},saves:0};
+  deltaUygula(MEM,[D]);memSave();
+  // bu sayfanın sözlüğünden de çıkar (programla gelen ya da şablondaki ölçüye dokunulmaz)
+  if(alan==="extra"){const d=DICT.get(k);if(d&&!d.tpl&&!DICT_TEMEL.has(k))DICT.delete(k)}
+  if(alan==="typ"){if(TYP_TEMEL.has(k))TYP.set(k,TYP_TEMEL.get(k).slice());else TYP.delete(k)}
+  if(alan==="fibers"&&!FIBERS_TEMEL.includes(k)){const i=FIBERS.indexOf(k);if(i>=0)FIBERS.splice(i,1)}
+  const q=pending();q.push(D);LS.set("ota_bekleyen",q);memInfo();syncNow();toast("Silindi.")}
+$("#ogrBtn").onclick=()=>{$("#ogrModal").classList.remove("hidden");$("#ogrAra").value="";ogrCiz();setTimeout(()=>$("#ogrAra").focus(),60)};
+$("#ogrKapat").onclick=()=>$("#ogrModal").classList.add("hidden");
+$("#ogrModal").onclick=e=>{if(e.target.id==="ogrModal")$("#ogrModal").classList.add("hidden")};
+$("#ogrAra").addEventListener("input",ogrCiz);
+
+/* ---------------- geri alma: ortak hafızayı eski bir andaki haline döndür (GitHub her değişikliği saklar) ---------------- */
+async function gecmisListe(){
+  const r=await fetch(`https://api.github.com/repos/${SYNC.owner}/${SYNC.repo}/commits?path=${encodeURIComponent(SYNC.path)}&per_page=100&t=${Date.now()}`,{headers:{Authorization:"Bearer "+SYNC.token,Accept:"application/vnd.github+json"},cache:"no-store"});
+  if(!r.ok)throw new Error("GitHub "+r.status);
+  return (await r.json()).map(c=>({sha:c.sha,t:Date.parse((c.commit.committer||c.commit.author||{}).date)||0,msg:String(c.commit.message||"").split("\n")[0]}))}
+async function gecmiseDon(sha){
+  await kilitle("ota-esitle",async()=>{
+    const eski=(await ghGet(sha)).mem;let yazildi=false;
+    for(let i=0;i<3&&!yazildi;i++){const {mem:simdi,sha:s}=await ghGet();
+      // dönem artar: öbür bilgisayarlar kendi (daha yeni) kopyalarıyla "geri yükleme" yapmaz, bu hale uyar.
+      // uygulanan kayıt kimlikleri korunur: daha önce işlenmiş bir kayıt sonradan yeniden sayılmasın
+      eski.donem=Math.max(simdi.donem||0,MEM.donem||0)+1;eski.uyg=[...new Set([...(simdi.uyg||[]),...(eski.uyg||[])])].slice(-400);
+      yazildi=await ghPut(eski,s,"hafıza eski haline döndürüldü")}
+    if(!yazildi)throw new Error("GitHub: yazılamadı (çakışma), tekrar dene");
+    MEM=memNorm(JSON.parse(JSON.stringify(eski)));deltaUygula(MEM,pending());memSave();LS.set("ota_son_esit",{t:Date.now(),d:"ok"})})}
+async function geriCiz(){const el=$("#geriList");el.innerHTML='<div class="orow"><div class="om">Geçmiş alınıyor…</div></div>';
+  let L;try{L=await gecmisListe()}catch(e){el.innerHTML=`<div class="orow"><div class="om">Geçmiş alınamadı (${esc(e.message)}). İnternet bağlantısını kontrol et.</div></div>`;return}
+  if(L.length<2){el.innerHTML='<div class="orow"><div class="om">Dönülecek eski bir hal yok: hafıza henüz bir kez yazılmış.</div></div>';return}
+  const yaz=x=>{const n=(x.msg.match(/\((\d+)\)/)||[])[1],pc=(x.msg.match(/·\s*(.+)$/)||[])[1];return `<b>${new Date(x.t).toLocaleString("tr-TR",{day:"numeric",month:"long",year:"numeric",hour:"2-digit",minute:"2-digit"})}</b> <small>· ${n?n+" kayıt":esc(x.msg)}${pc?" · "+esc(pc):""}${/döndürüldü/.test(x.msg)?" · geri alma":""}</small>`};
+  el.innerHTML=L.map((x,i)=>`<div class="orow"><div class="om">${yaz(x)}</div><span class="ok2">${i===0?"şimdiki hal":""}</span>${i===0?"<span></span>":`<button type="button" class="exb" data-i="${i}">Bu hale dön</button>`}</div>`).join("");
+  el.onclick=async e=>{const b=e.target.closest("[data-i]");if(!b)return;const x=L[+b.dataset.i];
+    if(!(await ask(`Ortak hafıza şu andaki haline dönsün mü?<br><br>${yaz(x)}<br><br>Bundan sonra öğrenilenler bütün bilgisayarlardan kalkar. (Excel'e kaydettiğin tablolara dokunulmaz.)`,"Bu hale dön")))return;
+    el.querySelectorAll("button").forEach(q=>q.disabled=true);
+    try{await gecmiseDon(x.sha);toast("Ortak hafıza eski haline döndü. Sayfa yenileniyor…");try{await taslakYaz(true)}catch(z){}setTimeout(()=>location.reload(),900)}
+    catch(z){console.warn(z);toast(z&&z.salt?"Bu bilgisayar ortak hafızaya yazamıyor.":"Geri alınamadı: "+z.message,7000);geriCiz()}}}
+$("#geriBtn").onclick=()=>{if(!syncOn()){toast("Ortak hafıza bağlı değil.");return}if(SYNC.salt){toast("Bu bilgisayar ortak hafızaya yazamıyor.");return}$("#geriModal").classList.remove("hidden");geriCiz()};
+$("#geriKapat").onclick=()=>$("#geriModal").classList.add("hidden");
+$("#geriModal").onclick=e=>{if(e.target.id==="geriModal")$("#geriModal").classList.add("hidden")};
+
+/* ---------------- geçmiş tablolardan öğrenme (yalnız Eleman'da) ----------------
+   Seçilen klasördeki hazır ölçü tabloları (elle Excel'de yapılanlar dahil) yalnız OKUNUR; klasöre hiçbir şey yazılmaz.
+   Her tablodan: ölçü adları (İngilizce / Türkçe / grup / hangi satırdan sonra geldiği) ve beden sütunlarındaki değerler.
+   Sayımlar bu bilgisayarda tutulur (IndexedDB "havuz_ist"); en az 2 tabloda geçen yeni ad, Türkçesi boş olana en az 3 tabloda
+   aynı yazılan Türkçe ve en az 3 tabloda geçen ölçünün (en az 5 değer) %5–%95 aralığı ortak hafızaya gider. Okunan dosyaların kısa özetleri ortak hafızada
+   (hv): başka bilgisayar aynı dosyayı yeniden saymaz; değişen dosya yeniden okunur. */
+const xmlCoz=t=>t.indexOf("&")<0?t:t.replace(/&#x([0-9a-f]+);/gi,(_,h)=>String.fromCodePoint(parseInt(h,16))).replace(/&#(\d+);/g,(_,d)=>String.fromCodePoint(+d)).replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&amp;/g,"&");
+function kisaOzet(str){let a=0xdeadbeef,b=0x41c6ce57;for(let i=0;i<str.length;i++){const c=str.charCodeAt(i);a=Math.imul(a^c,2654435761);b=Math.imul(b^c,1597334677)}
+  a=Math.imul(a^(a>>>16),2246822507)^Math.imul(b^(b>>>13),3266489909);b=Math.imul(b^(b>>>16),2246822507)^Math.imul(a^(a>>>13),3266489909);return (4294967296*(2097151&b)+(a>>>0)).toString(36)}
+async function havuzOku(buf){ // {rows:[{en,tr,grp,once,vals}]} | null (ölçü tablosu değil)
+  const zip=await JSZip.loadAsync(buf);const wf=zip.file("xl/workbook.xml"),rf=zip.file("xl/_rels/workbook.xml.rels");if(!wf||!rf)return null;
+  const wbx=await wf.async("string"),rels=await rf.async("string");const sm=wbx.match(/<sheet [^>]*r:id="([^"]+)"/);if(!sm)return null;
+  const tm=rels.match(new RegExp(`Id="${sm[1]}"[^>]*Target="([^"]+)"|Target="([^"]+)"[^>]*Id="${sm[1]}"`));if(!tm)return null;
+  const sf=zip.file("xl/"+(tm[1]||tm[2]).replace(/^\/?xl\//,""));if(!sf)return null;const sx=await sf.async("string");
+  const ssf=zip.file("xl/sharedStrings.xml");const ss=ssf?[...(await ssf.async("string")).matchAll(/<si>([\s\S]*?)<\/si>/g)].map(m=>[...m[1].matchAll(/<t[^>]*>([\s\S]*?)<\/t>/g)].map(x=>x[1]).join("")):[];
+  const C=new Map();
+  for(const m of sx.matchAll(/<c r="([A-Z]+\d+)"([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g)){if(m[3]==null)continue;const v=(m[3].match(/<v>([\s\S]*?)<\/v>/)||[])[1];
+    const val=/t="s"/.test(m[2])&&v!=null?ss[+v]:(/t="inlineStr"/.test(m[2])?[...m[3].matchAll(/<t[^>]*>([\s\S]*?)<\/t>/g)].map(x=>x[1]).join(""):v);
+    if(val!=null&&val!=="")C.set(m[1],xmlCoz(String(val)).replace(/\s+/g," ").trim())}
+  const val=ref=>C.get(ref)||"";
+  let hdr=0;for(let r=5;r<=30;r++)if(/MEASUREMENT/i.test(val("D"+r))){hdr=r;break}
+  if(!hdr)return null;
+  const merges=[...sx.matchAll(/<mergeCell ref="B(\d+):C(\d+)"\/>/g)].map(m=>[+m[1],+m[2]]);
+  const cols=[];for(let c=6;c<=12;c++)if(val(String.fromCharCode(64+c)+hdr))cols.push(String.fromCharCode(64+c));
+  const rows=[];let once="";
+  for(let r=hdr+1;r<=hdr+80;r++){const en=val("D"+r);if(!en||en.length>70)continue;const k=normEn(en);if(!k)continue;
+    const mg=merges.find(([a,b])=>r>=a&&r<=b);const vals=[];
+    for(const c of cols){const x=parseVal(val(c+r));if(typeof x==="number"&&isFinite(x)&&x>0&&x<400)vals.push(Math.round(x*100)/100)}
+    rows.push({en,k,tr:val("E"+r),grp:mg?val("B"+mg[0]):"",once,vals});once=k}
+  return rows.length>=3?{rows}:null}
+function havuzIsle(S,t){S.n++;const gor=new Set();
+  for(const r of t.rows){if(gor.has(r.k))continue;gor.add(r.k);const e=S.en[r.k]||(S.en[r.k]={en:r.en,c:0,tr:{},grp:{},onc:{},v:[]});e.c++;
+    if(r.tr)e.tr[r.tr]=(e.tr[r.tr]||0)+1;if(r.grp)e.grp[r.grp]=(e.grp[r.grp]||0)+1;if(r.once)e.onc[r.once]=(e.onc[r.once]||0)+1;
+    for(const v of r.vals)if(e.v.length<400)e.v.push(v)}}
+function havuzTuret(S){const D={names:{},tr:{},qual:{},extra:{},typ:{},fibers:[],ignore:[],saves:0};const N={ad:0,tr:0,typ:0};
+  const ust=o=>Object.entries(o||{}).sort((a,b)=>b[1]-a[1])[0];
+  for(const [k,e] of Object.entries(S.en)){const d=DICT.get(k),tt=ust(e.tr);
+    if(!d&&!MEM.extra[k]){if(e.c>=2&&k.replace(/[^A-Z]/g,"").length>=4&&!MEM.ignore.includes(k)){const g=ust(e.grp),o=ust(e.onc);
+      D.extra[k]={en:e.en,tr:tt?tt[0]:"",grp:g&&g[1]*2>=e.c?g[0]:"",after:o&&o[1]*2>=e.c?o[0]:"__END__"};N.ad++}}
+    else if(d&&!d.tpl&&!trFor(k,d.tr)&&tt&&tt[1]>=3&&tt[1]*10>=e.c*6){D.tr[k]=tt[0];N.tr++}
+    if(e.c>=3&&e.v.length>=5){const v=e.v.slice().sort((a,b)=>a-b),lo=v[Math.floor((v.length-1)*.05)],hi=v[Math.ceil((v.length-1)*.95)],t=TYP.get(k);
+      if(lo>0&&hi>=lo&&(!t||lo<t[0]||hi>t[1])){D.typ[k]=[lo,hi];N.typ++}}}
+  return {D,N}}
+let HAVUZ_BUSY=false,HAVUZ_YAZI="",HAVUZ=null;
+async function havuzDurum(){if(!EXE)return null;try{HAVUZ=await exeJson("GET","/olcu/havuz")}catch(e){HAVUZ=null}return HAVUZ}
+async function havuzTara(elle){
+  if(!EXE||HAVUZ_BUSY||!syncOn())return;HAVUZ_BUSY=true;
+  try{await kilitle("ota-havuz",async()=>{
+    const k=await havuzDurum();if(!k||!k.var)return;
+    if(!elle&&Date.now()-LS.get("ota_havuz_son",0)<12*3600e3)return;
+    HAVUZ_YAZI="Klasöre bakılıyor…";hafizaCiz();
+    const l=await exeJson("GET","/olcu/havuz-liste");if(l.hata)throw new Error(l.hata);
+    hafizaYenile();const bilinen=new Set(MEM.hv);
+    const yeni=(l.dosyalar||[]).map(f=>({y:f.y,h:kisaOzet(String(f.y).toLowerCase()+"|"+f.b+"|"+f.t)})).filter(f=>!bilinen.has(f.h));
+    let S=null;try{S=await IDB.get("havuz_ist")}catch(e){}if(!S||!S.en)S={n:0,en:{}};
+    let hv=[],okunan=0,top={ad:0,tr:0,typ:0,tablo:0};
+    const yaz=async()=>{if(!hv.length)return;try{await IDB.set("havuz_ist",S)}catch(e){}
+      hafizaYenile();const {D,N}=havuzTuret(S);Object.assign(D,{id:deltaId(),pc:PC,t:Date.now(),hv,havuz:okunan});
+      deltaUygula(MEM,[D]);memSave();memApply();const q=pending();q.push(D);LS.set("ota_bekleyen",q);
+      top.ad+=N.ad;top.tr+=N.tr;top.typ+=N.typ;top.tablo+=okunan;hv=[];okunan=0;memInfo()};
+    for(let i=0;i<yeni.length;i++){const f=yeni[i];
+      try{const r=await fetch("/olcu/havuz-dosya?y="+enc(f.y),{headers:{"X-Olcu":"1"},cache:"no-store"});
+        if(r.ok){const t=await havuzOku(await r.arrayBuffer());if(t){havuzIsle(S,t);okunan++}}}catch(e){}
+      hv.push(f.h);
+      if(i%10===0){HAVUZ_YAZI=`Geçmiş tablolar okunuyor: ${i+1} / ${yeni.length}`;hafizaCiz()}
+      if(hv.length>=250)await yaz();
+      await new Promise(r=>setTimeout(r,elle?2:30))}   // bilgisayarı yormasın: arka planda ağır ağır
+    await yaz();
+    LS.set("ota_havuz_son",Date.now());LS.set("ota_havuz_ozet",{t:Date.now(),dosya:(l.dosyalar||[]).length,yeni:yeni.length,...top});
+    if(elle||top.tablo)toast(yeni.length?`Geçmiş tablolar: ${top.tablo} tablo okundu · ${top.ad} yeni ölçü adı · ${top.typ} ölçü aralığı${top.tr?` · ${top.tr} Türkçe`:""}`:"Geçmiş tablolar: yeni ya da değişen tablo yok.",6000);
+    if(top.tablo||yeni.length)syncNow();
+  })}catch(e){console.warn(e);if(elle)toast("Geçmiş tablolar okunamadı: "+e.message,7000)}
+  finally{HAVUZ_BUSY=false;HAVUZ_YAZI="";hafizaCiz()}}
+async function havuzCiz(){const sec=$("#havuzSec"),el=$("#havuzInfo");if(!sec||!EXE)return;sec.classList.remove("hidden");
+  const k=HAVUZ||await havuzDurum()||{};const o=LS.get("ota_havuz_ozet",null);
+  const son=o?`${new Date(o.t).toLocaleString("tr-TR",{day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"})} · klasörde ${o.dosya} tablo${o.yeni?` · ${o.tablo} yenisi okundu`:" · yenisi yok"}`:"henüz yapılmadı";
+  el.innerHTML=`<div class="kv"><span>Klasör</span><span>${k.var?`<b>${esc(k.klasor)}</b>`:(k.klasor?`${esc(k.klasor)} (bulunamadı)`:"seçilmedi")}</span><span>Öğrenilen</span><span>${MEM.havuz||0} geçmiş tablo</span><span>Son tarama</span><span>${HAVUZ_YAZI?esc(HAVUZ_YAZI):son}</span></div>
+   <div class="row" style="margin-top:10px">${!k.var&&k.oneri?`<button class="btn sm pri" type="button" data-h="oneri">Bu klasörü kullan: ${esc(k.oneri)}</button>`:""}<button class="btn sm" type="button" data-h="sec">${k.var?"Klasörü değiştir":"Klasör seç"}</button>${k.var?`<button class="btn sm" type="button" data-h="tara"${HAVUZ_BUSY?" disabled":""}>Şimdi tara</button>`:""}</div>`;
+  el.onclick=async e=>{const b=e.target.closest("[data-h]");if(!b)return;const h=b.dataset.h;
+    if(h==="tara"){havuzTara(true);return}
+    try{const j=await exeJson("POST","/olcu/havuz-sec"+(h==="oneri"?"?yol="+enc(k.oneri):""));HAVUZ=j;if(j.var&&!j.iptal){havuzCiz();havuzTara(true)}else havuzCiz()}catch(x){toast("Klasör seçilemedi: "+x.message)}}}
 
 /* ---------------- tek tuşla tarama (Eleman programında: Epson L3260, WIA) ---------------- */
 let TARAYICILAR=null,TARA_T=0;
@@ -1917,7 +2092,7 @@ initCust();
 (async function basla(){
   await PLAT.hazirla();
   if(EXE){document.documentElement.classList.add("exe");$("#taraBtn").classList.remove("hidden");
-    const k=await PLAT.anahtar();if(k&&k.anahtar){SYNC.token=k.anahtar;SYNC.salt=!!k.salt}}
+    const k=await PLAT.anahtar();if(k&&k.anahtar){SYNC.token=k.anahtar;SYNC.salt=!!k.salt}PC=String((EXE_DURUM&&EXE_DURUM.pc)||"").slice(0,40)}
   AYAR=await PLAT.ayarAl();taraYazi();
   await customYukle();
   memApply();memInfo();HW_WAIT=(await HWQ.get()).length;memInfo();
@@ -1926,8 +2101,9 @@ initCust();
   if(SEKMELI)await taslakDevam();else await taslakSor();
   tarayiciBak(true);
   durumBildir();
+  setTimeout(()=>havuzTara(false),15000);   // geçmiş tablolar: günde en çok iki kez, arka planda
 })().catch(e=>console.error(e));
-window.__ota={renderXlsx,renderCurrent,pickSize,groupTogether,get SZ(){return SZ},sheetData,learn,get MEM(){return MEM},handleFile,buildXlsx,get ROWS(){return ROWS},get CUR(){return CUR},lookup,analyse,glossHint,custSec,get CUSTS(){return CUSTS},PLAT,taslakYaz,get EXE(){return EXE},orderRows,syncNow,sablonEsitle};
+window.__ota={renderXlsx,renderCurrent,pickSize,groupTogether,get SZ(){return SZ},sheetData,learn,get MEM(){return MEM},handleFile,buildXlsx,get ROWS(){return ROWS},get CUR(){return CUR},lookup,analyse,glossHint,custSec,get CUSTS(){return CUSTS},PLAT,taslakYaz,get EXE(){return EXE},orderRows,syncNow,sablonEsitle,havuzTara,havuzOku,havuzTuret,ogrSil,gecmiseDon,gecmisListe};
 </script>
 </body>
 </html>

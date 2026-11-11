@@ -42,7 +42,7 @@ namespace AsortiAraci
                     {
                         bool salt;
                         string k = HafizaAnahtari(out salt);
-                        JsonYanit(ctx, Json.H("olcu", true, "surum", Json.Str(Surum.Yerel(), "surum"), "anahtar", k.Length > 0, "salt", salt));
+                        JsonYanit(ctx, Json.H("olcu", true, "surum", Json.Str(Surum.Yerel(), "surum"), "anahtar", k.Length > 0, "salt", salt, "pc", Environment.MachineName));
                     }
                     return true;
                 case "olcu/anahtar":
@@ -76,6 +76,19 @@ namespace AsortiAraci
                     return true;
                 case "olcu/ayar":
                     OlcuAyar(ctx, m);
+                    return true;
+                case "olcu/havuz":
+                    JsonYanit(ctx, OlcuHavuzDurum());
+                    return true;
+                case "olcu/havuz-sec":
+                    if (m != "POST") break;
+                    JsonYanit(ctx, OlcuHavuzSec(Sorgu(ctx, "yol")));
+                    return true;
+                case "olcu/havuz-liste":
+                    JsonYanit(ctx, OlcuHavuzListe());
+                    return true;
+                case "olcu/havuz-dosya":
+                    OlcuHavuzDosya(ctx);
                     return true;
                 case "olcu/sablonlar":
                     // müşteri şablonları herkese açık program deposunda durmaz: kurulumla gelen gizli dosyadan okunur
@@ -186,6 +199,96 @@ namespace AsortiAraci
                 }
                 catch (Exception ex) { Kayit.Yaz("olcu sablonlari indirilemedi: " + ex.Message); return false; }
             }
+        }
+
+        // ---------- geçmiş tablolardan öğrenme: seçilen klasördeki hazır tablolar YALNIZ OKUNUR ----------
+        // Bu bölüm o klasöre hiçbir şey yazmaz, hiçbir dosyayı değiştirmez, silmez (kullanıcının kuralı: paylaşılan klasöre dokunulmaz).
+        static string OlcuHavuzKlasor() { return Kullanici.Al("olcu_havuz"); }
+
+        static OrderedDictionary OlcuHavuzDurum()
+        {
+            string k = OlcuHavuzKlasor(), oneri = "";
+            bool var = false;
+            try { var = k.Length > 0 && Directory.Exists(k); } catch { }
+            if (!var)
+            {
+                // sık kullanılan yer: masaüstündeki "Ortak Ölçü Tabloları" (yalnız öneri; kullanıcı onaylamadan okunmaz)
+                try
+                {
+                    string o = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "Ortak Ölçü Tabloları");
+                    if (Directory.Exists(o)) oneri = o;
+                }
+                catch { }
+            }
+            return Json.H("klasor", k, "var", var, "oneri", oneri);
+        }
+
+        OrderedDictionary OlcuHavuzSec(string yol)
+        {
+            string sec = "";
+            if (yol.Length > 0) { try { if (Directory.Exists(yol)) sec = yol; } catch { } }
+            else
+            {
+                try { if (Pencere != null) sec = Pencere.KlasorSec(OlcuHavuzKlasor()); }
+                catch (Exception ex) { Kayit.Yaz("olcu gecmis tablo klasoru secilemedi: " + ex.Message); }
+            }
+            bool tamam = false;
+            try { tamam = sec.Length > 0 && Directory.Exists(sec); } catch { }
+            if (tamam)
+            {
+                lock (olcuKilit) Kullanici.Yaz("olcu_havuz", sec);
+                Kayit.Yaz("olcu gecmis tablo klasoru (yalniz okunur): " + sec);
+                return OlcuHavuzDurum();
+            }
+            OrderedDictionary r = OlcuHavuzDurum();
+            r["iptal"] = true;
+            return r;
+        }
+
+        // klasördeki .xlsx dosyaları (alt klasörlerle): {y: klasöre göre yol, b: bayt, t: son değişiklik (sn)}
+        static OrderedDictionary OlcuHavuzListe()
+        {
+            string kok = OlcuHavuzKlasor();
+            try { if (!(kok.Length > 0 && Directory.Exists(kok))) return Json.H("hata", "Klasör bulunamadı."); } catch { return Json.H("hata", "Klasör bulunamadı."); }
+            kok = Path.GetFullPath(kok).TrimEnd(Path.DirectorySeparatorChar);
+            List<object> l = new List<object>();
+            OlcuHavuzGez(kok, kok, 0, l);
+            return Json.H("klasor", kok, "dosyalar", l);
+        }
+
+        static void OlcuHavuzGez(string kok, string d, int derinlik, List<object> l)
+        {
+            if (derinlik > 6 || l.Count >= 20000) return;
+            try
+            {
+                foreach (string f in Directory.GetFiles(d, "*.xlsx"))
+                {
+                    if (l.Count >= 20000) return;
+                    string ad = Path.GetFileName(f);
+                    if (ad.StartsWith("~$") || !ad.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase)) continue;   // Excel'in kilit dosyası; *.xlsx* (xlsxm...) değil
+                    FileInfo fi = new FileInfo(f);
+                    if (fi.Length < 2000 || fi.Length > 8 * 1024 * 1024) continue;
+                    l.Add(Json.H("y", f.Substring(kok.Length + 1).Replace(Path.DirectorySeparatorChar, '/'), "b", fi.Length, "t", fi.LastWriteTimeUtc.Ticks / 10000000));
+                }
+                foreach (string a in Directory.GetDirectories(d)) OlcuHavuzGez(kok, a, derinlik + 1, l);
+            }
+            catch { }   // okunamayan klasör atlanır
+        }
+
+        // tek dosyanın içeriği (yalnız seçilen klasörün içinden, yalnız .xlsx; Excel'de açıkken de okunur)
+        static void OlcuHavuzDosya(HttpListenerContext ctx)
+        {
+            string kok = OlcuHavuzKlasor(), y = Sorgu(ctx, "y");
+            try
+            {
+                if (kok.Length == 0 || y.Length == 0 || y.Length > 400 || y.Contains("..") || y.Contains(":") || !y.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase)) { Yanit(ctx, 400); return; }
+                kok = Path.GetFullPath(kok).TrimEnd(Path.DirectorySeparatorChar);
+                string yol = Path.GetFullPath(Path.Combine(kok, y.Replace('/', Path.DirectorySeparatorChar)));
+                if (!yol.StartsWith(kok + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) || !File.Exists(yol)) { Yanit(ctx, 404); return; }
+                if (new FileInfo(yol).Length > 8 * 1024 * 1024) { Yanit(ctx, 404); return; }
+                Yanit(ctx, 200, Dosya.PaylasimliOku(yol), "application/octet-stream", null);
+            }
+            catch { Yanit(ctx, 404); }
         }
 
         // ---------- müşteriye göre kayıt klasörü ----------
