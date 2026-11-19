@@ -615,16 +615,28 @@ window.addEventListener("storage",e=>{if(e.key===MEM_KEY){hafizaYenile();memInfo
   else if(e.key==="ota_son_esit"&&e.newValue&&!SYNC_BUSY){try{const d=JSON.parse(e.newValue).d;if(d==="ok"||d==="salt"){SYNC_STATE=d;memInfo()}}catch(x){}}});
 /* ---------------- el yazısı defteri: okunamayan yazıların görüntüsü + senin yazdığın doğru metin ---------------- */
 const HWQ={async get(){try{return (await IDB.get("hw_kuyruk"))||[]}catch(e){return []}},async set(v){try{await IDB.set("hw_kuyruk",v)}catch(e){}}};
-let HW_WAIT=0;
-async function addSamples(list){if(!list.length||SYNC.salt)return;const q=await HWQ.get();q.push(...list);await HWQ.set(q);HW_WAIT=q.length;LS.set("ota_hw_toplam",(LS.get("ota_hw_toplam",0))+list.length);memInfo();syncSamples()}
+/* sıra her sekmede ortak (IndexedDB): ekleme ve çıkarma kilitle, biri ötekinin yazdığını silmesin */
+const hwSira=f=>kilitle("ota-hw-sira",async()=>{const q=await HWQ.get();const y=await f(q);await HWQ.set(y);return y});
+let HW_WAIT=0,HW_TEKRAR=0;
+/* bekle: hemen gönderme (kayıttan sonra önce öğrenilenler gider, örnekler arkasından) */
+async function addSamples(list,bekle){if(!list.length||SYNC.salt)return;const q=await hwSira(q=>q.concat(list));HW_WAIT=q.length;LS.set("ota_hw_toplam",(LS.get("ota_hw_toplam",0))+list.length);memInfo();if(!bekle)syncSamples()}
 let HW_BUSY=false;
-async function syncSamples(){if(!syncOn()||HW_BUSY||SYNC.salt)return;HW_BUSY=true;
-  try{let q=await HWQ.get();HW_WAIT=q.length;
-    while(q.length){const smp=q[0];const d=new Date(smp.t);const path=`${SYNC.dir}/el_yazisi/${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}/${smp.t}_${smp.id}.json`;
-      const r=await fetch(`https://api.github.com/repos/${SYNC.owner}/${SYNC.repo}/contents/${path}`,{method:"PUT",headers:{Authorization:"Bearer "+SYNC.token,Accept:"application/vnd.github+json","Content-Type":"application/json"},body:JSON.stringify({message:"el yazısı örneği",content:b64e(JSON.stringify(smp))})});
-      if(yazamaz(r))break;if(!r.ok&&r.status!==422)throw new Error("GitHub "+r.status);
-      q.shift();await HWQ.set(q);HW_WAIT=q.length;LS.set("ota_hw_gonderilen",LS.get("ota_hw_gonderilen",0)+1)}
-  }catch(e){console.warn(e)}finally{HW_BUSY=false;memInfo()}}
+/* gönderme kendiliğinden: bir kayıttaki örnekler tek dosyada tek seferde gider ({ornekler:[...]}, ~700 KB'a kadar).
+   Ortak hafızayla aynı kilitte ("ota-esitle"): aynı anda iki yazma GitHub'da çakışmasın (önceden çakışınca örnekler
+   5 dakikalık eşitlemeye kadar bekliyordu). Çakışma / internet: birkaç kez yeniden dener, olmazsa yarım dakika sonra yine. */
+async function syncSamples(){if(!syncOn()||HW_BUSY||SYNC.salt)return;HW_BUSY=true;let olmadi=false;
+  try{await kilitle("ota-esitle",async()=>{
+    let q=await HWQ.get(),tekrar=0;HW_WAIT=q.length;memInfo();
+    while(q.length){let boy=0;const paket=[];for(const x of q){const n=JSON.stringify(x).length;if(paket.length&&boy+n>700000)break;paket.push(x);boy+=n}
+      const p0=paket[0],d=new Date(p0.t);const path=`${SYNC.dir}/el_yazisi/${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}/${p0.t}_${p0.id}_${paket.length}.json`;
+      let r=null;try{r=await fetch(`https://api.github.com/repos/${SYNC.owner}/${SYNC.repo}/contents/${path}`,{method:"PUT",headers:{Authorization:"Bearer "+SYNC.token,Accept:"application/vnd.github+json","Content-Type":"application/json"},body:JSON.stringify({message:`el yazısı defteri: ${paket.length} örnek`,content:b64e(JSON.stringify({ornekler:paket}))})})}catch(e){r=null}
+      if(r&&yazamaz(r))break;
+      if(!r||(!r.ok&&r.status!==422)){if(++tekrar>4){olmadi=true;break}await new Promise(z=>setTimeout(z,700*tekrar+Math.random()*600));continue}
+      tekrar=0;const giden=new Set(paket.map(x=>x.t+"_"+x.id));
+      q=await hwSira(k=>k.filter(x=>!giden.has(x.t+"_"+x.id)));HW_WAIT=q.length;LS.set("ota_hw_gonderilen",LS.get("ota_hw_gonderilen",0)+paket.length);memInfo()}
+  })}catch(e){console.warn(e);olmadi=true}
+  finally{HW_BUSY=false;memInfo()}
+  if(olmadi&&HW_WAIT){clearTimeout(HW_TEKRAR);HW_TEKRAR=setTimeout(syncSamples,30000)}}
 function hiCrop(src,y0,y1,x1){const pad=Math.max(6,(y1-y0)*.25);const sy=Math.max(0,y0-pad),sh=Math.min(src.height-sy,(y1-y0)+pad*2);const sx=Math.round(src.width*.04),sw=Math.min(src.width-sx,Math.round(x1-sx));
   const c=document.createElement("canvas");const sc=Math.min(1,1400/sw);c.width=sw*sc;c.height=sh*sc;c.getContext("2d").drawImage(src,sx,sy,sw,sh,0,0,c.width,c.height);return c.toDataURL("image/jpeg",.85)}
 /* ölçü hücresinin görüntüsü (M sütunu, el yazısıyla eklenen için sağa biraz pay): elle düzeltilen sayı deftere bununla gider */
@@ -1590,12 +1602,12 @@ function learn(){
   const sayi=ROWS.filter(r=>r.mImg&&r.mTyped&&r.m!==""&&fmtVal(r.m)!==fmtVal(r.mOku)&&r.ornekM!==fmtVal(r.m));
   for(const r of sayi){r.oid=r.oid||Math.random().toString(36).slice(2,10);r.ornekM=fmtVal(r.m);
     smp.push({id:Math.random().toString(36).slice(2,8),t:Date.now(),img:r.mImg,en:r.en,tr:r.tr,m:r.m,oku:(r.mOku===""||r.mOku==null)?null:r.mOku,satir:r.oid,tur:"sayi",musteri:CUR?CUR.name:"",model:artUp($("#fArt").value.trim())})}
-  addSamples(smp);
+  addSamples(smp,true);
   const q=pending();q.push(D);LS.set("ota_bekleyen",q);
-  memInfo();syncNow();
+  memInfo();syncNow().finally(()=>syncSamples());
 }
 function memInfo(){const n=Object.keys(MEM.names).length+Object.keys(MEM.extra).length,q=Object.keys(MEM.qual).length;const pq=pending().length;
-  const st=SYNC_STATE==="salt"?"Ortak hafıza: yalnız okuma. Müşteriler ve öğrenilenler bu bilgisayara gelir; burada öğrenilen, eklenen ya da silinen bu bilgisayarda kalır, kimseninkine dokunmaz":SYNC_STATE==="ok"?(pq?"Ortak hafıza: gönderiliyor…":"Ortak hafıza bağlı"):SYNC_STATE==="err"?`Ortak hafızaya ulaşılamadı (internet?) · ${pq} kayıt sırada, bağlanınca gönderilecek`:"Ortak hafıza ayarlanmadı, sadece bu bilgisayar öğreniyor";
+  const st=SYNC_STATE==="salt"?"Ortak hafıza: yalnız okuma. Müşteriler ve öğrenilenler bu bilgisayara gelir; burada öğrenilen, eklenen ya da silinen bu bilgisayarda kalır, kimseninkine dokunmaz":SYNC_STATE==="ok"?(pq||HW_WAIT?"Öğrenilenler ortak hafızaya kendiliğinden gönderiliyor, birkaç saniye sürer. Senin bir şey yapmana gerek yok":"Ortak hafıza bağlı"):SYNC_STATE==="err"?`Ortak hafızaya ulaşılamadı (internet?) · ${pq} kayıt sırada, bağlanınca gönderilecek`:"Ortak hafıza ayarlanmadı, sadece bu bilgisayar öğreniyor";
   const hwT=LS.get("ota_hw_toplam",0);const hwInfo=hwT?` · El yazısı defteri: ${hwT} örnek${HW_WAIT?` (${HW_WAIT} gönderilmeyi bekliyor)`:""}`:"";
   const el=$("#memInfo");if(el)el.textContent=`${st} · ${MEM.saves||0} kayıttan öğrenildi · ${n} ölçü adı · ${Object.keys(MEM.tr).length} Türkçe tercih · ${q} kumaş düzeltmesi${hwInfo}`;
   const cls="st "+(SYNC_STATE==="salt"?"ok":SYNC_STATE==="ok"?(pq?"chk":"ok"):SYNC_STATE==="err"?"chk":"new");
@@ -1972,7 +1984,7 @@ window.addEventListener("pagehide",()=>{if(DEGISTI&&!sekmeKapandi())taslakYaz()}
 if(!KHTTP&&!GOMULU)window.addEventListener("beforeunload",e=>{if(DEGISTI&&ROWS.length){taslakYaz();e.preventDefault();e.returnValue=""}});
 
 /* ---------------- Eleman / Asorti penceresiyle konuşma (sekme olarak açıldığında) ----------------
-   Gelen: {t:"tema",v} görünüm, {t:"kaydet"} pencere kapanıyor -> taslağı yaz, {t:"ayarlar"} ayarları aç.
+   Gelen: {t:"tema",v} görünüm, {t:"kaydet"} pencere kapanıyor -> taslağı yaz, {t:"ayarlar"} ayarları aç, {t:"esitle"} şimdi eşitle.
    Giden: {t:"tema",v} görünüm değişsin, {t:"sayfa",id,ad,busy,degisti} sekme başlığı, {t:"bildirim",tur:"olcu",...} kaydedildi.
    Asorti'nin kendi mesajlarıyla karışmaz: Asorti tanımadığı sekme kimliğini ve "olcu" türünü yok sayar. */
 let SON_DURUM="";
@@ -1981,6 +1993,7 @@ function durumBildir(){if(!GOMULU)return;const o={t:"sayfa",id:SAYFA,ad:artUp($(
 window.addEventListener("message",e=>{const d=e.data;if(!d||typeof d!=="object")return;
   if(d.t==="tema"&&(d.v==="dark"||d.v==="light"))temaUygula(d.v);
   if(d.t==="kaydet")taslakYaz();
+  if(d.t==="esitle")syncNow().finally(()=>syncSamples());   // başka bir Ölçü sekmesi kapandı: onun yarım kalan gönderimini bu sekme bitirir
   if(d.t==="ayarlar")ayarAc(d.bolum)});
 
 /* ---------------- ayarlar ---------------- */

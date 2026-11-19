@@ -1,10 +1,9 @@
 {
- "surum": "3.3.5",
+ "surum": "3.3.6",
  "tarih": "2026-11-19",
  "notlar": [
-  "Ölçü Tablosu · Almanca ölçü adlarını anlıyor: BRUSTWEITE, ÄRMELLÄNGE, AUSSCHNITTTIEFE VORNE, KAPUZENHÖHE gibi adlar parçalarına bölünüp bilinen ölçüye bağlanıyor (turuncu gelir, kağıttaki Almanca adı görünür; Onayla ya da düzelt). Bilinmeyen Almanca ad olduğu gibi kalır, Türkçesi için öneri çıkar",
-  "Ölçü Tablosu · yanlış yazılmış İngilizce de tanınıyor: WIDHT, LENTGH, HEGIHT gibi iki harfi yer değiştirmiş yazımlar doğru ölçüye bağlanıyor",
-  "Ölçü Tablosu · kağıdın yönüne bakarken Almanca kelimeleri ve küçük harfli İngilizceyi de tanıyor (Almanca kağıt ters konsa da düz çevrilir)",
-  "Ölçü Tablosu · gruplar Almanca adları da tanır (TASCHE = pocket, KRAGEN = collar, KAPUZE = hood); yaka açıklığında NAHT ZU NAHT = dikişten dikişe"
+  "Ölçü Tablosu · \"Gönderiliyor…\" artık takılı kalmıyor: kaydettikten sonra öğrenilenler ve el yazısı örnekleri ortak hafızaya birkaç saniyede kendiliğinden gider (bir şey yapmana gerek yok). Önceden iki gönderim aynı anda olunca çakışıyor, kalanlar 5 dakika bekliyordu",
+  "Ölçü Tablosu · bir kayıttaki el yazısı örnekleri tek seferde gönderiliyor; internet ya da GitHub bir anlık hata verirse kendiliğinden yeniden deniyor",
+  "Ölçü Tablosu · kaydedip sekmeyi hemen kapatırsan yarım kalan gönderimi açık olan başka bir Ölçü sekmesi bitiriyor"
  ]
 }

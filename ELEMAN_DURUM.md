@@ -380,6 +380,26 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
     çevrilmiş halleri) 3.3.4 ile birebir aynı, yönler aynı (doğru yönde puan biraz arttı, yanlış yönde 0–2). Yapay Almanca kağıt:
     3.3.4'te ters/yan konunca hiç okunmuyordu, şimdi 0/90/180'de aynı 16 satır, model, kumaş, beden 38.
 
+- 2026-11-19 öğleden sonra (Ölçü sohbeti): **Eleman 3.3.6**, "Gönderiliyor…" takılması (kullanıcı: "benden ne bekliyor, bir
+  butona mı basmamı istiyor? kendi otomatik yapsın"). Gönderme zaten kendiliğindendi ama takılıyordu: `learn()` örnek gönderimini
+  (`syncSamples`) ve hafıza eşitlemesini (`syncNow`) aynı anda başlatıyordu; iki commit GitHub'da çakışınca (409) `syncSamples`
+  duruyor, kalan örnekler 5 dakikalık eşitlemeye ya da pencere değişene kadar bekliyordu (eleman-hafiza'da görüldü: 13:56'daki
+  kaydın örnekleri 13:59'da gitti). Sahte GitHub'la 3.3.5'te aynısı üretildi (1 örnek gitti, 10'u kaldı).
+  - `syncSamples` artık `syncNow` ile aynı kilitte (`ota-esitle`): sekmeler ve iki iş sırayla yazar, çakışmaz.
+  - **Defter dosyası biçimi değişti:** bir gönderimdeki örnekler tek dosyada `{ornekler:[...]}` (yol
+    `el_yazisi/YYYY-MM/<t>_<id>_<adet>.json`, ~700 KB'a kadar). 3.3.6'dan önceki dosyalar tek örnek (doğrudan nesne). Defteri
+    okuyacak araç ikisini de okumalı.
+  - 409 / 5xx / internet: 4 kez artan beklemeyle yeniden dener, olmazsa 30 sn sonra yine. Sıra (IndexedDB `hw_kuyruk`) ekleme ve
+    çıkarmada kilitli (`ota-hw-sira`): gönderim sürerken gelen yeni kaydın örnekleri silinmez (önceden silinebiliyordu).
+  - `learn()`: önce öğrenilenler (`syncNow`), sonra örnekler (`addSamples(smp,true)` + `syncNow().finally(syncSamples)`).
+  - Kabuk: Ölçü sekmesi kapanınca (`kapatO`) açık bir Ölçü sekmesine `{t:"esitle"}` gider, yarım kalan gönderimi o bitirir;
+    hiç Ölçü sekmesi kalmadıysa gösterge "Gönderiliyor…"da kalmaz (sırada kalan Ölçü bir sonraki açılışta gider).
+  - Göstergenin ipucu: "Öğrenilenler ortak hafızaya kendiliğinden gönderiliyor, birkaç saniye sürer. Senin bir şey yapmana gerek yok".
+  - Denemeler (`scratchpad/e2e/t_gonder*.py`, `t_sekme2.py`, sahte GitHub: aynı anda iki yazma 409): kayıttan ~3 sn sonra
+    "Ortak hafıza", 11 örnek tek dosyada, çakışma 0; iki anlık hata (500, bağlantı) + gönderim sürerken ikinci kayıt: 20 örneğin
+    hepsi gitti; kaydedip sekmeyi 250 ms'de kapatınca: iki sekmede öteki bitirdi, tek sekmede gösterge takılmadı. Sekme ışığı,
+    Asorti sekmesi, ESLint aynı.
+
 ## Sıradaki işler
 0. **Sürüm arşivi = GitHub Releases.** 32 sürüm (ilk-deneme, v1.0.0–v1.1.22, v2.0.0–v2.0.4) bir kerelik GitHub Actions işiyle
    taşındı, `surum-v*`, `arsiv`, `surum-test` dalları silindi (dallar: eleman, main, exe-deneme). Bu oturumlardan etiket ve

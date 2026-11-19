@@ -774,7 +774,13 @@ function kapatO(id){const i=SO.list.indexOf(id);if(i<0)return;const d=infoO[id]|
  SO.list.splice(i,1);delete infoO[id];delete SO.ad[id];olcuTaslakSil(id);
  if(f)f.dataset.sil='1';
  if(!SO.list.length)SO.on='';else if(SO.on===id)SO.on=SO.list[Math.max(0,i-1)];
- saveO();cizO();if(f&&f!==gosterilenO&&!f.classList.contains('on'))f.remove()}
+ saveO();cizO();if(f&&f!==gosterilenO&&!f.classList.contains('on'))f.remove();
+ setTimeout(olcuEsitle,400)}
+/* kapanan sekme ortak hafızaya göndermeyi bitirmeden gitmiş olabilir: açık bir Ölçü sekmesi bitirsin (gösterge de güncellenir).
+   Açık Ölçü sekmesi kalmadıysa "Gönderiliyor…" takılı kalmasın; sırada kalan, Ölçü bir sonraki açılışta kendiliğinden gönderir */
+function olcuEsitle(){const f=[...document.querySelectorAll('#sayfalarO iframe')].find(x=>!x.dataset.sil&&!x.dataset.uyuyor&&x.dataset.hazir);
+ if(f){try{f.contentWindow.postMessage({t:'esitle'},'*')}catch(e){}return}
+ const h=$('hafiza');if(h&&h.className==='gonder'){h.className='';h.querySelector('span').textContent='Ortak hafıza';h.title='Ortak hafıza'}}
 TO.addEventListener('wheel',e=>{if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){TO.scrollLeft+=e.deltaY;e.preventDefault()}},{passive:false});
 /* Ölçü sayfalarından gelen haberler: sekme başlığı, bildirim, ortak hafıza durumu */
 window.addEventListener('message',e=>{const d=e.data||{};if(d.uygulama!=='olcu'&&d.tur!=='olcu')return;
