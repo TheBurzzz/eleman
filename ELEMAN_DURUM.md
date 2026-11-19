@@ -323,6 +323,28 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
     yanlış yönde puan 0–1, doğru yönde 27–102. Süre: düz kağıtta +~1,2 sn, ters kağıtta +~3 sn. Müşteri seçili akışta ters tarama
     `handleFile` ile: 25 satır, model ve beden doğru, sayfa hatası yok.
 
+- 2026-11-19 öğlen (Ölçü sohbeti): **Eleman 3.3.3**, kullanıcının dört isteği (`kaynak/olcu/src.html` + `Eleman/uygulama.html`).
+  - **Sekme ışığı / kapatma hatası** (kullanıcı: Excel'e kaydedip çıktı aldı, ışık yanıp sönüyor, sekmeyi kapatırken "şu an kağıt
+    okuyor ya da kaydediyor" diyor). Neden: kaydet düğmesi `durumBildir()`'i `KAYDEDIYOR` hâlâ true iken çağırıyor, `finally`'de
+    false olunca haber vermiyordu → kabuk `busy:true`'da kalıyordu (3.0'dan beri). Şimdi `finally`'de de `durumBildir()`.
+    Yeni durum: `KAYDEDILDI` (Excel'e kaydedildi, sonra değişmedi) → mesajda `bitti`; kabukta Ölçü sekmesi `ik ok` (sabit yeşil,
+    başlık "Excel'e kaydedildi"), `degisti()` / yeni kağıt / boş tablo / sıfırla sıfırlar; taslakta `kaydedildi` (uyuyan sekme
+    açılınca yine yeşil). Asorti sekmelerine dokunulmadı.
+  - **hood grubu**: `GROUPS0` + `GROUP_WORD.hood` (`\bHOOD\b|KAPUZE`). Taranan kağıtta `kapsonGrubu` HOOD geçen grupsuz satırları
+    hood yapar (öğrenilen hafızada HOOD WIDTH/LENGTH grubu "" olduğu için sözlükten değil burada). Elle "—" yapılan satır `grpEl`:
+    `autoGroup` onu gruba geri çekmez (pocket vb. için de geçerli; önceden tek satır gruptan çıkarılamıyordu).
+  - **Onayla**: ölçü kutusuna yazınca (`mTyped`) satırın adı şüpheli (`chk`) değilse Onayla düğmesi hemen kalkar. Onayla zaten
+    yazılan değeri bırakır (okunan değere dönmez); kullanıcı sordu: "7'yi silip 21 yazıp onaylarsam hangisini doğru sayar" → 21.
+  - **El yazısı defterine sayı örnekleri**: taranan her satırda `mOku` (okunan değer) ve `mImg` (`sayiCrop`: M sütunu hücresi,
+    sağa el yazısı payı, ~2–7 KB JPEG). Kayıtta elle yazılıp okunandan farklı olan değer → örnek `{tur:"sayi",img,m,oku,satir,en,tr,
+    musteri,model}`; aynı satır yeniden değişirse aynı `satir` kimliğiyle yeniden gider (sonuncusu geçerli). `eleman-hafiza`
+    `olcu-tablosu/el_yazisi/YYYY-MM/`. 19 Kasım öğlen defterde toplam 2 örnek vardı (ikisi de o sabah, Lykka INKGE, basılı satır).
+  - Denemeler (Ölçü sohbeti, `scratchpad/e2e`: Eleman klasörü http'de + Playwright): gerçek kabukta sekme 3.3.2'de kaydettikten sonra
+    `ik is` + kapatma uyarısı (hata yeniden üretildi), 3.3.3'te `ik ok`, değişince normal, kapatma sorunsuz. 3.3.2 ile 3.3.3 aynı
+    kağıtları birebir aynı okuyor (Fjonna, Jeldra, 2 fotoğraf, ters Fjonna, yapay kapşonlu kağıt); tek fark HOOD satırlarının grubu.
+    Onayla, defter örnekleri (düzeltilmeyen gitmez, ikinci kayıtta tekrar gitmez), hood boşaltma; Asorti sekmesi açılıyor; ESLint
+    `no-undef` yalnız eski iki tanıdık (`showDirectoryPicker`, `asortiPencere`).
+
 ## Sıradaki işler
 0. **Sürüm arşivi = GitHub Releases.** 32 sürüm (ilk-deneme, v1.0.0–v1.1.22, v2.0.0–v2.0.4) bir kerelik GitHub Actions işiyle
    taşındı, `surum-v*`, `arsiv`, `surum-test` dalları silindi (dallar: eleman, main, exe-deneme). Bu oturumlardan etiket ve
@@ -342,4 +364,7 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
 3. ✓ (3.2.5) Ölçü: birden çok sekme açıkken eşitleme sırayla, kayıtlar kimlikli (çift sayım yok).
 4. ⚙ menüsünde Ölçü'nün ayarları (şimdilik düğme Ölçü'nün kendi ayar penceresini açıyor).
 5. ✓ 9 Kasım 2026: kullanıcı "programı tamamen Eleman'a çevirelim" dedi; 3.2.0 main'e geçti, iş bilgisayarı güncellemeyle Eleman'a geçer.
-6. El yazısı okuma modeli (Eleman'ın ilk sürümünde olacak).
+6. El yazısı okuma modeli (Eleman'ın ilk sürümünde olacak). Hâlâ yok: öğreneceği örnek yok. 19 Kasım 2026'da defterde 2 örnek;
+   3.3.3'ten beri düzeltilen sayılar da giriyor. Kullanıcıya söylenen: ~300 örnek birikince ilk okuyucu kurulur (Tesseract'ı
+   defterdeki satır/hücre görüntüleriyle ince ayar ya da rakam için küçük model; sözlük ve tipik ölçü aralığıyla birlikte),
+   sonra örnek arttıkça iyileşir. Sayıyı `eleman-hafiza` → `olcu-tablosu/el_yazisi/` altından say.

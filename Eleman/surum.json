@@ -1,7 +1,10 @@
 {
- "surum": "3.3.2",
+ "surum": "3.3.3",
  "tarih": "2026-11-19",
  "notlar": [
-  "Ölçü Tablosu · kağıt tarayıcıya ters ya da yan konsa da düz çevrilip okunuyor: kağıdın yönüne program kendisi bakıyor (düz konan kağıtta okuma eskisiyle aynı)"
+  "Ölçü Tablosu · Excel'e kaydettikten sonra sekmedeki ışık artık yanıp sönmüyor ve sekme kapanıyor (önceden \"kaydediyor\" sanıp kapatmaya izin vermiyordu). Kaydedilen tablonun ışığı sabit yeşil yanar, tabloda bir şey değişince normale döner",
+  "Ölçü Tablosu · yeni grup: hood. Kapşon ölçüleri (HOOD geçenler) taranan kağıtta kendiliğinden hood grubuna girer; bir satırın grubunu elle boşaltırsan geri gelmez",
+  "Ölçü Tablosu · sarı (şüpheli) okunan sayıyı düzeltip yazınca Onayla düğmesi kendiliğinden kaybolur: yazdığın değer geçerlidir, ayrıca onaylamaya gerek yok",
+  "Ölçü Tablosu · düzelttiğin sayılar, kağıttaki görüntüsüyle birlikte el yazısı defterine de girer (ileride el yazısı okuyucusu rakamları buradan öğrenecek)"
  ]
 }

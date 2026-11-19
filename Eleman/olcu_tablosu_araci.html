@@ -627,6 +627,11 @@ async function syncSamples(){if(!syncOn()||HW_BUSY||SYNC.salt)return;HW_BUSY=tru
   }catch(e){console.warn(e)}finally{HW_BUSY=false;memInfo()}}
 function hiCrop(src,y0,y1,x1){const pad=Math.max(6,(y1-y0)*.25);const sy=Math.max(0,y0-pad),sh=Math.min(src.height-sy,(y1-y0)+pad*2);const sx=Math.round(src.width*.04),sw=Math.min(src.width-sx,Math.round(x1-sx));
   const c=document.createElement("canvas");const sc=Math.min(1,1400/sw);c.width=sw*sc;c.height=sh*sc;c.getContext("2d").drawImage(src,sx,sy,sw,sh,0,0,c.width,c.height);return c.toDataURL("image/jpeg",.85)}
+/* ölçü hücresinin görüntüsü (M sütunu, el yazısıyla eklenen için sağa biraz pay): elle düzeltilen sayı deftere bununla gider */
+function sayiCrop(src,y0,y1,M){if(!M)return null;try{const h=Math.max(8,y1-y0),pad=Math.max(6,h*.2);
+  const sx=Math.max(0,Math.round(M.x0-h*.8)),ex=Math.min(src.width,Math.round(M.x1+h*2.5)),sy=Math.max(0,Math.round(y0-pad)),ey=Math.min(src.height,Math.round(y1+pad));
+  if(ex-sx<8||ey-sy<8)return null;const c=document.createElement("canvas");const sc=Math.min(1,600/(ex-sx));c.width=Math.round((ex-sx)*sc);c.height=Math.round((ey-sy)*sc);
+  c.getContext("2d").drawImage(src,sx,sy,ex-sx,ey-sy,0,0,c.width,c.height);return c.toDataURL("image/jpeg",.85)}catch(e){return null}}
 const DICT_TEMEL=new Set(DICT.keys()),TYP_TEMEL=new Map([...TYP].map(([k,v])=>[k,v.slice()]));
 function memApply(){
   // öğrenilen yeni ölçüler sözlüğe; bir şablonda zaten olan ölçünün adı/Türkçesi/grubu şablondaki gibi kalır, sadece yeri öğrenilir
@@ -1301,7 +1306,7 @@ async function handleFile(files,o={}){if(needCust())return;
     if(!rows.length)toast("Tablo okunamadı. Kağıdı düz ve net tarayıp tekrar dene ya da boş tabloyla başla.",6000);
     rows.sort((a,b)=>a.paperIdx-b.paperIdx);
     nameEdited=false;
-    ROWS=rows;PAGES=pages; // önce kağıttaki sırayla; şablon sırası düğmeyle
+    ROWS=kapsonGrubu(rows);PAGES=pages;KAYDEDILDI=false; // önce kağıttaki sırayla; şablon sırası düğmeyle
     LAST_SCANNED=true;LAST_SIZE=sizeLbl||null;pickSize(LAST_SIZE);
     LAST_QUAL_RAW=info.qualRaw||"";
     $("#fArt").value=info.art||"";$("#fQual").value=info.qual||"";$("#fDate").value=today();
@@ -1331,13 +1336,13 @@ async function sayfaOku(w,canvas,base){
     window.__last={words,res};
     const xr=res.M?res.M.x1+src.width*.1:src.width*.95;
     const JUNK=[];
-    const unreadRow=(y0,y1,yc,pi)=>newRow({en:"",tr:"",m:"",status:"unread",wasUnread:true,hw:hiCrop(src,y0,y1,Math.min(src.width,xr)),yer:yer(y0,y1),snip:cropSnip(src,y0,y1,Math.min(src.width,xr)),paperIdx:base+pi});
+    const unreadRow=(y0,y1,yc,pi)=>newRow({en:"",tr:"",m:"",mOku:"",mImg:sayiCrop(src,y0,y1,res.M),status:"unread",wasUnread:true,hw:hiCrop(src,y0,y1,Math.min(src.width,xr)),yer:yer(y0,y1),snip:cropSnip(src,y0,y1,Math.min(src.width,xr)),paperIdx:base+pi});
     const rows=res.rows.map((r,i)=>{const lk=lookup(r.en);
       // anlamsız okunan (çoğunlukla el yazısı) satır: atma, okunamadı diye göster
       if(!r.num&&lk.status==="new"&&(r.en.match(/[A-Za-z]/g)||[]).length<8){JUNK.push({y0:r.y0,y1:r.y1,yc:r.yc,pi:i});return null}
       let tr=lk.tr||(r.tr?up(r.tr):"");
       const en=lk.en||up(r.en);const pv=plaus(en,parseVal(r.num));
-      return newRow({en,tr,m:pv.v,mChk:!r.sure||!pv.ok,grp:lk.grp||"",after:lk.after||"",status:lk.status,orig:r.en,origTr:r.tr,hw:(!r.tr)?hiCrop(src,r.y0,r.y1,Math.min(src.width,xr)):null,yer:yer(r.y0,r.y1),snip:cropSnip(src,r.y0,r.y1,Math.min(src.width,xr)),paperIdx:base+i})});
+      return newRow({en,tr,m:pv.v,mOku:pv.v,mImg:sayiCrop(src,r.y0,r.y1,res.M),mChk:!r.sure||!pv.ok,grp:lk.grp||"",after:lk.after||"",status:lk.status,orig:r.en,origTr:r.tr,hw:(!r.tr)?hiCrop(src,r.y0,r.y1,Math.min(src.width,xr)):null,yer:yer(r.y0,r.y1),snip:cropSnip(src,r.y0,r.y1,Math.min(src.width,xr)),paperIdx:base+i})});
     // hiçbir satıra denk gelmeyen yazılar (elle eklenmiş satırlar vb.)
     for(let i=rows.length-1;i>=0;i--)if(!rows[i])rows.splice(i,1);
     const bands=inkBands(src,res).map(bd=>({...bd,pi:res.rows.filter(r=>(r.y0+r.y1)/2<bd.yc).length-.5+bd.yc/1e6})).concat(JUNK);
@@ -1352,7 +1357,7 @@ async function sayfaOku(w,canvas,base){
       if(lk&&lk.status==="new"){const ws=normEn(enTxt).split(" ").filter(x=>/^[A-Z]{2,}$/.test(x));const known=ws.filter(x=>VOCAB.has(x)||["AT","THE","OF","TO","IN","AND"].includes(x)).length;
         if(ws.length>=3&&known/ws.length>=.6)lk={...lk,status:"new",en:fixTokens(normEn(enTxt))};else lk=null}
       if(lk&&(lk.status==="ok"||lk.status==="chk"||lk.status==="new")){let pv={v:"",ok:true};for(const t of tnums){const c=plaus(lk.en,parseVal(cleanNum(t).v));if(c.ok){pv=c;break}if(pv.v==="")pv=c}
-        rows.push(newRow({en:lk.en,tr:lk.tr||"",m:pv.v,mChk:true,grp:lk.grp||"",after:lk.after||"",status:lk.status==="new"?"new":"chk",orig:enTxt,yer:yer(bd.y0,bd.y1),snip:cropSnip(src,bd.y0,bd.y1,Math.min(src.width,xr)),paperIdx:base+pi}))}
+        rows.push(newRow({en:lk.en,tr:lk.tr||"",m:pv.v,mOku:pv.v,mImg:sayiCrop(src,bd.y0,bd.y1,res.M),mChk:true,grp:lk.grp||"",after:lk.after||"",status:lk.status==="new"?"new":"chk",orig:enTxt,yer:yer(bd.y0,bd.y1),snip:cropSnip(src,bd.y0,bd.y1,Math.min(src.width,xr)),paperIdx:base+pi}))}
       else{const u=unreadRow(bd.y0,bd.y1,bd.yc,pi);u.ocrText=rb.text;rows.push(u)}}
     return {rows,info:res.info,sizeLbl:res.sizeLbl||null,img,yon};
 }
@@ -1360,8 +1365,11 @@ function today(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth
 
 /* şablon sırası: şablondaki ölçü kendi yerine, öğrenilen konumdakiler o ölçünün altına, kalanlar en alta */
 /* aynı gruptaki satırlar her zaman alt alta (ilk görüldüğü yerde) */
-const GROUP_WORD={"pocket":/\bPOCKET\b/,"chest dart":/\bDART\b/,"collar":/\bCOLLAR\b/,"belt":/\bBELT\b/};
-function autoGroup(rows){for(const [g,re] of Object.entries(GROUP_WORD)){if(!rows.some(r=>(r.grp||"").trim()===g))continue;for(const r of rows)if(!r.grp&&re.test(normEn(r.en)))r.grp=g}return rows}
+const GROUP_WORD={"pocket":/\bPOCKET\b/,"chest dart":/\bDART\b/,"collar":/\bCOLLAR\b/,"belt":/\bBELT\b/,"hood":/\bHOOD\b|KAPUZE/};
+/* grubu elle "—" yapılan satır (grpEl) gruba geri çekilmez */
+function autoGroup(rows){for(const [g,re] of Object.entries(GROUP_WORD)){if(!rows.some(r=>(r.grp||"").trim()===g))continue;for(const r of rows)if(!r.grp&&!r.grpEl&&re.test(normEn(r.en)))r.grp=g}return rows}
+/* kapşon ölçüleri: taranan kağıtta kendiliğinden "hood" grubunda (başka grubu yoksa) */
+function kapsonGrubu(rows){for(const r of rows)if(!(r.grp||"").trim()&&!r.grpEl&&GROUP_WORD.hood.test(normEn(r.en)))r.grp="hood";return rows}
 function groupTogether(rows){autoGroup(rows);const out=[],done=new Set();
   for(const r of rows){if(done.has(r))continue;const g=(r.grp||"").trim();if(!g){out.push(r);done.add(r);continue}
     for(const x of rows)if(!done.has(x)&&(x.grp||"").trim()===g){out.push(x);done.add(x)}}
@@ -1383,10 +1391,10 @@ $("#blankBtn").onclick=async()=>{if(needCust())return;
   LAST_SCANNED=false;LAST_SIZE=null;LAST_QUAL_RAW="";pickSize(null,true);nameEdited=false;
   ROWS=TPL.map((t,i)=>newRow({en:t.en,tr:trFor(t.en,t.tr),grp:t.grp||"",status:"ok",paperIdx:i}));PAGES=[];
   $("#fArt").value="";$("#fQual").value="";$("#fDate").value=today();$("#saveInfo").innerHTML="";$("#ocrMsg").textContent="";$("#prog").classList.add("hidden");
-  openEdit();DEGISTI=false;taslakSil()};
+  openEdit();DEGISTI=false;KAYDEDILDI=false;taslakSil();durumBildir()};
 
 /* ---------------- tablo düzenleme ---------------- */
-const GROUPS0=["pocket","chest dart","collar","belt"];
+const GROUPS0=["pocket","chest dart","collar","belt","hood"];
 /* grup seçenekleri: her zamankiler + seçili müşterinin şablonundaki gruplar */
 function groupList(){const s=new Set(GROUPS0);for(const t of TPL)if((t.grp||"").trim())s.add(t.grp.trim());return ["",...s]}
 function openEdit(sessiz){$("#editArea").classList.remove("hidden");renderTable();updName();if(KP.acik||LS.get("ota_yanyana",false))kpAc(true);if(!sessiz)$("#editArea").scrollIntoView({behavior:"smooth",block:"start"})}
@@ -1414,10 +1422,13 @@ function renderTable(){
 }
 const tbody=$("#tbl tbody");
 tbody.addEventListener("input",e=>{const tr=e.target.closest("tr");if(!tr)return;const r=ROWS[+tr.dataset.i],k=e.target.dataset.k;if(!k)return;
-  if(k==="m"){r.m=parseVal(e.target.value);r.mChk=false;e.target.classList.remove("mchk")}else if(k==="en"){r.en=e.target.value.toUpperCase();r.enTyped=true}else if(k==="tr"){r.tr=up(e.target.value);r.trTyped=true}
+  if(k==="m"){r.m=parseVal(e.target.value);r.mChk=false;r.mTyped=true;e.target.classList.remove("mchk");e.target.title="";
+    // sayıyı sen yazdın: değer artık senin, adı da şüpheli değilse ayrıca onaylamaya gerek yok
+    if(r.status!=="chk"){const b=tr.querySelector(".onayla");if(b)b.remove()}}
+  else if(k==="en"){r.en=e.target.value.toUpperCase();r.enTyped=true}else if(k==="tr"){r.tr=up(e.target.value);r.trTyped=true}
   if(k==="tr"||k==="m")e.target.classList.toggle("empty",!e.target.value);degisti()});
 tbody.addEventListener("change",e=>{const tr=e.target.closest("tr");if(!tr)return;const r=ROWS[+tr.dataset.i],k=e.target.dataset.k;
-  if(k==="grp"){r.grp=e.target.value;ROWS=groupTogether(ROWS);renderTable();degisti();return}
+  if(k==="grp"){r.grp=e.target.value;r.grpEl=!r.grp;ROWS=groupTogether(ROWS);renderTable();degisti();return}
   if(k==="nv"){applyNeck(r,e.target.value);renderTable();degisti();return}
   if(k==="en"){const e2=DICT.get(normEn(r.en));if(e2){r.en=e2.en;if(!r.tr)r.tr=e2.tr;if(!r.grp&&e2.grp)r.grp=e2.grp;r.status="ok"}else r.status=(r.status==="ok"||r.status==="unread")?"new":r.status;e.target.value=r.en;renderTable();degisti()}
   if(k==="tr"){e.target.value=r.tr}});
@@ -1464,7 +1475,7 @@ $("#fQual").addEventListener("input",degisti);$("#fDate").addEventListener("inpu
 $("#fQual").addEventListener("change",e=>{e.target.value=normQual(e.target.value)});
 function tabloKapat(){ROWS=[];PAGES=[];if(typeof KP!=="undefined"&&KP.acik)kpCiz();nameEdited=false;LAST_SCANNED=false;LAST_SIZE=null;LAST_QUAL_RAW="";DELETED_UNREAD=[];
   $("#fnameIn").value="";$("#fArt").value="";$("#fQual").value="";$("#saveInfo").innerHTML="";$("#editArea").classList.add("hidden");$("#prog").classList.add("hidden");$("#ocrMsg").textContent="";
-  DEGISTI=false;taslakSil();durumBildir()}
+  DEGISTI=false;KAYDEDILDI=false;taslakSil();durumBildir()}
 $("#sifirlaBtn").onclick=async()=>{if(OKUYOR){toast("Bir kağıt okunuyor, bitmesini bekle.");return}
   if((ROWS.length||CUR)&&!(await ask(ROWS.length&&DEGISTI?"Sayfa sıfırlansın mı? Kaydetmediğin tablo silinir (Excel'e kaydettiklerin durur).":"Sayfa sıfırlansın mı? Açık tablo kapanır (Excel'e kaydettiklerin durur).","Sıfırla")))return;
   tabloKapat();kpAc(false);CUR=null;CUSTN="";initCust();window.scrollTo({top:0,behavior:"smooth"});toast("Sayfa sıfırlandı.")};
@@ -1493,6 +1504,11 @@ function learn(){
   const yeni=ROWS.filter(r=>r.hw&&!r.ornek&&(r.tr||r.en)&&(r.wasUnread||r.trTyped||r.enTyped));
   const smp=yeni.map(r=>({id:Math.random().toString(36).slice(2,8),t:Date.now(),img:r.hw,en:r.en,tr:r.tr,m:r.m===""?null:r.m,tur:r.wasUnread?"satir":"turkce",musteri:CUR?CUR.name:"",model:artUp($("#fArt").value.trim())}));
   yeni.forEach(r=>r.ornek=true);
+  // elle düzeltilen sayı: kağıttaki ölçü hücresi + doğru değer + programın okuduğu ("oku"). Sonra yine değişirse aynı "satir"
+  // kimliğiyle yeniden gider (en sonuncusu geçerli)
+  const sayi=ROWS.filter(r=>r.mImg&&r.mTyped&&r.m!==""&&fmtVal(r.m)!==fmtVal(r.mOku)&&r.ornekM!==fmtVal(r.m));
+  for(const r of sayi){r.oid=r.oid||Math.random().toString(36).slice(2,10);r.ornekM=fmtVal(r.m);
+    smp.push({id:Math.random().toString(36).slice(2,8),t:Date.now(),img:r.mImg,en:r.en,tr:r.tr,m:r.m,oku:(r.mOku===""||r.mOku==null)?null:r.mOku,satir:r.oid,tur:"sayi",musteri:CUR?CUR.name:"",model:artUp($("#fArt").value.trim())})}
   addSamples(smp);
   const q=pending();q.push(D);LS.set("ota_bekleyen",q);
   memInfo();syncNow();
@@ -1536,11 +1552,12 @@ $("#saveBtn").onclick=async()=>{
     const ad=r.ad||name,saat=new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});
     $("#saveInfo").innerHTML=`<div class="bildir ok"><span class="bik">✓</span><div class="bmt"><b>Kaydedildi:</b> ${esc(ad)}<div class="balt">${esc(r.yol||((r.klasor?r.klasor+"\\":"")+ad))} · ${saat}</div></div>${EXE?`<div class="row"><button type="button" class="btn sm yesil" data-ac="dosya">Excel'de aç</button><button type="button" class="btn sm" data-ac="klasor">Klasörde göster</button></div>`:""}</div>`;
     $("#saveInfo").onclick=e=>{const b=e.target.closest("[data-ac]");if(b)PLAT.ac(CUR.name,ad,b.dataset.ac)};
-    DEGISTI=false;if(SEKMELI)taslakYaz(true);else taslakSil();durumBildir();
+    DEGISTI=false;KAYDEDILDI=true;if(SEKMELI)taslakYaz(true);else taslakSil();durumBildir();
     if(GOMULU)try{parent.postMessage({t:"bildirim",id:SAYFA,tur:"olcu",baslik:"Excel'e kaydedildi",metin:ad,ad},"*")}catch(e){}
     toast("Kaydedildi: "+ad);
   }catch(e){console.error(e);toast("Kaydedilemedi: "+e.message,7000)}
-  finally{KAYDEDIYOR=false;$("#saveBtn").disabled=false}
+  // kayıt bitti: sekmeye de haber ver (yoksa Eleman sekmesi "kaydediyor" sanıp ışığı yakıp söndürür, kapatmaya izin vermez)
+  finally{KAYDEDIYOR=false;$("#saveBtn").disabled=false;durumBildir()}
 };
 
 /* ---------------- Excel yazma (şablonun biçimi korunur) ---------------- */
@@ -1841,11 +1858,11 @@ $("#pageClose").onclick=()=>$("#pageModal").classList.add("hidden");
 $("#pageModal").onclick=e=>{if(e.target.id==="pageModal")$("#pageModal").classList.add("hidden")};
 
 /* ---------------- taslak: kaydedilmemiş tablo bu bilgisayarda saklanır, pencere kapansa da kaybolmaz ---------------- */
-let DEGISTI=false,TASLAK_T=0;
-function degisti(){DEGISTI=true;taslakZamanla();durumBildir()}
+let DEGISTI=false,KAYDEDILDI=false,TASLAK_T=0;   // KAYDEDILDI: tablo Excel'e kaydedildi, sonra değişmedi (sekmede sabit yeşil)
+function degisti(){DEGISTI=true;KAYDEDILDI=false;taslakZamanla();durumBildir()}
 function taslakZamanla(){clearTimeout(TASLAK_T);TASLAK_T=setTimeout(taslakYaz,1200)}
 async function taslakYaz(zorla){clearTimeout(TASLAK_T);if(!CUR||!ROWS.length||(!DEGISTI&&!zorla)||sekmeKapandi())return;
-  try{await IDB.set(TASLAK_K,{v:1,ts:Date.now(),degisti:DEGISTI,cust:CUR.name,art:$("#fArt").value,qual:$("#fQual").value,date:$("#fDate").value,fname:$("#fnameIn").value,nameEdited,rows:ROWS,sz:SZ,lastSize:LAST_SIZE,scanned:LAST_SCANNED,qualRaw:LAST_QUAL_RAW,pages:PAGES,deleted:DELETED_UNREAD})}catch(e){console.warn(e)}}
+  try{await IDB.set(TASLAK_K,{v:1,ts:Date.now(),degisti:DEGISTI,kaydedildi:KAYDEDILDI&&!DEGISTI,cust:CUR.name,art:$("#fArt").value,qual:$("#fQual").value,date:$("#fDate").value,fname:$("#fnameIn").value,nameEdited,rows:ROWS,sz:SZ,lastSize:LAST_SIZE,scanned:LAST_SCANNED,qualRaw:LAST_QUAL_RAW,pages:PAGES,deleted:DELETED_UNREAD})}catch(e){console.warn(e)}}
 async function taslakSil(){clearTimeout(TASLAK_T);$("#taslakBar").innerHTML="";try{await IDB.del(TASLAK_K)}catch(e){}}
 async function taslakSor(){let d=null;try{d=await IDB.get(TASLAK_K)}catch(e){}
   if(!d||!d.rows||!d.rows.length||!CUSTS.some(x=>x.name===d.cust))return;
@@ -1864,7 +1881,7 @@ async function taslakAc(d,sessiz){
   if(d.sz&&d.sz.list&&d.sz.list.length){SZ={list:d.sz.list.slice(),sample:d.sz.sample,base:(d.sz.base&&d.sz.base.length?d.sz.base:d.sz.list).slice(),elle:!!d.sz.elle};renderSizes();sizeNote("")}
   $("#fArt").value=d.art||"";$("#fQual").value=d.qual||"";$("#fDate").value=d.date||today();
   nameEdited=!!d.nameEdited;$("#fnameIn").value=d.fname||"";if(!nameEdited)autoName();
-  $("#taslakBar").innerHTML="";$("#saveInfo").innerHTML="";DEGISTI=sessiz?d.degisti!==false:true;openEdit(sessiz);durumBildir();if(!sessiz)toast("Tablo kaldığın yerden açıldı.")}
+  $("#taslakBar").innerHTML="";$("#saveInfo").innerHTML="";DEGISTI=sessiz?d.degisti!==false:true;KAYDEDILDI=!!(sessiz&&d.kaydedildi&&!DEGISTI);openEdit(sessiz);durumBildir();if(!sessiz)toast("Tablo kaldığın yerden açıldı.")}
 /* Eleman'ın Ölçü sekmesi: sekmenin tablosu sormadan, sessizce geri gelir */
 async function taslakDevam(){let d=null;try{d=await IDB.get(TASLAK_K)}catch(e){}
   if(!d||!d.rows||!d.rows.length||!CUSTS.some(x=>x.name===d.cust))return;await taslakAc(d,true)}
@@ -1878,7 +1895,7 @@ if(!KHTTP&&!GOMULU)window.addEventListener("beforeunload",e=>{if(DEGISTI&&ROWS.l
    Giden: {t:"tema",v} görünüm değişsin, {t:"sayfa",id,ad,busy,degisti} sekme başlığı, {t:"bildirim",tur:"olcu",...} kaydedildi.
    Asorti'nin kendi mesajlarıyla karışmaz: Asorti tanımadığı sekme kimliğini ve "olcu" türünü yok sayar. */
 let SON_DURUM="";
-function durumBildir(){if(!GOMULU)return;const o={t:"sayfa",id:SAYFA,ad:artUp($("#fArt").value.trim()),busy:OKUYOR||KAYDEDIYOR,bitti:false,degisti:DEGISTI&&ROWS.length>0,uygulama:"olcu"};
+function durumBildir(){if(!GOMULU)return;const o={t:"sayfa",id:SAYFA,ad:artUp($("#fArt").value.trim()),busy:OKUYOR||KAYDEDIYOR,bitti:KAYDEDILDI&&!DEGISTI&&ROWS.length>0&&!OKUYOR&&!KAYDEDIYOR,degisti:DEGISTI&&ROWS.length>0,uygulama:"olcu"};
   const k=JSON.stringify(o);if(k===SON_DURUM)return;SON_DURUM=k;try{parent.postMessage(o,"*")}catch(e){}}
 window.addEventListener("message",e=>{const d=e.data;if(!d||typeof d!=="object")return;
   if(d.t==="tema"&&(d.v==="dark"||d.v==="light"))temaUygula(d.v);
