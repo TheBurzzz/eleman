@@ -1,7 +1,10 @@
 {
- "surum": "3.3.4",
+ "surum": "3.3.5",
  "tarih": "2026-11-19",
  "notlar": [
-  "Ölçü Tablosu · yaka açıklığı varsayılan olarak içten içe gelir: kağıtta yalnız \"neck width\" yazıyorsa NECK WIDTH (INSIDE) / YAKA AÇIKLIĞI (İÇTEN İÇE). Kağıtta dikişten dikişe (seam to seam) yazıyorsa dikişten dikişe kalır. Elle yazılan düz NECK WIDTH de içten içe olur; satırdaki seçimden \"—\" ya da \"Dikişten dikişe\" seçilebilir"
+  "Ölçü Tablosu · Almanca ölçü adlarını anlıyor: BRUSTWEITE, ÄRMELLÄNGE, AUSSCHNITTTIEFE VORNE, KAPUZENHÖHE gibi adlar parçalarına bölünüp bilinen ölçüye bağlanıyor (turuncu gelir, kağıttaki Almanca adı görünür; Onayla ya da düzelt). Bilinmeyen Almanca ad olduğu gibi kalır, Türkçesi için öneri çıkar",
+  "Ölçü Tablosu · yanlış yazılmış İngilizce de tanınıyor: WIDHT, LENTGH, HEGIHT gibi iki harfi yer değiştirmiş yazımlar doğru ölçüye bağlanıyor",
+  "Ölçü Tablosu · kağıdın yönüne bakarken Almanca kelimeleri ve küçük harfli İngilizceyi de tanıyor (Almanca kağıt ters konsa da düz çevrilir)",
+  "Ölçü Tablosu · gruplar Almanca adları da tanır (TASCHE = pocket, KRAGEN = collar, KAPUZE = hood); yaka açıklığında NAHT ZU NAHT = dikişten dikişe"
  ]
 }

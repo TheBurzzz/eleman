@@ -678,7 +678,61 @@ function sim(a,b){const A=toks(a),B=toks(b);if(!A.length||!B.length)return 0;let
   return 2*hit/(A.length+B.length)}
 function lev(a,b){if(Math.abs(a.length-b.length)>2)return 9;const d=[...Array(b.length+1).keys()];for(let i=1;i<=a.length;i++){let p=d[0];d[0]=i;for(let j=1;j<=b.length;j++){const t=d[j];d[j]=Math.min(d[j]+1,d[j-1]+1,p+(a[i-1]===b[j-1]?0:1));p=t}}return d[b.length]}
 const VOCAB=new Map();for(const [k,e] of DICT)for(const w of k.split(" "))if(/^[A-Z]{3,}$/.test(w))VOCAB.set(w,(VOCAB.get(w)||0)+(e.n||1));
-function fixTokens(k){return k.split(" ").map(w=>{if(!/^[A-Z]{3,}$/.test(w)||VOCAB.has(w))return w;let best=w,bn=0;for(const [v,n] of VOCAB){if(Math.abs(v.length-w.length)>1)continue;if(lev(w,v)===1&&n>bn){bn=n;best=v}}return bn>=5?best:w}).join(" ")}
+/* ---------------- Almanca ölçü adları ----------------
+   Müşterilerin çoğu Alman: ölçü adı bazen Almanca, bazen İngilizcesi yanlış yazılmış. Almanca ad bilinen parçalarına bölünüp
+   İngilizceye çevrilir (BRUSTWEITE -> CHEST WIDTH, AUSSCHNITTTIEFE VORNE -> NECK DROP FRONT). Çeviri bilinen bir ölçüye denk gelirse
+   o ölçü gelir (turuncu: kontrol et, "Kağıtta:" Almanca ad); gelmezse ad kağıttaki gibi Almanca kalır, Türkçe önerisi çeviriden çıkar. */
+const DE_PARCA={
+ WEITE:"WIDTH",BREITE:"WIDTH",LANGE:"LENGTH",LAENGE:"LENGTH",HOHE:"HEIGHT",HOEHE:"HEIGHT",TIEFE:"DEPTH",UMFANG:"CIRCUMFERENCE",
+ ABSTAND:"DISTANCE",POSITION:"POSITION",PLATZIERUNG:"POSITION",
+ BRUST:"CHEST",TAILLE:"WAIST",HUFTE:"HIP",HUFT:"HIP",HUEFTE:"HIP",HUEFT:"HIP",SAUM:"BOTTOM",UNTERKANTE:"BOTTOM",OBERKANTE:"TOP EDGE",
+ SCHULTER:"SHOULDER",ARMEL:"SLEEVE",AERMEL:"SLEEVE",ARMLOCH:"ARMHOLE",ARMAUSSCHNITT:"ARMHOLE",OBERARM:"UPPER SLEEVE",BIZEPS:"UPPER SLEEVE",
+ ELLBOGEN:"ELBOW",ELLENBOGEN:"ELBOW",HALS:"NECK",HALSAUSSCHNITT:"NECK",AUSSCHNITT:"NECK",BLENDE:"BINDING",KRAGEN:"COLLAR",STEG:"STAND",
+ KAPUZE:"HOOD",TASCHE:"POCKET",BUND:"WAISTBAND",GURTEL:"BELT",GUERTEL:"BELT",BEIN:"LEG",OBERSCHENKEL:"THIGH",KNIE:"KNEE",
+ SCHRITTLANGE:"INSEAM",INNENBEINLANGE:"INSEAM",LEIBHOHE:"RISE",RUCKEN:"BACK",RUECKEN:"BACK",VORDERTEIL:"FRONT",RUCKENTEIL:"BACK",
+ MANSCHETTE:"CUFF",BUNDCHEN:"CUFF",BUENDCHEN:"CUFF",KNOPFLEISTE:"PLACKET",LEISTE:"PLACKET",SCHLITZ:"SLIT",ABNAHER:"DART",ABNAEHER:"DART",
+ PASSE:"YOKE",FALTE:"PLEAT",BIESE:"PINTUCK",KORDEL:"STRING",KNOPF:"BUTTON",KNOPFLOCH:"BUTTONHOLE",REISSVERSCHLUSS:"ZIPPER",
+ GUMMIZUG:"ELASTIC",GUMMI:"ELASTIC",NAHT:"SEAM",SEITENNAHT:"SIDE SEAM",SCHULTERNAHT:"SHOULDER SEAM",TAILLENNAHT:"WAIST SEAM",SEITE:"SIDE",
+ KANTE:"EDGE",SCHULTERPUNKT:"SHOULDER POINT",ABSCHLUSS:"OPENING",UMSCHLAG:"TURN UP",AUFSCHLAG:"TURN UP",STICKEREI:"EMBROIDERY",
+ VORNE:"FRONT",VORN:"FRONT",VORDERE:"FRONT",VORDEREN:"FRONT",VORDER:"FRONT",HINTEN:"BACK",HINTERE:"BACK",HINTEREN:"BACK",HINTER:"BACK",
+ MITTE:"CENTER",VM:"CF",HM:"CB",OBEN:"TOP",UNTEN:"BOTTOM",INNEN:"INSIDE",AUSSEN:"OUTSIDE",GERADE:"STRAIGHT",GEBOGEN:"CURVED",ENTLANG:"ALONG",
+ GEDEHNT:"STRETCHED",ENTSPANNT:"RELAXED",UNGEDEHNT:"RELAXED",GEMESSEN:"MEASURED",FERTIG:"FINISHED",GESAMT:"TOTAL",OBERE:"UPPER",UNTERE:"LOWER",
+ LINKS:"LEFT",RECHTS:"RIGHT",GESCHLOSSEN:"CLOSED",OFFEN:"OPEN",
+ ZU:"TO",BIS:"TO",AB:"FROM",VON:"FROM",VOM:"FROM",UNTER:"BELOW",UNTERHALB:"BELOW",UBER:"ABOVE",UEBER:"ABOVE",OBERHALB:"ABOVE",
+ AM:"AT",AN:"AT",BEI:"AT",MIT:"WITH",OHNE:"WITHOUT",UND:"AND",DER:"",DIE:"",DAS:"",DEN:"",DEM:"",DES:"",HALBE:"",HALBER:"",HALBEN:""};
+const deKanon=s=>String(s||"").toUpperCase().replace(/ß/g,"SS").normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+/* bileşik kelimeyi parçalarına böl (TAILLENWEITE = TAILLE+N+WEITE); bölünemezse null */
+const tekFark=(a,b)=>{let d=0;for(let i=0;i<a.length;i++)if(a[i]!==b[i]&&++d>1)return false;return d===1};
+function deBol(s,hata){const memo=new Map();
+  // hata: parçalardan birinin bir harfi yanlış okunmuş olabilir (KAPUZENHTHE = KAPUZE+N+HÖHE); yalnız bileşikte, 4+ harfli parçada
+  const f=(i,h)=>{if(i===s.length)return [];const mk=i+"_"+h;if(memo.has(mk))return memo.get(mk);let best=null;
+    // AM, ZU, DER gibi kısalar yalnız kendi başına kelimeyse (bileşiğin içinde parça sayılmaz)
+    for(let j=s.length;j>i&&!best;j--){const p=s.slice(i,j);let q=Object.prototype.hasOwnProperty.call(DE_PARCA,p)?p:null,h2=h;
+      if(!q&&h&&p.length>=4){for(const x in DE_PARCA)if(x.length===p.length&&tekFark(p,x)){q=x;h2=0;break}}
+      if(!q||(q.length<=3&&!(i===0&&j===s.length)))continue;
+      for(const l of ["","S","N","EN","ES"]){if(l&&!s.startsWith(l,j))continue;const rest=f(j+l.length,h2);if(rest){best=[DE_PARCA[q],...rest];break}}}
+    memo.set(mk,best);return best};
+  const r=f(0,hata?1:0);return r&&hata&&r.length<2?null:r}
+/* Almanca kelime mi: parçalarına bölünüyor, İngilizce sözlükte yok, en az 4 harf (AM, ZU gibi kısalar tek başına saymaz) */
+const almancaMi=w=>{const c=deKanon(w);return c.length>=4&&!VOCAB.has(c)&&!!deBol(c)};
+function almancaCevir(k){const ws=deKanon(String(k).replace(/\b(AM|LAUT) MUSTER\b/g," ")).split(/[\s\-]+/).filter(Boolean);let de=0;
+  const out=ws.map(w=>{const m=w.match(/^([^A-Z]*)([A-Z]{2,})([^A-Z]*)$/);if(!m)return w;   // "(GEMESSEN" -> "(MEASURED"
+    const p=deBol(m[2])||(m[2].length>=6&&!VOCAB.has(m[2])?deBol(m[2],true):null);if(!p)return w;
+    if(m[2].length>=4&&!VOCAB.has(m[2]))de++;return m[1]+p.join(" ")+m[3]});
+  if(!de)return null;
+  let t=out.join(" ").replace(/\s+/g," ").trim().replace(/\b(\w+)( \1\b)+/g,"$1").replace(/\bNECK DEPTH\b/g,"NECK DROP");
+  t=t.replace(/^SHOULDER WIDTH$/,"SHOULDER TO SHOULDER").replace(/^(TOTAL LENGTH BACK|BACK TOTAL LENGTH)\b.*$/,"BACK LENGTH")
+     .replace(/^(FRONT )?(TOTAL )?LENGTH( FRONT)?( FROM HPS)?$/,m=>/TOTAL|FRONT/.test(m)?"FRONT LENGTH FROM HPS":m);
+  return t&&t!==k?t:null}
+/* yazım hatası: sözlükte olmayan kelime bir harf farkla (ya da yan yana iki harfi yer değiştirmiş: WIDHT, LENTGH) bilinen kelimeye
+   çevrilir. Almanca kelimeye dokunulmaz (HOHE -> HOLE olmasın) */
+const yerDegis=(a,b)=>{if(a.length!==b.length)return false;let i=0;while(i<a.length&&a[i]===b[i])i++;return i<a.length-1&&a[i]===b[i+1]&&a[i+1]===b[i]&&a.slice(i+2)===b.slice(i+2)};
+function fixTokens(k){return k.split(" ").map(w=>{if(!/^[A-Z]{3,}$/.test(w)||almancaMi(w))return w;const n0=VOCAB.get(w)||0;
+  let best=w,bn=0;for(const [v,n] of VOCAB){if(Math.abs(v.length-w.length)>1||v===w)continue;
+    // sözlükte hiç olmayan kelime: bir harf farkı ya da yer değiştirme. Eski tablolarda da yanlış yazılmış kelime (WIDHT 7 kez,
+    // WIDTH binlerce): yalnız yer değiştirme ve doğrusu en az 20 kat yaygınsa (CENTRE/CENTER, SEAT/SEAM gibi gerçek kelimeler kalır)
+    const ok=n0?(yerDegis(w,v)&&n>=Math.max(50,n0*20)):(lev(w,v)===1||yerDegis(w,v));if(ok&&n>bn){bn=n;best=v}}
+  return bn>=5?best:w}).join(" ")}
 function lookup(raw,trKagit){const r=lookup0(raw);if(r.en){yakaKurali(r,raw+" "+(trKagit||""));r.tr=trFor(r.en,r.tr)}return r}
 /* yaka açıklığı (kullanıcının kuralı): kağıtta dikişten dikişe yazıyorsa dikişten dikişe, bir şey yazmıyorsa içten içe.
    Yalnız düz NECK WIDTH ve şablondaki iki hali; "edge to edge", "NECK WIDTH 1" gibi başka bir şey yazanlara dokunulmaz */
@@ -687,19 +741,30 @@ function yakaKurali(r,kagit){const k=normEn(r.en);if(!/^NECK WIDTH( \((INSIDE|SE
   const P=normEn(kagit),v=(YAKA_DIKIS.test(P)&&!YAKA_IC.test(P))?"SEAM TO SEAM":"INSIDE",hedef=`NECK WIDTH (${v})`;if(k===hedef)return r;
   const e=DICT.get(hedef);r.en=e?e.en:hedef;r.tr=e?e.tr:(v==="INSIDE"?"YAKA ACIKLIGI (İÇTEN İÇE)":"YAKA ACIKLIGI (DİKİŞTEN DİKİŞE)");
   if(e){r.grp=e.grp||r.grp||"";r.after=e.after||""}return r}
-function lookup0(raw){
+/* harfleri katlanmış (Ä=A, Ö=O, Ü=U, ß=SS) eşleşme: kağıtta BANDLÄNGE, öğrenilen BANDLANGE (ya da tersi) */
+let KATLI=null,KATLI_N=-1;
+function katliBul(k){const f=deKanon(k);
+  for(const [kk,L] of Object.entries(learned()))if(deKanon(kk)===f)return {status:"ok",en:L.en,tr:trFor(L.en,L.tr),grp:L.grp||"",after:L.after||"",src:"öğrenilen"};
+  if(!KATLI||KATLI_N!==DICT.size){KATLI=new Map();for(const kk of DICT.keys()){const x=deKanon(kk);if(!KATLI.has(x))KATLI.set(x,kk)}KATLI_N=DICT.size}
+  const kk=KATLI.get(f),e=kk&&DICT.get(kk);return e?{status:"ok",en:e.en,tr:e.tr,grp:e.grp,after:e.after}:null}
+function lookup0(raw,almancaYok){
   let k=normEn(raw); if(!k) return {status:"new",en:"",tr:""};
   if(!learned()[k]&&!DICT.has(k))k=fixTokens(k);
   const L=learned()[k]; if(L) return {status:"ok",en:L.en,tr:trFor(L.en,L.tr),grp:L.grp||"",after:L.after||"",src:"öğrenilen"};
   for(const [re,to] of SYN){const m=k.match(re);if(m){const en=typeof to==="function"?to(m):to;const e=DICT.get(normEn(en));return {status:"ok",en:e?e.en:en,tr:e?e.tr:"",grp:e?e.grp:"",after:e?e.after:""}}}
   const e=DICT.get(k); if(e) return {status:"ok",en:e.en,tr:e.tr,grp:e.grp,after:e.after};
+  {const r3=katliBul(k);if(r3)return r3}   // BANDLÄNGE = öğrenilen BANDLANGE
+  // Almanca ad: çevirisi bilinen bir ölçüyse o (kontrol için turuncu)
+  const de=almancaYok?null:almancaCevir(k);
+  // (çevirinin benzerlikle eşleşmesi yalnız çok yakınsa: TASCHENTIEFE = POCKET DEPTH, "POCKET OPENING DEPTH" sayılmasın)
+  if(de){const r2=lookup0(de,true);if(r2.status==="ok"||(r2.status==="chk"&&(r2.skor||0)>=.9))return {...r2,status:"chk",orig:raw,src:"almanca"}}
   let best=null,bs=0;
   for(const [kk,e2] of DICT){const s=sim(k,kk)+Math.min(e2.n,400)/40000;if(s>bs){bs=s;best=e2}}
-  if(best&&bs>=0.78) return {status:"chk",en:best.en,tr:best.tr,grp:best.grp,after:best.after,orig:raw};
+  if(best&&bs>=0.78) return {status:"chk",en:best.en,tr:best.tr,grp:best.grp,after:best.after,orig:raw,skor:bs};
   // sona karışmış Türkçe/çöp kelimeleri atıp tekrar dene
   const tw=k.split(" ");for(let c=1;c<=3&&tw.length-c>=2;c++){const k2=tw.slice(0,tw.length-c).join(" ");const e2=DICT.get(k2);if(e2)return {status:"chk",en:e2.en,tr:e2.tr,grp:e2.grp,after:e2.after,orig:raw};
     for(const [re,to] of SYN){const m=k2.match(re);if(m){const en=typeof to==="function"?to(m):to;const e3=DICT.get(normEn(en));return {status:"chk",en:e3?e3.en:en,tr:e3?e3.tr:"",grp:e3?e3.grp:"",after:e3?e3.after:"",orig:raw}}}}
-  return {status:"new",en:k,tr:"",grp:"",after:"",orig:raw};
+  return {status:"new",en:k,tr:"",grp:"",after:"",orig:raw,ipucu:de||""};   // ipucu: Almancanın İngilizcesi (Türkçe önerisi için)
 }
 
 /* ---------------- durum ---------------- */
@@ -1020,9 +1085,15 @@ function cleanCanvas(src){
    Sayfanın küçük, temizlenmiş bir kopyası 0°, 180°, 90°, 270° çevrilerek hızlıca okunur; sözlükteki kelimelerden
    en çok hangisinde güvenle okunuyorsa sayfa o yöne çevrilir. Düz konan kağıtta tek kısa okuma yapılır (~1 sn). */
 let YON_BAKIYOR=false,YON_KELIME=null;
-function yonKelimeleri(){if(YON_KELIME)return YON_KELIME;const K=new Set(VOCAB.keys());
-  for(const [,e] of DICT)for(const x of String(e.tr||"").toLocaleUpperCase("tr-TR").split(/[^A-ZÇĞİÖŞÜ]+/))if(x.length>=3)K.add(x);
-  for(const x of ["MEASUREMENT","MEASUREMENTS","SIZE","SIZES","ARTICLE","QUALITY","DESCRIPTION","POINT","POINTS","CODE","TOLERANCE","STYLE","SEASON","SUPPLIER","DATE","COLOUR","COLOR","FABRIC","SAMPLE"])K.add(x);
+/* kelimeler şapkasız büyük harfle karşılaştırılır: küçük harfli İngilizce (width -> WİDTH), Türkçe ve Almanca (LÄNGE, HÖHE) aynı biçime gelir */
+const yonKanon=s=>String(s||"").toLocaleUpperCase("tr-TR").replace(/ß/g,"SS").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^A-Z]/g,"");
+function yonKelimeleri(){if(YON_KELIME)return YON_KELIME;const K=new Set(),ek=x=>{const t=yonKanon(x);if(t.length>=3)K.add(t)};
+  for(const x of VOCAB.keys())ek(x);
+  for(const [,e] of DICT)for(const x of String(e.tr||"").toLocaleUpperCase("tr-TR").split(/[^A-ZÇĞİÖŞÜ]+/))ek(x);
+  for(const x of ["MEASUREMENT","MEASUREMENTS","SIZE","SIZES","ARTICLE","QUALITY","DESCRIPTION","POINT","POINTS","CODE","TOLERANCE","STYLE","SEASON","SUPPLIER","DATE","COLOUR","COLOR","FABRIC","SAMPLE"])ek(x);
+  // Almanca: ölçü parçaları (4 harften uzunlar) ve başlık kelimeleri
+  for(const x of Object.keys(DE_PARCA))if(x.length>=4)ek(x);
+  for(const x of ["MASSTABELLE","MASSE","GROESSE","GROSSE","GRÖSSE","ARTIKEL","MODELL","QUALITÄT","MATERIAL","FARBE","LIEFERANT","DATUM","MUSTER","TOLERANZ","KUNDE","SAISON","BESCHREIBUNG","MESSPUNKT","MESSPUNKTE","STOFF","ZUSAMMENSETZUNG","BRUSTWEITE","TAILLENWEITE","HÜFTWEITE","SAUMWEITE","ÄRMELLÄNGE","SCHULTERBREITE","RÜCKENBREITE","RÜCKENLÄNGE","GESAMTLÄNGE","OBERARMWEITE","AUSSCHNITTTIEFE","HALSWEITE","KRAGENHÖHE","BUNDWEITE","KAPUZENHÖHE","TASCHENBREITE"])ek(x);
   return YON_KELIME=K}
 // saat yönünde d derece (90'ın katı) çevir; tam sayılı dönüşüm: pikseller birebir taşınır, görüntü bulanıklaşmaz
 function cevir(src,d){if(!d)return src;const c=document.createElement("canvas");const yan=d===90||d===270;c.width=yan?src.height:src.width;c.height=yan?src.width:src.height;
@@ -1033,7 +1104,7 @@ function kucult(src,gen){const s=Math.min(1,gen/src.width);if(s===1)return src;c
   const g=c.getContext("2d");g.imageSmoothingQuality="high";g.drawImage(src,0,0,c.width,c.height);return c}
 function bant(src,a,b){const y=Math.round(src.height*a),h=Math.max(1,Math.round(src.height*(b-a)));const c=document.createElement("canvas");c.width=src.width;c.height=h;c.getContext("2d").drawImage(src,0,y,src.width,h,0,0,src.width,h);return c}
 async function yonPuani(w,c){const {data}=await w.recognize(c,{},{blocks:true});const K=yonKelimeleri();let p=0;
-  for(const x of wordsOf(data)){if(x.c<55)continue;const t=x.t.toLocaleUpperCase("tr-TR").replace(/[^A-ZÇĞİÖŞÜ]/g,"");if(t.length>=3&&K.has(t))p++}return p}
+  for(const x of wordsOf(data)){if(x.c<55)continue;const t=yonKanon(x.t);if(t.length>=3&&K.has(t))p++}return p}
 async function yonBul(w,canvas){
   YON_BAKIYOR=true;
   try{
@@ -1118,7 +1189,7 @@ function analyse(words,W,H){
     en=tidy(en);tr=tidy(tr);
     const letters=(en.match(/[A-Za-z]/g)||[]).length;
     if(letters<3&&!num)continue;
-    if(/^(code|point of measurements|description|measurements?)\b/i.test(en)&&!num)continue;
+    if(/^(code|point of measurements|description|measurements?|messpunkte?|messstellen?|bezeichnung|beschreibung|ma(?:ß|ss)(?:e|tabelle))\b/i.test(en)&&!num)continue;
     rows.push({en,tr:/[A-Za-zÇĞİÖŞÜçğıöşü]{3}/.test(tr)?tr:"",num,sure,y0:l.y0,y1:l.y1,yc:l.yc,hasLetters:letters>=3});
   }
   for(let i=rows.length-1;i>=0;i--)if(!rows[i].en)rows.splice(i,1);
@@ -1136,7 +1207,7 @@ function analyse(words,W,H){
     merged.push(r)}
   let outRows=merged.filter(r=>r.hasLetters||r.num);
   // başlık satırı numara bedenle okunduysa (ör. "Measurements | 36") onu beden say, satırı at
-  const h0=outRows[0];if(h0&&(/^(code|point of measurements?|description|measurements?|pom)\b/i.test(h0.en)||!h0.hasLetters)&&/^\d{2}$/.test(String(h0.num))){sizeLbl=String(h0.num);outRows=outRows.slice(1)}
+  const h0=outRows[0];if(h0&&(/^(code|point of measurements?|description|measurements?|pom|messpunkte?|messstellen?|bezeichnung|beschreibung|ma(?:ß|ss)(?:e|tabelle))\b/i.test(h0.en)||!h0.hasLetters)&&/^\d{2}$/.test(String(h0.num))){sizeLbl=String(h0.num);outRows=outRows.slice(1)}
   return {info,rows:outRows,M,mh,sizeLbl,leftX};
 }
 /* rakamı temizle: işaret/tik karışmışsa sağdaki ölçüyü al, virgülü kaçırılmış 395 -> 39,5 */
@@ -1251,7 +1322,8 @@ function headerInfo(words,lines,mh,W,limitY){
       const nx=L.filter(o=>o!==w&&Math.abs(o.y0-w.y0)<mh&&o.x0>w.x0&&o.x0-w.x1<mh*1.2).sort((a,b)=>a.x0-b.x0)[0];
       if(nx&&re.test(w.t+nx.t))c.push({t:w.t+nx.t,x0:w.x0,y0:Math.min(w.y0,nx.y0),x1:nx.x1,y1:Math.max(w.y1,nx.y1),parts:[w,nx]})}
     return c.sort((a,b)=>a.y0-b.y0)[0]};
-  const labels={qual:lab(/^Quality[:;.]?$/i),art:lab(/^.?Ac?rticle/i),prog:lab(/^pro[gğ]ram/i),col:lab(/^Colou?r[:;.]?$/i),sup:lab(/^Supplier[:;.]?$/i),size:lab(/^Size[:;.]?$/i)};
+  const labels={qual:lab(/^Quality[:;.]?$/i)||lab(/^(Qualit[äa]t|Material)[:;.]?$/i),art:lab(/^.?Ac?rticle/i)||lab(/^Artikel/i),prog:lab(/^pro[gğ]ram/i),
+    col:lab(/^Colou?r[:;.]?$/i)||lab(/^Farbe[:;.]?$/i),sup:lab(/^Supplier[:;.]?$/i)||lab(/^Lieferant[:;.]?$/i),size:lab(/^Size[:;.]?$/i)||lab(/^Gr[öo](?:ß|ss)e[:;.]?$/i)};   // İngilizcesi yoksa Almancası
   const allParts=Object.values(labels).filter(Boolean).flatMap(l=>l.parts||[l]);
   const all=Object.values(labels).filter(Boolean);
   function valueOf(l,maxLines=1){
@@ -1349,7 +1421,7 @@ async function sayfaOku(w,canvas,base){
       if(!r.num&&lk.status==="new"&&(r.en.match(/[A-Za-z]/g)||[]).length<8){JUNK.push({y0:r.y0,y1:r.y1,yc:r.yc,pi:i});return null}
       let tr=lk.tr||(r.tr?up(r.tr):"");
       const en=lk.en||up(r.en);const pv=plaus(en,parseVal(r.num));
-      return newRow({en,tr,m:pv.v,mOku:pv.v,mImg:sayiCrop(src,r.y0,r.y1,res.M),mChk:!r.sure||!pv.ok,grp:lk.grp||"",after:lk.after||"",status:lk.status,orig:r.en,origTr:r.tr,hw:(!r.tr)?hiCrop(src,r.y0,r.y1,Math.min(src.width,xr)):null,yer:yer(r.y0,r.y1),snip:cropSnip(src,r.y0,r.y1,Math.min(src.width,xr)),paperIdx:base+i})});
+      return newRow({en,tr,m:pv.v,mOku:pv.v,mImg:sayiCrop(src,r.y0,r.y1,res.M),mChk:!r.sure||!pv.ok,ipucu:lk.ipucu||"",grp:lk.grp||"",after:lk.after||"",status:lk.status,orig:r.en,origTr:r.tr,hw:(!r.tr)?hiCrop(src,r.y0,r.y1,Math.min(src.width,xr)):null,yer:yer(r.y0,r.y1),snip:cropSnip(src,r.y0,r.y1,Math.min(src.width,xr)),paperIdx:base+i})});
     // hiçbir satıra denk gelmeyen yazılar (elle eklenmiş satırlar vb.)
     for(let i=rows.length-1;i>=0;i--)if(!rows[i])rows.splice(i,1);
     const bands=inkBands(src,res).map(bd=>({...bd,pi:res.rows.filter(r=>(r.y0+r.y1)/2<bd.yc).length-.5+bd.yc/1e6})).concat(JUNK);
@@ -1362,9 +1434,9 @@ async function sayfaOku(w,canvas,base){
       const okTxt=enTxt.replace(/[^A-Za-z]/g,"").length>=6&&rb.conf>=55;let lk=okTxt?lookup(enTxt):null;
       // sözlükte yok ama basılı, anlamlı İngilizce ise yeni ölçü olarak ekle
       if(lk&&lk.status==="new"){const ws=normEn(enTxt).split(" ").filter(x=>/^[A-Z]{2,}$/.test(x));const known=ws.filter(x=>VOCAB.has(x)||["AT","THE","OF","TO","IN","AND"].includes(x)).length;
-        if(ws.length>=3&&known/ws.length>=.6)lk={...lk,status:"new",en:fixTokens(normEn(enTxt))};else lk=null}
+        if(ws.length>=3&&known/ws.length>=.6)lk={...lk,status:"new",en:fixTokens(normEn(enTxt))};else if(lk.ipucu)lk={...lk,status:"new",en:normEn(enTxt)};else lk=null}   // Almanca tanındıysa ad Almanca kalır
       if(lk&&(lk.status==="ok"||lk.status==="chk"||lk.status==="new")){let pv={v:"",ok:true};for(const t of tnums){const c=plaus(lk.en,parseVal(cleanNum(t).v));if(c.ok){pv=c;break}if(pv.v==="")pv=c}
-        rows.push(newRow({en:lk.en,tr:lk.tr||"",m:pv.v,mOku:pv.v,mImg:sayiCrop(src,bd.y0,bd.y1,res.M),mChk:true,grp:lk.grp||"",after:lk.after||"",status:lk.status==="new"?"new":"chk",orig:enTxt,yer:yer(bd.y0,bd.y1),snip:cropSnip(src,bd.y0,bd.y1,Math.min(src.width,xr)),paperIdx:base+pi}))}
+        rows.push(newRow({en:lk.en,tr:lk.tr||"",m:pv.v,mOku:pv.v,mImg:sayiCrop(src,bd.y0,bd.y1,res.M),mChk:true,ipucu:lk.ipucu||"",grp:lk.grp||"",after:lk.after||"",status:lk.status==="new"?"new":"chk",orig:enTxt,yer:yer(bd.y0,bd.y1),snip:cropSnip(src,bd.y0,bd.y1,Math.min(src.width,xr)),paperIdx:base+pi}))}
       else{const u=unreadRow(bd.y0,bd.y1,bd.yc,pi);u.ocrText=rb.text;rows.push(u)}}
     return {rows,info:res.info,sizeLbl:res.sizeLbl||null,img,yon};
 }
@@ -1372,7 +1444,7 @@ function today(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth
 
 /* şablon sırası: şablondaki ölçü kendi yerine, öğrenilen konumdakiler o ölçünün altına, kalanlar en alta */
 /* aynı gruptaki satırlar her zaman alt alta (ilk görüldüğü yerde) */
-const GROUP_WORD={"pocket":/\bPOCKET\b/,"chest dart":/\bDART\b/,"collar":/\bCOLLAR\b/,"belt":/\bBELT\b/,"hood":/\bHOOD\b|KAPUZE/};
+const GROUP_WORD={"pocket":/\bPOCKET\b|TASCHE/,"chest dart":/\bDART\b|ABN[AÄ]E?HER/,"collar":/\bCOLLAR\b|KRAGEN/,"belt":/\bBELT\b|G[UÜ]E?RTEL/,"hood":/\bHOOD\b|KAPUZE/};   // Almanca adlar da
 /* grubu elle "—" yapılan satır (grpEl) gruba geri çekilmez */
 function autoGroup(rows){for(const [g,re] of Object.entries(GROUP_WORD)){if(!rows.some(r=>(r.grp||"").trim()===g))continue;for(const r of rows)if(!r.grp&&!r.grpEl&&re.test(normEn(r.en)))r.grp=g}return rows}
 /* kapşon ölçüleri: taranan kağıtta kendiliğinden "hood" grubunda (başka grubu yoksa) */
@@ -1421,7 +1493,7 @@ function renderTable(){
     <td><i class="st ${stCls(r.status)}" title="${r.status==="chk"?"Kağıtta: "+esc(r.orig):r.status==="unread"?"Okunamadı":r.status==="new"?"Sözlükte yok":"Sözlükte var"}"></i></td>
     <td><select data-k="grp" aria-label="Grup">${GL0.concat(r.grp&&!GL0.includes(r.grp)?[r.grp]:[]).map(g=>`<option ${g===r.grp?"selected":""} value="${esc(g)}">${g||"—"}</option>`).join("")}</select></td>
     <td class="f-${stCls(r.status)}"><div class="enw"><input class="en" data-k="en" autocomplete="off" spellcheck="false" value="${esc(r.en)}" title="${r.orig?"Kağıtta: "+esc(r.orig):""}" placeholder="${r.status==="unread"?"OKUNAMADI — kağıda bakıp yaz":""}">${/^NECK (WIDTH|DROP)/.test(normEn(r.en))?`<select data-k="nv" title="İçten içe / dikişten dikişe">${[["","—"],["IN","İçten içe"],["SS","Dikişten dikişe"]].map(([v,t])=>`<option value="${v}" ${neckVar(r.en)===v?"selected":""}>${t}</option>`).join("")}</select>`:""}</div></td>
-    <td><input data-k="tr" autocomplete="off" spellcheck="false" class="${r.tr?"":"empty"}" value="${esc(r.tr)}" placeholder="${esc(r.origTr?up(r.origTr):(glossHint(r.en)?"öneri: "+glossHint(r.en):"Türkçesi…"))}" title="${r.tr?"":"Çift tıkla: öneriyi yaz"}"></td>
+    <td><input data-k="tr" autocomplete="off" spellcheck="false" class="${r.tr?"":"empty"}" value="${esc(r.tr)}" placeholder="${esc(r.origTr?up(r.origTr):(glossHint(r.ipucu||r.en)?"öneri: "+glossHint(r.ipucu||r.en):"Türkçesi…"))}" title="${r.tr?"":"Çift tıkla: öneriyi yaz"}"></td>
     <td><input autocomplete="off" class="m ${r.m===""?"empty":r.mChk?"mchk":""}" data-k="m" value="${esc(fmtVal(r.m))}" title="${r.mChk?"Okuma emin değil, kağıttan kontrol et":""}"></td>
     <td>${r.snip?`<img class="snip" src="${r.snip}" alt="">`:""}</td>
     <td class="acts">${(r.status==="chk"||r.mChk)?`<button type="button" class="onayla" data-a="ok" title="Okunan ad ve ölçü doğru: onayla">✓ Onayla</button>`:""}<button class="icb" data-a="up" title="Yukarı">↑</button><button class="icb" data-a="down" title="Aşağı">↓</button><button class="icb" data-a="ins" title="Altına satır ekle">＋</button><button class="icb del" data-a="del" title="Satırı sil">✕</button></td></tr>`).join("");
@@ -1432,7 +1504,7 @@ tbody.addEventListener("input",e=>{const tr=e.target.closest("tr");if(!tr)return
   if(k==="m"){r.m=parseVal(e.target.value);r.mChk=false;r.mTyped=true;e.target.classList.remove("mchk");e.target.title="";
     // sayıyı sen yazdın: değer artık senin, adı da şüpheli değilse ayrıca onaylamaya gerek yok
     if(r.status!=="chk"){const b=tr.querySelector(".onayla");if(b)b.remove()}}
-  else if(k==="en"){r.en=e.target.value.toUpperCase();r.enTyped=true}else if(k==="tr"){r.tr=up(e.target.value);r.trTyped=true}
+  else if(k==="en"){r.en=e.target.value.toUpperCase();r.enTyped=true;r.ipucu=""}else if(k==="tr"){r.tr=up(e.target.value);r.trTyped=true}
   if(k==="tr"||k==="m")e.target.classList.toggle("empty",!e.target.value);degisti()});
 tbody.addEventListener("change",e=>{const tr=e.target.closest("tr");if(!tr)return;const r=ROWS[+tr.dataset.i],k=e.target.dataset.k;
   if(k==="grp"){r.grp=e.target.value;r.grpEl=!r.grp;ROWS=groupTogether(ROWS);renderTable();degisti();return}
@@ -1441,7 +1513,7 @@ tbody.addEventListener("change",e=>{const tr=e.target.closest("tr");if(!tr)retur
     if(normEn(r.en)==="NECK WIDTH"&&!r.trTyped)yakaKurali(r,r.en);   // elle yazılan düz NECK WIDTH da içten içe ("—" seçilirse düz kalır)
     e.target.value=r.en;renderTable();degisti()}
   if(k==="tr"){e.target.value=r.tr}});
-tbody.addEventListener("dblclick",e=>{const i=e.target;if(i.dataset&&i.dataset.k==="tr"&&!i.value){const r=ROWS[+i.closest("tr").dataset.i];const h=r.origTr?up(r.origTr):glossHint(r.en);if(h){r.tr=up(h);r.trTyped=true;i.value=r.tr;i.classList.remove("empty");degisti()}}});
+tbody.addEventListener("dblclick",e=>{const i=e.target;if(i.dataset&&i.dataset.k==="tr"&&!i.value){const r=ROWS[+i.closest("tr").dataset.i];const h=r.origTr?up(r.origTr):glossHint(r.ipucu||r.en);if(h){r.tr=up(h);r.trTyped=true;i.value=r.tr;i.classList.remove("empty");degisti()}}});
 tbody.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const i=+b.closest("tr").dataset.i;const a=b.dataset.a;
   // ✓: okunan ad ve ölçü doğru. Sözlükte olmayan (kırmızı) ölçü ✓ ile "sözlükte var" olmaz, Türkçesi yine beklenir
   if(a==="ok"){const r=ROWS[i];if(r.status==="chk")r.status="ok";r.mChk=false;renderTable();degisti();return}

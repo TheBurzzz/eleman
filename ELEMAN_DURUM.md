@@ -357,6 +357,29 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
     3.3.3 ile birebir aynı, wa0 (düz neck width) artık içten içe; başka fark yok. Yedi müşteri şablonunun hepsinde iki satır var:
     NECK WIDTH (INSIDE) ve NECK WIDTH (SEAM TO SEAM).
 
+- 2026-11-19 öğleden sonra (Ölçü sohbeti): **Eleman 3.3.5**, Almanca ve yanlış yazılmış İngilizce. Kullanıcı: "müşterilerin çoğu
+  Alman; bazen İngilizceyi yanlış yazıyorlar, bazen ölçü adlarını Almanca yazıyorlar (nadir). Her şeyi İngilizce düşünme."
+  **Bundan sonra her yeni kural (anahtar kelime, eşleştirme) Almancayı da düşünmeli.**
+  - `DE_PARCA` (Almanca parça → İngilizce: WEITE/BREITE→WIDTH, LÄNGE→LENGTH, HÖHE→HEIGHT, BRUST, TAILLE, HÜFTE, SAUM→BOTTOM, ÄRMEL,
+    ARMLOCH, AUSSCHNITT→NECK, KAPUZE, TASCHE, BUND→WAISTBAND, VORNE/HINTEN, HM→CB, VM→CF, NAHT→SEAM …). `deBol`: bileşik kelimeyi
+    parçalara böler (bağlayıcı S/N/EN/ES; AM, ZU gibi kısalar yalnız tek başına); `deBol(s,true)`: bileşikte bir parçanın bir harfi
+    yanlış okunmuş olabilir (KAPUZENHTHE = KAPUZE+N+HÖHE). `almancaCevir`: kelime kelime çeviri; NECK DEPTH→NECK DROP,
+    SHOULDER WIDTH→SHOULDER TO SHOULDER, TOTAL/FRONT LENGTH→FRONT LENGTH FROM HPS.
+  - `lookup0`: öğrenilen → SYN → sözlük → **katlanmış eşleşme** (`katliBul`: Ä=A, Ö=O, Ü=U, ß=SS; kağıtta BANDLÄNGE, öğrenilen
+    BANDLANGE) → **Almanca**: çeviri bilinen ölçüyse o (status `chk`, `orig` Almanca ad; benzerlikle eşleşme yalnız skor ≥ 0,9) →
+    benzerlik → yeni (Almanca ad kalır, `ipucu` = İngilizcesi; Türkçe önerisi `glossHint(r.ipucu||r.en)`).
+  - `fixTokens`: yer değiştirme de düzeltilir (WIDHT, LENTGH, HEGIHT, POISTION). Sözlükte hiç olmayan kelime: bir harf farkı ya da
+    yer değiştirme; eski tablolarda da yanlış yazılmış kelime (WIDHT 7 kez): yalnız yer değiştirme ve doğrusu ≥ 50 ve ≥ 20 kat
+    yaygınsa (CENTRE/CENTER kalır). Almanca kelimeye dokunulmaz (HOHE → HOLE olmasın).
+  - Yön bulma: `yonKanon` (büyük harf, şapkasız: width → WIDTH, LÄNGE → LANGE, Türkçe harfler de) + Almanca kelimeler.
+    Başlık: Messpunkt / Bezeichnung / Maße satırı beden etiketi; Artikel, Qualität/Material, Farbe, Lieferant, Größe etiketleri
+    (yalnız İngilizcesi yoksa). Gruplar: TASCHE, KRAGEN, ABNÄHER, GÜRTEL, KAPUZE.
+  - Denemeler (`scratchpad/e2e/t_almanca*.py`): 65 tek tek ad; sözlüğün 6168 yazılışı (her ad, küçük harfli, " I" ekli, harf
+    yer değiştirmiş, harf eksik) 3.3.4 ile: sözlükteki hiçbir ad ve küçük harfli yazılış değişmedi, bulunan hiçbir şey kaybolmadı,
+    farklar yalnız yanlış yazılışlarda (çoğu doğru ada bağlandı). 20 gerçek sayfa (Fjonna, Jeldra, 8 WhatsApp fotoğrafı, 2 PDF,
+    çevrilmiş halleri) 3.3.4 ile birebir aynı, yönler aynı (doğru yönde puan biraz arttı, yanlış yönde 0–2). Yapay Almanca kağıt:
+    3.3.4'te ters/yan konunca hiç okunmuyordu, şimdi 0/90/180'de aynı 16 satır, model, kumaş, beden 38.
+
 ## Sıradaki işler
 0. **Sürüm arşivi = GitHub Releases.** 32 sürüm (ilk-deneme, v1.0.0–v1.1.22, v2.0.0–v2.0.4) bir kerelik GitHub Actions işiyle
    taşındı, `surum-v*`, `arsiv`, `surum-test` dalları silindi (dallar: eleman, main, exe-deneme). Bu oturumlardan etiket ve
