@@ -679,7 +679,14 @@ function sim(a,b){const A=toks(a),B=toks(b);if(!A.length||!B.length)return 0;let
 function lev(a,b){if(Math.abs(a.length-b.length)>2)return 9;const d=[...Array(b.length+1).keys()];for(let i=1;i<=a.length;i++){let p=d[0];d[0]=i;for(let j=1;j<=b.length;j++){const t=d[j];d[j]=Math.min(d[j]+1,d[j-1]+1,p+(a[i-1]===b[j-1]?0:1));p=t}}return d[b.length]}
 const VOCAB=new Map();for(const [k,e] of DICT)for(const w of k.split(" "))if(/^[A-Z]{3,}$/.test(w))VOCAB.set(w,(VOCAB.get(w)||0)+(e.n||1));
 function fixTokens(k){return k.split(" ").map(w=>{if(!/^[A-Z]{3,}$/.test(w)||VOCAB.has(w))return w;let best=w,bn=0;for(const [v,n] of VOCAB){if(Math.abs(v.length-w.length)>1)continue;if(lev(w,v)===1&&n>bn){bn=n;best=v}}return bn>=5?best:w}).join(" ")}
-function lookup(raw){const r=lookup0(raw);if(r.en)r.tr=trFor(r.en,r.tr);return r}
+function lookup(raw,trKagit){const r=lookup0(raw);if(r.en){yakaKurali(r,raw+" "+(trKagit||""));r.tr=trFor(r.en,r.tr)}return r}
+/* yaka açıklığı (kullanıcının kuralı): kağıtta dikişten dikişe yazıyorsa dikişten dikişe, bir şey yazmıyorsa içten içe.
+   Yalnız düz NECK WIDTH ve şablondaki iki hali; "edge to edge", "NECK WIDTH 1" gibi başka bir şey yazanlara dokunulmaz */
+const YAKA_DIKIS=/\bSEAM|\bSIEM\b|DIKI[SŞ]|\bNAHT\b|S[ØO]M TIL S[ØO]M/,YAKA_IC=/\bINSIDE\b|\bINSEDE\b|I[CÇ]TEN|\bINNEN\b/;
+function yakaKurali(r,kagit){const k=normEn(r.en);if(!/^NECK WIDTH( \((INSIDE|SEAM TO SEAM)\))?$/.test(k))return r;
+  const P=normEn(kagit),v=(YAKA_DIKIS.test(P)&&!YAKA_IC.test(P))?"SEAM TO SEAM":"INSIDE",hedef=`NECK WIDTH (${v})`;if(k===hedef)return r;
+  const e=DICT.get(hedef);r.en=e?e.en:hedef;r.tr=e?e.tr:(v==="INSIDE"?"YAKA ACIKLIGI (İÇTEN İÇE)":"YAKA ACIKLIGI (DİKİŞTEN DİKİŞE)");
+  if(e){r.grp=e.grp||r.grp||"";r.after=e.after||""}return r}
 function lookup0(raw){
   let k=normEn(raw); if(!k) return {status:"new",en:"",tr:""};
   if(!learned()[k]&&!DICT.has(k))k=fixTokens(k);
@@ -1337,7 +1344,7 @@ async function sayfaOku(w,canvas,base){
     const xr=res.M?res.M.x1+src.width*.1:src.width*.95;
     const JUNK=[];
     const unreadRow=(y0,y1,yc,pi)=>newRow({en:"",tr:"",m:"",mOku:"",mImg:sayiCrop(src,y0,y1,res.M),status:"unread",wasUnread:true,hw:hiCrop(src,y0,y1,Math.min(src.width,xr)),yer:yer(y0,y1),snip:cropSnip(src,y0,y1,Math.min(src.width,xr)),paperIdx:base+pi});
-    const rows=res.rows.map((r,i)=>{const lk=lookup(r.en);
+    const rows=res.rows.map((r,i)=>{const lk=lookup(r.en,r.tr);
       // anlamsız okunan (çoğunlukla el yazısı) satır: atma, okunamadı diye göster
       if(!r.num&&lk.status==="new"&&(r.en.match(/[A-Za-z]/g)||[]).length<8){JUNK.push({y0:r.y0,y1:r.y1,yc:r.yc,pi:i});return null}
       let tr=lk.tr||(r.tr?up(r.tr):"");
@@ -1430,7 +1437,9 @@ tbody.addEventListener("input",e=>{const tr=e.target.closest("tr");if(!tr)return
 tbody.addEventListener("change",e=>{const tr=e.target.closest("tr");if(!tr)return;const r=ROWS[+tr.dataset.i],k=e.target.dataset.k;
   if(k==="grp"){r.grp=e.target.value;r.grpEl=!r.grp;ROWS=groupTogether(ROWS);renderTable();degisti();return}
   if(k==="nv"){applyNeck(r,e.target.value);renderTable();degisti();return}
-  if(k==="en"){const e2=DICT.get(normEn(r.en));if(e2){r.en=e2.en;if(!r.tr)r.tr=e2.tr;if(!r.grp&&e2.grp)r.grp=e2.grp;r.status="ok"}else r.status=(r.status==="ok"||r.status==="unread")?"new":r.status;e.target.value=r.en;renderTable();degisti()}
+  if(k==="en"){const e2=DICT.get(normEn(r.en));if(e2){r.en=e2.en;if(!r.tr)r.tr=e2.tr;if(!r.grp&&e2.grp)r.grp=e2.grp;r.status="ok"}else r.status=(r.status==="ok"||r.status==="unread")?"new":r.status;
+    if(normEn(r.en)==="NECK WIDTH"&&!r.trTyped)yakaKurali(r,r.en);   // elle yazılan düz NECK WIDTH da içten içe ("—" seçilirse düz kalır)
+    e.target.value=r.en;renderTable();degisti()}
   if(k==="tr"){e.target.value=r.tr}});
 tbody.addEventListener("dblclick",e=>{const i=e.target;if(i.dataset&&i.dataset.k==="tr"&&!i.value){const r=ROWS[+i.closest("tr").dataset.i];const h=r.origTr?up(r.origTr):glossHint(r.en);if(h){r.tr=up(h);r.trTyped=true;i.value=r.tr;i.classList.remove("empty");degisti()}}});
 tbody.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const i=+b.closest("tr").dataset.i;const a=b.dataset.a;

@@ -345,6 +345,18 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
     Onayla, defter örnekleri (düzeltilmeyen gitmez, ikinci kayıtta tekrar gitmez), hood boşaltma; Asorti sekmesi açılıyor; ESLint
     `no-undef` yalnız eski iki tanıdık (`showDirectoryPicker`, `asortiPencere`).
 
+- 2026-11-19 öğleden sonra (Ölçü sohbeti): **Eleman 3.3.4**, yaka açıklığı kuralı (kullanıcı: "yaka açıklığı varsayılan olarak içten
+  içe gelsin; ölçü tablosunda dikişten dikişe yazıyorsa varsayılan yapma, bir şey yazmıyorsa varsayılanı kullan").
+  - `lookup(raw, trKagit)` → `yakaKurali`: sonuç düz `NECK WIDTH` ya da şablondaki iki hali (`(INSIDE)`, `(SEAM TO SEAM)`) ise
+    kağıttaki satır yazısına (İngilizce + varsa Türkçe) bakılır: SEAM / SIEM / DİKİŞ / NAHT / SØM TIL SØM geçiyor ve INSIDE / İÇTEN /
+    INNEN geçmiyorsa `NECK WIDTH (SEAM TO SEAM)`, yoksa `NECK WIDTH (INSIDE)`; ad ve Türkçe sözlükten (şablon yazımı).
+    Öğrenilen hafıza "dikişten dikişe" dese bile kağıtta yazmıyorsa içten içe. "NECK WIDTH SEAM TO SEAM" (parantezsiz, sözlükte),
+    "EDGE TO EDGE", "NECK WIDTH 1" gibi başka bir şey yazanlara dokunulmaz. NECK DROP'a dokunulmadı.
+  - Elle yazılan düz NECK WIDTH (Türkçesi elle yazılmamışsa) da içten içe; satırdaki seçimden "—" seçilirse düz kalır.
+  - Denemeler: 15 tek tek eşleştirme; yapay iki kağıt (düz → içten içe, seam to seam → aynen); Fjonna, Jeldra, wa1 (seam to seam)
+    3.3.3 ile birebir aynı, wa0 (düz neck width) artık içten içe; başka fark yok. Yedi müşteri şablonunun hepsinde iki satır var:
+    NECK WIDTH (INSIDE) ve NECK WIDTH (SEAM TO SEAM).
+
 ## Sıradaki işler
 0. **Sürüm arşivi = GitHub Releases.** 32 sürüm (ilk-deneme, v1.0.0–v1.1.22, v2.0.0–v2.0.4) bir kerelik GitHub Actions işiyle
    taşındı, `surum-v*`, `arsiv`, `surum-test` dalları silindi (dallar: eleman, main, exe-deneme). Bu oturumlardan etiket ve

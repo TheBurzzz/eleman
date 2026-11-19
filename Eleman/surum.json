@@ -1,10 +1,7 @@
 {
- "surum": "3.3.3",
+ "surum": "3.3.4",
  "tarih": "2026-11-19",
  "notlar": [
-  "Ölçü Tablosu · Excel'e kaydettikten sonra sekmedeki ışık artık yanıp sönmüyor ve sekme kapanıyor (önceden \"kaydediyor\" sanıp kapatmaya izin vermiyordu). Kaydedilen tablonun ışığı sabit yeşil yanar, tabloda bir şey değişince normale döner",
-  "Ölçü Tablosu · yeni grup: hood. Kapşon ölçüleri (HOOD geçenler) taranan kağıtta kendiliğinden hood grubuna girer; bir satırın grubunu elle boşaltırsan geri gelmez",
-  "Ölçü Tablosu · sarı (şüpheli) okunan sayıyı düzeltip yazınca Onayla düğmesi kendiliğinden kaybolur: yazdığın değer geçerlidir, ayrıca onaylamaya gerek yok",
-  "Ölçü Tablosu · düzelttiğin sayılar, kağıttaki görüntüsüyle birlikte el yazısı defterine de girer (ileride el yazısı okuyucusu rakamları buradan öğrenecek)"
+  "Ölçü Tablosu · yaka açıklığı varsayılan olarak içten içe gelir: kağıtta yalnız \"neck width\" yazıyorsa NECK WIDTH (INSIDE) / YAKA AÇIKLIĞI (İÇTEN İÇE). Kağıtta dikişten dikişe (seam to seam) yazıyorsa dikişten dikişe kalır. Elle yazılan düz NECK WIDTH de içten içe olur; satırdaki seçimden \"—\" ya da \"Dikişten dikişe\" seçilebilir"
  ]
 }
