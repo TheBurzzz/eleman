@@ -1,7 +1,7 @@
 {
- "surum": "3.3.1",
- "tarih": "2026-11-12",
+ "surum": "3.3.2",
+ "tarih": "2026-11-19",
  "notlar": [
-  "Ölçü Tablosu · ayarlarda \"Geçmiş tablolardan öğrenme\" bölümü görünmüyordu, düzeltildi (Ayarlar → Ortak hafıza → Bu klasörü kullan)"
+  "Ölçü Tablosu · kağıt tarayıcıya ters ya da yan konsa da düz çevrilip okunuyor: kağıdın yönüne program kendisi bakıyor (düz konan kağıtta okuma eskisiyle aynı)"
  ]
 }

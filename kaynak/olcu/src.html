@@ -946,16 +946,17 @@ async function dosyaSayfalari(file){
     pdfjsLib.GlobalWorkerOptions.workerSrc=EXE?new URL(LIB+"pdf.worker.min.js",location.href).href:"https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
     const pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;
     let sec=[1];if(pdf.numPages>1){sec=await pdfSayfaSec(pdf,file.name);if(!sec)return null}
-    const out=[];for(const n of sec)out.push(await pdfCiz(pdf,n,2480));return out;
+    const out=[];for(const n of sec)out.push(await pdfCiz(pdf,n,2480,true));return out;
   }
   const url=URL.createObjectURL(file);
   try{const img=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=()=>rej(new Error("Resim açılamadı: "+file.name));i.src=url});
     // tarayıcıdan gelen sayfa PDF'teki gibi 2480 px genişliğe getirilir (okuma ayarları buna göre); telefon fotoğrafı en az 2000 px
-    const s=file.tarama?2480/img.width:Math.max(1,2000/img.width);const c=document.createElement("canvas");c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);
+    // ölçek kısa kenara göre: yan duran (yatay) sayfa küçülmesin; dik sayfada genişliğe göre olanla aynı
+    const kisa=Math.min(img.width,img.height);const s=file.tarama?2480/kisa:Math.max(1,2000/kisa);const c=document.createElement("canvas");c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);
     const g=c.getContext("2d");g.imageSmoothingQuality="high";g.drawImage(img,0,0,c.width,c.height);return [c]}
   finally{URL.revokeObjectURL(url)}
 }
-async function pdfCiz(pdf,n,genislik){const page=await pdf.getPage(n);const v0=page.getViewport({scale:1});const vp=page.getViewport({scale:genislik/v0.width});
+async function pdfCiz(pdf,n,genislik,kisaKenar){const page=await pdf.getPage(n);const v0=page.getViewport({scale:1});const vp=page.getViewport({scale:genislik/(kisaKenar?Math.min(v0.width,v0.height):v0.width)});
   const c=document.createElement("canvas");c.width=Math.round(vp.width);c.height=Math.round(vp.height);const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);
   await page.render({canvasContext:g,viewport:vp}).promise;return c}
 /* çok sayfalı PDF: küçük resimlerden okunacak sayfa(lar)ı seç — tablo iki sayfaya taşıyorsa ikisini birden seç */
@@ -1003,13 +1004,44 @@ function cleanCanvas(src){
   for(let p=0,i=0;p<W*H;p++,i+=4){const v=dark[p]&&!kill[p]?0:255;d[i]=d[i+1]=d[i+2]=v;d[i+3]=255}
   g.putImageData(im,0,0);return c;
 }
+/* ---------- kağıdın yönü: tarayıcıya nasıl konursa konsun (ters, yan) düz okunur ----------
+   Sayfanın küçük, temizlenmiş bir kopyası 0°, 180°, 90°, 270° çevrilerek hızlıca okunur; sözlükteki kelimelerden
+   en çok hangisinde güvenle okunuyorsa sayfa o yöne çevrilir. Düz konan kağıtta tek kısa okuma yapılır (~1 sn). */
+let YON_BAKIYOR=false,YON_KELIME=null;
+function yonKelimeleri(){if(YON_KELIME)return YON_KELIME;const K=new Set(VOCAB.keys());
+  for(const [,e] of DICT)for(const x of String(e.tr||"").toLocaleUpperCase("tr-TR").split(/[^A-ZÇĞİÖŞÜ]+/))if(x.length>=3)K.add(x);
+  for(const x of ["MEASUREMENT","MEASUREMENTS","SIZE","SIZES","ARTICLE","QUALITY","DESCRIPTION","POINT","POINTS","CODE","TOLERANCE","STYLE","SEASON","SUPPLIER","DATE","COLOUR","COLOR","FABRIC","SAMPLE"])K.add(x);
+  return YON_KELIME=K}
+// saat yönünde d derece (90'ın katı) çevir; tam sayılı dönüşüm: pikseller birebir taşınır, görüntü bulanıklaşmaz
+function cevir(src,d){if(!d)return src;const c=document.createElement("canvas");const yan=d===90||d===270;c.width=yan?src.height:src.width;c.height=yan?src.width:src.height;
+  const g=c.getContext("2d");
+  if(d===180)g.setTransform(-1,0,0,-1,c.width,c.height);else if(d===90)g.setTransform(0,1,-1,0,c.width,0);else g.setTransform(0,-1,1,0,0,c.height);
+  g.drawImage(src,0,0);return c}
+function kucult(src,gen){const s=Math.min(1,gen/src.width);if(s===1)return src;const c=document.createElement("canvas");c.width=Math.round(src.width*s);c.height=Math.round(src.height*s);
+  const g=c.getContext("2d");g.imageSmoothingQuality="high";g.drawImage(src,0,0,c.width,c.height);return c}
+function bant(src,a,b){const y=Math.round(src.height*a),h=Math.max(1,Math.round(src.height*(b-a)));const c=document.createElement("canvas");c.width=src.width;c.height=h;c.getContext("2d").drawImage(src,0,y,src.width,h,0,0,src.width,h);return c}
+async function yonPuani(w,c){const {data}=await w.recognize(c,{},{blocks:true});const K=yonKelimeleri();let p=0;
+  for(const x of wordsOf(data)){if(x.c<55)continue;const t=x.t.toLocaleUpperCase("tr-TR").replace(/[^A-ZÇĞİÖŞÜ]/g,"");if(t.length>=3&&K.has(t))p++}return p}
+async function yonBul(w,canvas){
+  YON_BAKIYOR=true;
+  try{
+    const temiz=cleanCanvas(kucult(canvas,1000));const sira=[0,180,90,270];
+    // önce orta bant (hızlı): düz okunan yön hemen seçilir
+    const p={};
+    for(const d of sira){p[d]=await yonPuani(w,bant(cevir(temiz,d),.25,.75));if(p[d]>=8&&(d===0||p[d]>=2*p[0]+2))return d}
+    // orta bantta yazı azsa (kısa tablo, boş sayfa): bütün sayfaya bak
+    const t={};for(const d of sira)t[d]=await yonPuani(w,cevir(temiz,d));
+    let en=0;for(const d of sira)if(t[d]>t[en])en=d;
+    return (en!==0&&t[en]>=4&&t[en]>=2*t[0]+2)?en:0;
+  }finally{YON_BAKIYOR=false}
+}
 let WORKER=null;
 async function getWorker(){
   if(WORKER)return WORKER;
   if(typeof Tesseract==="undefined")throw new Error("okuma motoru yüklenemedi (internet bağlantısını kontrol et)");
   // Eleman programında okuma motoru ve dil dosyaları programın içinden gelir (internet gerekmez)
   const yer=EXE?{workerPath:LIB+"worker.min.js",corePath:LIB+"core",langPath:LIB+"lang"}:{};
-  WORKER=await Tesseract.createWorker(["eng","tur"],1,{...yer,logger:m=>{if(m.status==="recognizing text")setProg(.35+m.progress*.6,"Kağıt okunuyor… %"+Math.round(m.progress*100));else if(/load/i.test(m.status))setProg(.1+(m.progress||0)*.2,"Okuma motoru yükleniyor (ilk seferde biraz sürer)…")}});
+  WORKER=await Tesseract.createWorker(["eng","tur"],1,{...yer,logger:m=>{if(m.status==="recognizing text"){if(YON_BAKIYOR)setProg(.1+m.progress*.2,"Kağıdın yönüne bakılıyor…");else setProg(.35+m.progress*.6,"Kağıt okunuyor… %"+Math.round(m.progress*100))}else if(/load/i.test(m.status))setProg(.1+(m.progress||0)*.2,"Okuma motoru yükleniyor (ilk seferde biraz sürer)…")}});
   await WORKER.setParameters({tessedit_pageseg_mode:"11",preserve_interword_spaces:"1"});
   return WORKER;
 }
@@ -1256,10 +1288,11 @@ async function handleFile(files,o={}){if(needCust())return;
     for(const f of files){const c=await dosyaSayfalari(f);if(c)sayfalar.push(...c)}
     if(!sayfalar.length){$("#ocrMsg").textContent="";$("#prog").classList.add("hidden");return}
     const w=await getWorker();
-    const rows=[],pages=[];let info=null,sizeLbl=null;
+    const rows=[],pages=[];let info=null,sizeLbl=null,donen=0;
     for(let s=0;s<sayfalar.length;s++){
       PROG_ON=sayfalar.length>1?`Sayfa ${s+1}/${sayfalar.length} · `:"";
       const r=await sayfaOku(w,sayfalar[s],s*1000);
+      if(r.yon&&!donen)donen=r.yon;
       pages.push(r.img);rows.push(...r.rows);
       if(!info||(!info.art&&r.info.art))info=r.info;
       if(!sizeLbl&&r.sizeLbl)sizeLbl=r.sizeLbl;
@@ -1274,16 +1307,20 @@ async function handleFile(files,o={}){if(needCust())return;
     $("#fArt").value=info.art||"";$("#fQual").value=info.qual||"";$("#fDate").value=today();
     $("#saveInfo").innerHTML="";
     const nu=ROWS.filter(r=>r.status==="unread").length;
-    setProg(1,`${ROWS.length-nu} satır okundu${nu?`, ${nu} satır okunamadı (kırmızı, kağıda bakıp doldur ya da ✕ ile sil)`:""}. Renkli işaretli satırları kontrol et.`);
+    const yonNotu=donen?` Kağıt ${donen===180?"ters":"yan"} taranmıştı, düz çevrilip okundu.`:"";
+    setProg(1,`${ROWS.length-nu} satır okundu${nu?`, ${nu} satır okunamadı (kırmızı, kağıda bakıp doldur ya da ✕ ile sil)`:""}. Renkli işaretli satırları kontrol et.${yonNotu}`);
     openEdit();DEGISTI=true;taslakZamanla();
   }catch(e){console.error(e);toast("Okuma sırasında hata: "+e.message,6000);$("#ocrMsg").textContent="";$("#prog").classList.add("hidden")}
   finally{OKUYOR=false;PROG_ON="";durumBildir()}
 }
 /* tek sayfayı oku: base = bu sayfanın satırlarının kağıttaki sıra başlangıcı (2. sayfa 1000'den başlar) */
 async function sayfaOku(w,canvas,base){
+    setProg(.1,"Kağıdın yönüne bakılıyor…");
+    const yon=await yonBul(w,canvas);
+    if(yon)canvas=cevir(canvas,yon);
     const src=deskew(canvas);
     const yer=(a,b)=>({pg:Math.floor(base/1000),a:a/src.height,b:b/src.height});   // satırın kağıttaki yeri (0-1)
-    const clean=cleanCanvas(src);setProg(.08);
+    const clean=cleanCanvas(src);setProg(.3);
     const img=src.toDataURL("image/jpeg",.7);
     setProg(.35,"Kağıt okunuyor…");
     const {data}=await w.recognize(clean,{}, {blocks:true,text:true});
@@ -1317,7 +1354,7 @@ async function sayfaOku(w,canvas,base){
       if(lk&&(lk.status==="ok"||lk.status==="chk"||lk.status==="new")){let pv={v:"",ok:true};for(const t of tnums){const c=plaus(lk.en,parseVal(cleanNum(t).v));if(c.ok){pv=c;break}if(pv.v==="")pv=c}
         rows.push(newRow({en:lk.en,tr:lk.tr||"",m:pv.v,mChk:true,grp:lk.grp||"",after:lk.after||"",status:lk.status==="new"?"new":"chk",orig:enTxt,yer:yer(bd.y0,bd.y1),snip:cropSnip(src,bd.y0,bd.y1,Math.min(src.width,xr)),paperIdx:base+pi}))}
       else{const u=unreadRow(bd.y0,bd.y1,bd.yc,pi);u.ocrText=rb.text;rows.push(u)}}
-    return {rows,info:res.info,sizeLbl:res.sizeLbl||null,img};
+    return {rows,info:res.info,sizeLbl:res.sizeLbl||null,img,yon};
 }
 function today(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
 

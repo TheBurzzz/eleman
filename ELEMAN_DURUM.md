@@ -309,6 +309,20 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
   - Denemeler: `/home/claude/is/tarama/t_yeni.py` (iş bilgisayarından kopyalanan 22 gerçek tabloyla; klasörün değişmediği özetle
     doğrulandı) 9/9; önceki denemeler yeniden: yarış 3/3, hafıza 8/8, sekme 5/5, genel akış.
 
+- 2026-11-19 (Ölçü sohbeti): **Eleman 3.3.2**, kağıdın yönü. Kullanıcı ilk kez Eleman'dan taradı; kağıt camda ters duruyordu,
+  hiçbir satır okunamadı (kullanıcı: "kağıdı tarayıcıya nasıl koyduğum fark etmesin … iki yönlü de koyabileyim").
+  - `kaynak/olcu/src.html` → `yonBul`: sayfanın 1000 px'lik temizlenmiş kopyasının orta bandı (%25–75) 0°, 180°, 90°, 270° sırayla
+    hızlıca okunur; güveni ≥55 olan sözlük kelimeleri sayılır (VOCAB + sözlükteki Türkçe kelimeler + başlık kelimeleri). Puanı ≥8 olan
+    ilk yön seçilir (0° dışındaki yön 0°'ın 2 katı+2'yi de geçmeli); bantta yazı azsa (kısa tablo, boş sayfa) bütün sayfaya bakılır.
+    Sonra eskisi gibi deskew → temizle → oku; "Kağıdı yanda aç" ve satırların kağıttaki yeri çevrilmiş sayfaya göre.
+    Mesaj: "Kağıt ters/yan taranmıştı, düz çevrilip okundu."
+  - `cevir`: tam sayılı `setTransform` (pikseller birebir taşınır; `rotate` + yarım piksel kayması görüntüyü bulanıklaştırıyordu).
+  - Ölçek kısa kenara göre (tarama 2480, fotoğraf en az 2000, PDF `pdfCiz(...,true)`): yan duran sayfa küçülmesin; dik sayfada eskisiyle aynı.
+  - Denemeler (Ölçü sohbeti, Playwright, gerçek tarama örnekleri): düz kağıtta 3.3.1 ile birebir aynı sonuç (FJONNA ve JELDRA PDF,
+    tarayıcı JPEG'i, 2 telefon fotoğrafı); aynı kağıt 0°/90°/180°/270° → satırlar, değerler ve kağıttaki yerler birebir aynı (kayıpsız PNG);
+    yanlış yönde puan 0–1, doğru yönde 27–102. Süre: düz kağıtta +~1,2 sn, ters kağıtta +~3 sn. Müşteri seçili akışta ters tarama
+    `handleFile` ile: 25 satır, model ve beden doğru, sayfa hatası yok.
+
 ## Sıradaki işler
 0. **Sürüm arşivi = GitHub Releases.** 32 sürüm (ilk-deneme, v1.0.0–v1.1.22, v2.0.0–v2.0.4) bir kerelik GitHub Actions işiyle
    taşındı, `surum-v*`, `arsiv`, `surum-test` dalları silindi (dallar: eleman, main, exe-deneme). Bu oturumlardan etiket ve
