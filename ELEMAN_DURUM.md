@@ -400,6 +400,20 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
     hepsi gitti; kaydedip sekmeyi 250 ms'de kapatınca: iki sekmede öteki bitirdi, tek sekmede gösterge takılmadı. Sekme ışığı,
     Asorti sekmesi, ESLint aynı.
 
+- 2026-11-20 sabah (Ölçü sohbeti): **Eleman 3.3.7**, en üst satır atlanıyordu (kullanıcı: "son 3-4 tabloda en üst satırı okumuyor,
+  elle satır açıyorum"; Lykka designsheet, Inskai). Neden: ilk satırın sayısının hemen sağına tik atılmış ("61-|"); OCR "A1"
+  okuyor, sayı sayılmadığı için `analyse` M sütununun başını (`topY`) ikinci sayıdan hesaplıyor, ilk satır tablonun dışında
+  kalıyordu (kullanıcının ekran görüntüsündeki kağıtla birebir üretildi; 3.3.6'da 16, 3.3.7'de 17 satır).
+  - `analyse`: başlık (M sütunundaki beden etiketi ya da MEASUREMENTS / MESSPUNKT / DESCRIPTION) ile ilk okunan sayı arasında
+    2,5 satır yüksekliğinden büyük boşluk varsa oraya, başlık yoksa bir satır aralığı yukarısına bakılır (`ekUst`); bu ek bölgedeki
+    satır yalnız adı bilinen bir ölçüyse (`lookup0` ok) alınır, harfli okunan sayısı boşaltılır (`refineNums` hücreyi yalnız
+    rakamla yeniden okur). Başlık ile ilk sayı arası olağansa hiçbir şey değişmez.
+  - `BASLIK` / `basliksiz`: başlık kelimesiyle başlayan satır (ilk satırla tek satır okunmuş olabilir) başlıktan sonrası bilinen
+    ölçüyse atılmaz.
+  - `cleanNum`: sayının sağına yapışık tik "61-1" / "61~|" → 61 (emin değil, sarı).
+  - Denemeler: 27 sayfa (gerçek + yapay + Almanca, çevrilmiş halleri) 3.3.6 ile birebir aynı; sahte kelimelerle `analyse`
+    (tikli ilk sayı: 3.3.6 satırı atıyor, 3.3.7 alıyor; olağan tablo aynı).
+
 ## Sıradaki işler
 0. **Sürüm arşivi = GitHub Releases.** 32 sürüm (ilk-deneme, v1.0.0–v1.1.22, v2.0.0–v2.0.4) bir kerelik GitHub Actions işiyle
    taşındı, `surum-v*`, `arsiv`, `surum-test` dalları silindi (dallar: eleman, main, exe-deneme). Bu oturumlardan etiket ve

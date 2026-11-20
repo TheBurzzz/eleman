@@ -1156,6 +1156,10 @@ const NUMRE=/(\d+(?:[.,]\d+)?(?:\s*[\/+]\s*\d+(?:[.,]\d+)?)?)/;
 function parseVal(s){s=String(s||"").trim();if(!s)return "";if(/^\d+(?:[.,]\d+)?$/.test(s))return parseFloat(s.replace(",","."));return s}
 function fmtVal(v){if(v===""||v==null)return "";if(typeof v==="number")return String(v).replace(".",",");return String(v)}
 
+/* tablo başlığı (MEASUREMENTS, POM, Messpunkt…). Başlık satırı ilk ölçü satırıyla tek satır okunmuş olabilir
+   ("MEASUREMENTS FROM LENGTH FR HPS … 61"): başlık kelimesinden sonrası bilinen bir ölçüyse o satır atılmaz */
+const BASLIK=/^(code|point of measurements?|description|measurements?|pom|messpunkte?|messstellen?|bezeichnung|beschreibung|ma(?:ß|ss)(?:e|tabelle))\b/i;
+function basliksiz(en){const k=String(en).replace(BASLIK,"").replace(/^[\s:|\-–—]+/,"").trim();return k.replace(/[^A-Za-z]/g,"").length>=6&&lookup0(k).status==="ok"?k:""}
 function analyse(words,W,H){
   const {lines,mh}=groupLines(words);
   // M sütunu: sağ yarıdaki rakamların toplandığı dikey şerit
@@ -1170,13 +1174,23 @@ function analyse(words,W,H){
   const mWord=words.filter(w=>SZ.test(w.t.replace(/[^A-Za-z0-9]/g,""))&&Math.abs((w.x0+w.x1)/2-mx)<tol*1.5&&w.y1<topY+mh&&w.y0>topY-mh*6).sort((a,b)=>b.y1-a.y1)[0];
   let sizeLbl=mWord?mWord.t.replace(/[^A-Za-z0-9]/g,"").toUpperCase():null;
   const info=headerInfo(words,lines,mh,W,mWord?mWord.y0:topY-mh*2);
+  // İlk satırın sayısı yanındaki tikle karışıp sayı gibi okunmazsa ("61-1" -> "A1") M sütunu ikinci satırdan başlıyor sanılıyor,
+  // ilk satır hiç gelmiyordu. Başlıkla (M / MEASUREMENTS) ilk okunan sayı arasında bir satırlık boşluk varsa oraya, başlık
+  // bulunamazsa bir satır yukarısına kadar bakılır; oradaki satır yalnız adı bilinen bir ölçüyse alınır.
+  const ilkSayi=topY+mh*.6;
+  const ys=colW.map(w=>w.y0).sort((a,b)=>a-b),aralik=ys.slice(1).map((y,i)=>y-ys[i]).filter(d=>d>mh*.8).sort((a,b)=>a-b);
+  const adim=aralik.length?aralik[Math.floor(aralik.length/2)]:mh*2.6;
+  const bas=words.filter(w=>w.y1<ilkSayi&&w.y0>ilkSayi-mh*9&&((SZ.test(w.t.replace(/[^A-Za-z0-9]/g,""))&&Math.abs((w.x0+w.x1)/2-mx)<tol*1.5)||/^(MEASUREMENTS?|MESSPUNKTE?|DESCRIPTION)$/i.test(w.t.replace(/[^A-Za-zÄÖÜäöü]/g,""))));
+  const hb=bas.length?Math.max(...bas.map(w=>w.y1)):null;
+  const ekUst=hb!=null?(ilkSayi-hb>mh*2.5?hb+mh*.2:null):ilkSayi-adim*1.6;
   // satırları topla
   const raw=[];
   for(const l of lines){
-    if(l.yc<=topY)continue;
+    const ekte=l.yc<=topY;
+    if(ekte&&!(ekUst!=null&&l.yc>ekUst))continue;
     const nums=l.ws.filter(w=>(w.x0+w.x1)/2>mx-tol&&w.x0<xr+mh*2);
     const left=l.ws.filter(w=>w.x1<mx-tol*.9);
-    raw.push({l,nums,left});
+    raw.push({l,nums,left,ekte});
   }
   // tablonun sol kenarı ve Türkçe sütununun başlangıcı (satırların çoğuna bakarak)
   const med=a=>{a=a.slice().sort((x,y)=>x-y);return a.length?a[Math.floor(a.length/2)]:null};
@@ -1186,11 +1200,12 @@ function analyse(words,W,H){
   const leftX=med(firstX);
   const s2=seg2X.filter(x=>leftX==null||x>leftX+mh*6).sort((a,b)=>a-b);const trX=s2.length>=Math.max(3,raw.length*.25)?s2[Math.floor(s2.length*.2)]-mh*.5:null;
   const rows=[];
-  for(const {l,nums,left:left0} of raw){
+  for(const {l,nums,left:left0,ekte} of raw){
     const left=left0.filter(w=>leftX==null||w.x1>leftX-mh*.8);
     let num="",sure=true;
     const cand=nums.map(w=>({w,t:/^[lI|!\]\[]$/.test(w.t)?"1":w.t.replace(/[oO]/g,"0").replace(/^[lI|]([.,]\d)$/,"1$1")})).filter(o=>/\d/.test(o.t)).sort((a,b)=>Math.abs(a.w.x1-xr)-Math.abs(b.w.x1-xr));
-    if(cand.length){const r=cleanNum(cand[0].t);num=r.v;sure=r.sure&&cand[0].w.c>=75&&Math.abs(cand[0].w.x1-xr)<=mh*1.5}
+    if(cand.length){const r=cleanNum(cand[0].t);num=r.v;sure=r.sure&&cand[0].w.c>=75&&Math.abs(cand[0].w.x1-xr)<=mh*1.5;
+      if(ekte&&/[A-Za-z]/.test(cand[0].w.t)){num="";sure=false}}   // ek bölgede harfli okunan sayı ("A1"): hücre yalnız rakamla yeniden okunsun
     let enW,trW;
     if(trX!=null){enW=left.filter(w=>w.x0<trX);trW=left.filter(w=>w.x0>=trX)}
     else{const segs=[];let cur=[];for(const w of left){if(cur.length&&w.x0-cur[cur.length-1].x1>mh*2.2){segs.push(cur);cur=[]}cur.push(w)}if(cur.length)segs.push(cur);enW=segs[0]||[];trW=segs.slice(1).flat()}
@@ -1201,7 +1216,8 @@ function analyse(words,W,H){
     en=tidy(en);tr=tidy(tr);
     const letters=(en.match(/[A-Za-z]/g)||[]).length;
     if(letters<3&&!num)continue;
-    if(/^(code|point of measurements|description|measurements?|messpunkte?|messstellen?|bezeichnung|beschreibung|ma(?:ß|ss)(?:e|tabelle))\b/i.test(en)&&!num)continue;
+    if(ekte&&(letters<6||lookup0(en).status!=="ok"))continue;   // başlığın altındaki ek bölge: yalnız bilinen ölçü adı
+    if(BASLIK.test(en)&&!num){const kalan=basliksiz(en);if(kalan)en=kalan;else continue}
     rows.push({en,tr:/[A-Za-zÇĞİÖŞÜçğıöşü]{3}/.test(tr)?tr:"",num,sure,y0:l.y0,y1:l.y1,yc:l.yc,hasLetters:letters>=3});
   }
   for(let i=rows.length-1;i>=0;i--)if(!rows[i].en)rows.splice(i,1);
@@ -1219,14 +1235,15 @@ function analyse(words,W,H){
     merged.push(r)}
   let outRows=merged.filter(r=>r.hasLetters||r.num);
   // başlık satırı numara bedenle okunduysa (ör. "Measurements | 36") onu beden say, satırı at
-  const h0=outRows[0];if(h0&&(/^(code|point of measurements?|description|measurements?|pom|messpunkte?|messstellen?|bezeichnung|beschreibung|ma(?:ß|ss)(?:e|tabelle))\b/i.test(h0.en)||!h0.hasLetters)&&/^\d{2}$/.test(String(h0.num))){sizeLbl=String(h0.num);outRows=outRows.slice(1)}
+  const h0=outRows[0];if(h0&&(BASLIK.test(h0.en)||!h0.hasLetters)&&/^\d{2}$/.test(String(h0.num))){const kalan=h0.hasLetters?basliksiz(h0.en):"";
+    if(kalan)h0.en=kalan;else{sizeLbl=String(h0.num);outRows=outRows.slice(1)}}
   return {info,rows:outRows,M,mh,sizeLbl,leftX};
 }
 /* rakamı temizle: işaret/tik karışmışsa sağdaki ölçüyü al, virgülü kaçırılmış 395 -> 39,5 */
 function cleanNum(t){
   t=String(t).replace(/[oO]/g,"0").replace(/\s+/g,"");let sure=true;
   // sağa yapışmış tik/işaret (1✓ -> "1/", "1L", "1v")
-  const tr0=t;t=t.replace(/^(\d+(?:[.,]\d+)?)[^\d]+$/,"$1").replace(/^[lI|]$/,"1");if(t!==tr0)sure=false;
+  const tr0=t;t=t.replace(/^(\d+(?:[.,]\d+)?)[-~_—–]+[1lI|\/\\]$/,"$1").replace(/^(\d+(?:[.,]\d+)?)[^\d]+$/,"$1").replace(/^[lI|]$/,"1");if(t!==tr0)sure=false;
   const pair=t.match(/(\d{1,3}(?:[.,]\d{1,2})?)\/(\d{1,3}(?:[.,]\d{1,2})?)$/);
   if(pair&&+pair[1].replace(",",".")<=200&&+pair[2].replace(",",".")<=200&&pair[1].length>1&&pair[2].length>1&&t===pair[0])return {v:pair[0].replace(/\./g,","),sure};
   const plus=t.match(/^(\d{1,3})\+(\d{1,3})$/);if(plus)return {v:t,sure};

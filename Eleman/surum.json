@@ -1,9 +1,8 @@
 {
- "surum": "3.3.6",
- "tarih": "2026-11-19",
+ "surum": "3.3.7",
+ "tarih": "2026-11-20",
  "notlar": [
-  "Ölçü Tablosu · \"Gönderiliyor…\" artık takılı kalmıyor: kaydettikten sonra öğrenilenler ve el yazısı örnekleri ortak hafızaya birkaç saniyede kendiliğinden gider (bir şey yapmana gerek yok). Önceden iki gönderim aynı anda olunca çakışıyor, kalanlar 5 dakika bekliyordu",
-  "Ölçü Tablosu · bir kayıttaki el yazısı örnekleri tek seferde gönderiliyor; internet ya da GitHub bir anlık hata verirse kendiliğinden yeniden deniyor",
-  "Ölçü Tablosu · kaydedip sekmeyi hemen kapatırsan yarım kalan gönderimi açık olan başka bir Ölçü sekmesi bitiriyor"
+  "Ölçü Tablosu · tablonun en üst satırı atlanmıyor: ilk satırdaki sayının yanına tik atılmışsa sayı harfli okunuyordu (\"61-|\" -> \"A1\") ve program ölçülerin ikinci satırdan başladığını sanıp ilk satırı almıyordu. Artık başlıkla ilk okunan sayı arasında kalan satıra da bakılıyor; adı bilinen bir ölçüyse alınıyor, sayısı yeniden okunuyor",
+  "Ölçü Tablosu · sayının sağına yapışık tik (\"61-1\") sayıdan ayrılıyor"
  ]
 }
