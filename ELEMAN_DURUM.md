@@ -414,6 +414,29 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
   - Denemeler: 27 sayfa (gerçek + yapay + Almanca, çevrilmiş halleri) 3.3.6 ile birebir aynı; sahte kelimelerle `analyse`
     (tikli ilk sayı: 3.3.6 satırı atıyor, 3.3.7 alıyor; olağan tablo aynı).
 
+- 2026-11-20 sabah (Asorti sohbeti): **Eleman 3.4.0**, kullanıcının iki isteği: (1) "alt-üst takım / çizgili gibi panolu işler
+  için de bir seçenek … 1 panodan kaç beden, kaç kol çıkıyor yazacağım alan … asorti yapılmıyor ama ek asorti tabloları kalsın …
+  seçenekler uygulamanın temasına uygun olsun"; (2) "astar ve kontrast cep … gerbere gönderip oto pastala gönderme seçeneği de
+  olsun ama kendim yapma seçeneği de olsun".
+  - Sipariş kartı: iki onay kutusu yerine "İş türü" tek seçim (Normal · Alt-üst takım · Çizgili ürün · Panolu iş), simgeli
+    kartlar (`turUI`, `turSec`; `tkTog` / `cizTog` ona yönlenir). Yeni bayrak `ord.panolu`.
+  - Asortisiz işler için `info.asz` (= çizgili || panolu): "asorti yok" anlamında `info.cizgili`'ye bakan her yer (ek tablolar
+    sipariş adetlerinden, ana Gerber gönderimi kapalı, fazla kesim yok…) artık `info.asz`'a bakar; çizgiliye özgü birim
+    tabloları `info.cizgili`'de kaldı.
+  - Panolu iş: kart `#stp` (2. adım), gruplar `pnr` [{s:[beden], b:'1,5', k:'2'}], varsayılan tek grup bütün bedenler, kolda
+    "= 4 kol" ipucu. Excel / yazdırma: sarı PANO BİRİMLERİ; BEDEN PANO BİRİMİ ve KOL PANO BİRİMİ ikişer sütun birleşik, değer
+    "1 PANODAN 1,5 İŞ" (kullanıcının elle yaptığı tablolardaki gibi; iş bilgisayarındaki KESİM RAPORLARI'nda 2 örnek vardı).
+    Kayıtta `pnr`; aynı bedenlerle yeniden hazırlayınca gruplar kalır.
+  - Ek tablolar (yalnız astar ve kontrast cep, OTOPASTAL kuruluysa): "OTOPASTAL yerleştirsin / Kendim yerleştireceğim" (tür
+    başına son seçim `localStorage asorti-xoto`). OTOPASTAL seçiliyse sipariş dosyasına `# kuyruksuz` yazılmaz, köprü ana
+    pastallar gibi kuyruğa ekler (köprüde değişiklik yok). Bitince boy, BİRİM ve verim tabloya yazılır, bildirim çıkar;
+    sürerken Durdur var. Kayıtta `xt[].oto`.
+  - Çizgili / panolu işte Excel'deki sipariş tablosunun TOPLAM sütunu (n+2) artık genişlik alıyor (eskiden dar kalıyordu).
+  - Denendi (Playwright, kabuk içinden, açık ve koyu): iş türü seçimi; panolu kart, Excel (LibreOffice ile bakıldı), yazdırma,
+    sayfa kaydı, yeniden hazırlama, türler arası geçiş, eski kayıt; kontrast cep OTOPASTAL (sahte köprü sonucuyla: yerleşim,
+    bitti, yerleşemedi, bildirim), astar kendim. Eski ve yeni sürümle aynı normal iş: Excel bayt bayt aynı; çizgili işte yalnız
+    TOPLAM sütun genişliği farklı. Çizgili ve Gerber ad denemeleri yeniden geçti.
+
 ## Sıradaki işler
 0. **Sürüm arşivi = GitHub Releases.** 32 sürüm (ilk-deneme, v1.0.0–v1.1.22, v2.0.0–v2.0.4) bir kerelik GitHub Actions işiyle
    taşındı, `surum-v*`, `arsiv`, `surum-test` dalları silindi (dallar: eleman, main, exe-deneme). Bu oturumlardan etiket ve

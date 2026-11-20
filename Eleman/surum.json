@@ -1,8 +1,10 @@
 {
- "surum": "3.3.7",
+ "surum": "3.4.0",
  "tarih": "2026-11-20",
  "notlar": [
-  "Ölçü Tablosu · tablonun en üst satırı atlanmıyor: ilk satırdaki sayının yanına tik atılmışsa sayı harfli okunuyordu (\"61-|\" -> \"A1\") ve program ölçülerin ikinci satırdan başladığını sanıp ilk satırı almıyordu. Artık başlıkla ilk okunan sayı arasında kalan satıra da bakılıyor; adı bilinen bir ölçüyse alınıyor, sayısı yeniden okunuyor",
-  "Ölçü Tablosu · sayının sağına yapışık tik (\"61-1\") sayıdan ayrılıyor"
+  "Asorti · Sipariş girerken iş türü yeni görünümde tek seçim: Normal, Alt-üst takım, Çizgili ürün, Panolu iş",
+  "Asorti · Panolu iş: asorti yapılmaz. Aynı pano birimli bedenler için 1 panodan kaç iş çıktığını (beden ve kol) yazarsın; Excel'e ve yazdırmaya PANO BİRİMLERİ tablosu çıkar (1 PANODAN 1,5 İŞ). Hızar, kontrast cep gibi ek asorti tabloları duruyor",
+  "Asorti · Astar ve kontrast cep tablolarında «OTOPASTAL yerleştirsin» seçeneği: pastal Gerber'de oluşur, OTOPASTAL yerleştirir, BİRİM ve PASTAL BOYU tabloya kendiliğinden yazılır. «Kendim yerleştireceğim» de duruyor",
+  "Asorti · Çizgili ve panolu işlerde Excel'deki TOPLAM sütunu artık dar kalmıyor"
  ]
 }

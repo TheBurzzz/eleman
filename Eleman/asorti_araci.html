@@ -133,6 +133,22 @@ html[data-theme=dark] [style*="#f4f5f7"]{background:rgba(255,255,255,.08)!import
 @media print{body::before{display:none!important}}
 .xc{margin:12px 0;padding:14px 16px;border:1px solid var(--line);border-radius:18px;background:var(--inbg)}.xc .row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}.xc h3{margin:0 0 8px;font-size:15px;display:flex;align-items:center;gap:10px}.xc h3 input{width:230px;font-weight:600}.xc .tag{font-size:11px;font-weight:600;letter-spacing:.04em;padding:2px 10px;border-radius:999px;background:rgba(255,214,10,.35);color:var(--ink)}.xc .e{color:var(--red)}.gtag{font-size:11px;font-weight:700;padding:1px 8px;border-radius:999px;background:rgba(0,113,227,.14);color:var(--acc);margin-left:6px}
 .szs{display:flex;flex-wrap:wrap;gap:2px;align-items:center;max-width:620px}button.szb{display:inline-block;width:auto;margin:2px;padding:5px 13px;font-size:13px;font-weight:600;border-radius:999px}button.szb.on{background:linear-gradient(180deg,#4da6ff,var(--acc));color:#fff;border-color:transparent;box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 4px 12px rgba(0,113,227,.3)}
+/* iş türü seçimi (sipariş kartı) */
+.turlar{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:10px;margin:6px 0 4px;max-width:960px}
+button.trb{display:flex;align-items:center;gap:11px;width:auto;margin:0;padding:10px 14px 10px 10px;text-align:left;border-radius:16px;border:1px solid var(--line);background:var(--inbg);box-shadow:none;color:var(--ink);font-weight:400;transition:background .15s,border-color .15s,box-shadow .15s,transform .15s}
+button.trb:hover:not(:disabled){background:var(--hov);transform:none;border-color:var(--tb)}
+button.trb .tri{flex:none;width:36px;height:36px;border-radius:11px;display:grid;place-items:center;background:var(--th);color:var(--mut);transition:background .15s,color .15s}
+button.trb svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+button.trb .trm{display:flex;flex-direction:column;min-width:0;line-height:1.25}
+button.trb b{font-size:13.5px;font-weight:600;letter-spacing:-.01em}
+button.trb .trm span{font-size:11.5px;color:var(--mut);margin-top:2px}
+button.trb.on,button.trb.on:hover:not(:disabled){border-color:var(--acc);background:color-mix(in srgb,var(--acc) 8%,var(--inbg));box-shadow:0 0 0 3px var(--ring)}
+button.trb.on .tri{background:linear-gradient(180deg,#4da6ff,var(--acc));color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 3px 8px rgba(0,113,227,.3)}
+html[data-theme=dark] button.trb.on,html[data-theme=dark] button.trb.on:hover:not(:disabled){background:rgba(10,132,255,.17)}
+html[data-theme=dark] button.trb .tri{background:rgba(255,255,255,.09);color:rgba(235,235,245,.72)}
+html[data-theme=dark] button.trb.on .tri{background:linear-gradient(180deg,#3d9bff,#0a84ff);color:#fff}
+/* panolu iş: "1 panodan [1,5] iş" alanı */
+.pnv{display:flex;align-items:center;gap:7px}.pnv input{width:84px}.pnv .pnk{min-width:52px}
 .gpb{margin:10px 0 4px;padding:10px 12px;border:1px dashed var(--tb);border-radius:14px;background:var(--inbg)}.gpb textarea{display:block;width:100%;max-width:520px;margin-top:6px;font:inherit;padding:6px 10px;border:1px solid var(--line);border-radius:10px;background:var(--inbg);color:var(--ink);resize:vertical}#gpm div{margin-top:4px}
 /* Sipariş kartı: "Kayıtlı Excel'i aç" yumuşak Excel yeşili, "Sıfırla" dikkat isteyen iş olduğu için kırmızı yazı (Apple'daki gibi) */
 #ldb{background:linear-gradient(180deg,rgba(33,163,102,.15),rgba(33,163,102,.08)),var(--btn);border-color:rgba(33,163,102,.32);color:#157347}
@@ -158,6 +174,7 @@ html[data-theme=dark] #rst:hover:not(:disabled){background:linear-gradient(180de
 <div style="margin-top:14px"><button class="pri" id="go" disabled>Hesapla</button><span id="st" class="m"></span></div></div>
 <div id="res"></div>
 <div class="card" id="stb" style="display:none"><h2><span class="step">2</span><span id="stbt">Beden birimleri</span> <span class="m">(çizgili ürün)</span></h2><div class="m" style="margin-bottom:6px">Çizgili üründe asorti / pastal yok. Birimi aynı olan bedenleri işaretle, yanına birimini yaz (örn. 10 · 12 · 14 → 92). Tablo Excel'de adetlerin hemen altına yazılır.</div><div class="chips" style="margin:10px 0 4px"><label title="Beden birimi ile kol birimi farklıysa: ikisini ayrı ayrı gir. Excel'e BEDEN BİRİMLERİ ve KOL BİRİMLERİ diye iki ayrı sarı tablo yazılır."><input type="checkbox" id="bkt" onchange="bkTog(this.checked)">Kol birimi ayrı</label></div><div id="bg"></div></div>
+<div class="card" id="stp" style="display:none"><h2><span class="step">2</span>Pano birimleri <span class="m">(panolu iş)</span></h2><div class="m" style="margin-bottom:6px">Panolu işte asorti / pastal yok. Pano birimi aynı olan bedenleri işaretle, 1 panodan kaç iş çıktığını yaz (örn. ön · arka · ön yan yana → 1,5 iş; kolda 1 panodan 2 iş = 4 kol). Tablo Excel'de adetlerin hemen altına yazılır.</div><div id="pn"></div></div>
 <div class="card" id="stx" style="display:none"><h2><span class="step">3</span>Ek asorti tabloları <span class="m">(Hızar, Tela, Kontrast cep…)</span></h2><div class="m" id="xdesc" style="margin-bottom:6px">Ana asortinin çıkan (artılı) adetleri üzerinden ayrı bir asorti hazırlar. Excel'de sarı başlıklı ayrı tablo olarak yazılır. Bu tablo ne için olacak?</div><div id="xgz"></div><div id="xt"></div><div style="margin-top:8px"><button type="button" onclick="xAdd('hizar')">+ Hızar asortisi</button><button type="button" onclick="xAdd('tela')">+ Tela asortisi</button><button type="button" onclick="xAdd('ribana')">+ Ribana asortisi</button><button type="button" onclick="xAdd('astar')">+ Astar asortisi</button><button type="button" onclick="xAdd('cep')">+ Kontrast cep</button><button type="button" onclick="xAdd('diger')">+ Başka tablo</button></div></div>
 <div class="card" id="st3" style="display:none"><h2><span class="step">4</span>Ek satırlar <span class="m">(Biye, Hızar…)</span></h2><div id="ex"></div><div style="margin-top:8px"><button type="button" onclick="exAdd('BİYE')">+ BİYE</button><button type="button" onclick="exAdd('HIZAR')">+ HIZAR</button><button type="button" onclick="exAdd('')">+ Başka satır</button></div><div class="m" style="margin-top:6px">Bu satırlar Excel'de pastalların bir satır altına, sağa yaslı ve alt alta yazılır.</div></div>
 <div id="act"></div><div id="msg"></div>
@@ -415,16 +432,33 @@ function bgSec(k){const L=bgL(k),sz=info.sizes,cnt=sz.map((_,i)=>L.filter(g=>g.s
   '<div style="margin-top:8px"><button type="button" onclick="bgAdd('+k+')">+ '+(k?'Kol':'Beden')+' grubu ekle</button>'+(k&&!L.some(g=>g.s.length)&&bgr.some(g=>g.s.length)?'<button type="button" onclick="bgKopya()">Beden gruplarını kopyala</button>':'')+'</div>'}
 function bgDraw(){const c=$('bg');if(!c||!info)return;const t=$('bkt'),h=$('stbt');if(t)t.checked=bkOn;if(h)h.textContent=bkOn?'Beden ve kol birimleri':'Beden birimleri';
  c.innerHTML=bkOn?'<div class="xc">'+bgSec(0)+'</div><div class="xc">'+bgSec(1)+'</div>':bgSec(0)}
+/* panolu iş: beden grupları için 1 panodan kaç iş çıktığı (beden ve kol). Grup: {s:[beden sırası], b:'1,5', k:'2'} */
+let pnr=[];const pnBos=()=>[{s:info?info.sizes.map((_,i)=>i):[],b:'',k:''}];
+function setupPn(){info.mi=info.colors.map((_,g)=>g);info.mtotal=info.total;info.tk=null;sols=[{pastals:[],over:0}];cur=0;pnr=pnBos();lock=[];ban=[];
+ $('act').innerHTML=actBtn();$('stp').style.display='block';$('stx').style.display='block';$('st3').style.display='block';pnDraw();xDraw()}
+const pnSayi=v=>{const m=String(v||'').trim().match(/^(\d+(?:[.,]\d+)?)(?:\s*(?:İŞ|IŞ|IS|İS))?$/i);return m?m[1].replace('.',','):null};
+/* Excel'e: "1 PANODAN 1,5 İŞ" (sayı yazıldıysa), yazı yazıldıysa olduğu gibi */
+const pnYaz=v=>{v=String(v||'').trim();if(!v)return'';const n=pnSayi(v);return n?'1 PANODAN '+n+' İŞ':v.toLocaleUpperCase('tr')};
+const pnKol=v=>{const n=pnSayi(v);if(!n)return'';const k=+n.replace(',','.')*2;return '= '+String(+k.toFixed(2)).replace('.',',')+' kol'};
+function pnAdd(){pnr.push({s:[],b:'',k:''});pnDraw()}
+function pnDel(j){pnr.splice(j,1);if(!pnr.length)pnr.push({s:[],b:'',k:''});pnDraw()}
+function pnSet(j,f,v){pnr[j][f]=String(v||'').trim();if(f=='k'){const e=$('pnk'+j);if(e)e.textContent=pnKol(v)}}
+function pnTog(j,i){const a=pnr[j].s,q=a.indexOf(i);q<0?a.push(i):a.splice(q,1);a.sort((x,y)=>x-y);pnDraw()}
+function pnDraw(){const c=$('pn');if(!c||!info)return;const sz=info.sizes,cnt=sz.map((_,i)=>pnr.filter(g=>g.s.includes(i)).length);
+ const miss=sz.filter((_,i)=>!cnt[i]),dup=sz.filter((_,i)=>cnt[i]>1),fld=(j,f,g,ph)=>'<div class="pnv"><input inputmode="decimal" value="'+esc(g[f])+'" placeholder="'+ph+'" oninput="pnSet('+j+',\''+f+'\',this.value)"><span class="m">iş</span>'+(f=='k'?'<span class="m pnk" id="pnk'+j+'">'+esc(pnKol(g.k))+'</span>':'')+'</div>';
+ c.innerHTML=pnr.map((g,j)=>'<div class="row" style="align-items:center;margin:8px 0;gap:14px 18px"><div class="szs">'+sz.map((x,i)=>'<button type="button" class="szb'+(g.s.includes(i)?' on':'')+'" onclick="pnTog('+j+','+i+')">'+esc(x)+'</button>').join('')+'</div><div><span class="t">Beden · 1 panodan</span>'+fld(j,'b',g,'örn. 1,5')+'</div><div><span class="t">Kol · 1 panodan</span>'+fld(j,'k',g,'örn. 2')+'</div><button type="button" class="sm" style="width:auto" onclick="pnDel('+j+')">× Sil</button></div>').join('')+
+ (miss.length&&pnr.some(g=>g.s.length)?'<div class="m e">Pano birimi verilmemiş beden: '+esc(miss.join(', '))+'</div>':'')+(dup.length?'<div class="m e">Birden fazla grupta olan beden: '+esc(dup.join(', '))+'</div>':'')+
+ '<div style="margin-top:8px"><button type="button" onclick="pnAdd()">+ Beden grubu ekle</button></div>'}
 
 /* ---- ek asorti tabloları (hızar / tela / kontrast cep) ---- */
 const XK={hizar:{base:'HIZAR',mode:'col'},tela:{base:'TELA',mode:'tot'},ribana:{base:'RİBANA',mode:'col'},astar:{base:'ASTAR',mode:'tot'},cep:{base:'KONTRAST CEP',mode:'tot'},diger:{base:'',mode:'col'}};
 const XL={hizar:'H',astar:'A',tela:'T',ribana:'R',cep:'C'};
-function xAdd(k){xSync();const d=XK[k];xt.push({id:++xid,kind:k,base:d.base,mode:d.mode,fab:k=='tela'?'TELA':'',side:'ÜST',P:'',T:'',Y:'',one:false,kat:false,N:'2',res:null,cur:0,sig:'',err:'',busy:false});xDraw();const e=$('xP'+xid);if(e)e.focus()}
+function xAdd(k){xSync();const d=XK[k];xt.push({id:++xid,kind:k,base:d.base,mode:d.mode,fab:k=='tela'?'TELA':'',side:'ÜST',P:'',T:'',Y:'',one:false,kat:false,N:'2',oto:XOTO.includes(k)&&!!xOtoHat()[k],res:null,cur:0,sig:'',err:'',busy:false});xDraw();const e=$('xP'+xid);if(e)e.focus()}
 function xDel(id){xSync();xt=xt.filter(x=>x.id!=id);xDraw()}
 function xSync(){xt.forEach(x=>{const g=q=>$(q+x.id);if(!g('xN'))return;x.base=g('xN').value.trim().toLocaleUpperCase('tr');if(g('xF'))x.fab=g('xF').value.trim().toLocaleUpperCase('tr');if(g('xS'))x.side=g('xS').value;if(g('xM'))x.mode=g('xM').value;if(g('xP'))x.P=g('xP').value;if(g('xT'))x.T=g('xT').value;if(g('xY'))x.Y=g('xY').value;if(g('xO'))x.one=g('xO').checked;if(g('xNk'))x.N=g('xNk').value})}
 function xKatSec(id,v){xSync();const x=xt.find(q=>q.id==id);if(!x)return;x.kat=!!v;x.res=null;x.err='';if(x.kat)xKat(x);xDraw()}
 /* "ana asortinin katı": ana pastalların asortisi N ile çarpılır, kat sayısı N'e bölünüp yukarı yuvarlanır */
-function xKat(x){const s=sols[cur];if(!info||info.cizgili||!s)return false;const N=Math.round(+x.N);
+function xKat(x){const s=sols[cur];if(!info||info.asz||!s)return false;const N=Math.round(+x.N);
  if(!(N>=1&&N<=20)){x.res=null;x.err='Kaç katı alınacağını yaz (1, 2, 3…)';return false}
  const nd=xNeed(x),tot=nd.O.flat().reduce((a,b)=>a+b,0),ci=info.tk?(x.side=='ALT'?info.tk.A:info.tk.B):info.colors.map((_,g)=>g);
  const P=s.pastals.filter(p=>p.a.some(v=>v)).map(p=>({a:p.a.map(v=>v*N),k:x.mode=='tot'?[Math.ceil(info.mi.reduce((u,g)=>u+(p.k[g]||0),0)/N)]:ci.map(g=>Math.ceil((p.k[g]||0)/N))})).filter(p=>p.k.some(v=>v));
@@ -432,7 +466,7 @@ function xKat(x){const s=sols[cur];if(!info||info.cizgili||!s)return false;const
  x.res=[{pastals:P,over:made-tot}];x.cur=0;x.timeout=false;x.err='';x.names=nd.names;x.need=nd.O;x.tot=tot;x.sig=xSig(x);return true}
 function xOne(id){xSync();xDraw()}
 function xMode(id){xSync();const x=xt.find(q=>q.id==id);x.res=null;x.err='';xDraw()}
-function cutM(){if(info.cizgili)return info.O.map(o=>o.slice());const s=sols[cur];return info.colors.map((_,g)=>info.sizes.map((_,i)=>s.pastals.reduce((a,p)=>a+p.k[g]*p.a[i],0)))}
+function cutM(){if(info.asz)return info.O.map(o=>o.slice());const s=sols[cur];return info.colors.map((_,g)=>info.sizes.map((_,i)=>s.pastals.reduce((a,p)=>a+p.k[g]*p.a[i],0)))}
 function xNeed(x){const C=cutM();
  if(x.mode=='tot')return{O:[info.sizes.map((_,i)=>info.mi.reduce((a,g)=>a+C[g][i],0))],names:[x.fab||'(kumaş adı)']};
  const ci=info.tk?(x.side=='ALT'?info.tk.A:info.tk.B):C.map((_,g)=>g);return{O:ci.map(g=>C[g]),names:ci.map(g=>info.colors[g])}}
@@ -454,20 +488,20 @@ function xNext(id){xSync();const x=xt.find(q=>q.id==id);x.cur=(x.cur+1)%x.res.le
 /* çizgili üründe ana asorti ve onun Gerber bölümü yok: ek asorti tablolarını Gerber'e göndermek için müşteri klasörü burada seçilir */
 function gCizUI(){if(OTO==='kapali')return'<div class="m" style="margin:0 0 8px">Bu bilgisayarda Gerber bağlantısı kapalı (⚙ → Gerber bağlantısı → Otomatik bul).</div>';if(!gAlan)gAlanYukle();
  return '<div class="gpb" style="margin:0 0 10px"><b>Gerber</b> <span class="m">· ek asorti tabloları kendi düğmeleriyle gönderilir (her biri tek pastal, OTOPASTAL\'a gitmez)</span><div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center"><label class="m">Müşteri klasörü <input id="gAr" list="gArL" style="width:150px" value="'+esc(gArDef())+'" placeholder="listeden seç" autocomplete="off" onclick="if(!gAlan)gAlanYukle()" oninput="this.value=this.value.toLocaleUpperCase(\'tr\');info.gAr=this.value.trim();gArNot()"></label><datalist id="gArL">'+gArOpts()+'</datalist><span id="gArN" class="m">'+gArNotH()+'</span></div></div>'}
-function gCizCiz(){const z=$('xgz');if(!z)return;const ist=!!(info&&info.cizgili&&xt.length),i=$('gAr');
+function gCizCiz(){const z=$('xgz');if(!z)return;const ist=!!(info&&info.asz&&xt.length),i=$('gAr');
  if(!ist){if(z.firstChild)z.innerHTML='';return}if(!i||!z.contains(i)||z.dataset.oto!==OTO){z.dataset.oto=OTO;z.innerHTML=gCizUI()}}
-function xDraw(){gCizCiz();const c=$('xt');if(!c)return;const dd=$('xdesc');if(dd&&info)dd.textContent=(info.cizgili?'Sipariş adetleri':'Ana asortinin çıkan (artılı) adetleri')+' üzerinden ayrı bir asorti hazırlar. Excel\'de sarı başlıklı ayrı tablo olarak yazılır. Bu tablo ne için olacak?';if(!info||!sols[cur]){c.innerHTML='';return}
+function xDraw(){gCizCiz();const c=$('xt');if(!c)return;const dd=$('xdesc');if(dd&&info)dd.textContent=(info.asz?'Sipariş adetleri':'Ana asortinin çıkan (artılı) adetleri')+' üzerinden ayrı bir asorti hazırlar. Excel\'de sarı başlıklı ayrı tablo olarak yazılır. Bu tablo ne için olacak?';if(!info||!sols[cur]){c.innerHTML='';return}
  c.innerHTML=xt.map(x=>{const nd=xNeed(x),sz=info.sizes;
   let h='<div class="xc" id="xc'+x.id+'"><h3><span class="tag">'+(x.mode=='tot'?'TEK KUMAŞ · TOPLAM ADET':'RENK BAZINDA')+'</span><input id="xN'+x.id+'" value="'+esc(x.base)+'" placeholder="Tablo adı" onchange="this.value=this.value.toLocaleUpperCase(\'tr\')"> ASORTİSİ<button class="sm" style="width:auto;margin-left:auto" onclick="xDel('+x.id+')">× Kaldır</button></h3><div class="row">';
   h+='<div><span class="t">Hesap şekli</span><select class="sel" id="xM'+x.id+'" onchange="xMode('+x.id+')"><option value="tot"'+(x.mode=='tot'?' selected':'')+'>Toplam (tek kumaş)</option><option value="col"'+(x.mode=='col'?' selected':'')+'>Renk bazında</option></select></div>';
   if(x.mode=='tot'&&x.kind!='tela')h+='<div><span class="t">Kumaş adı / rengi</span><input id="xF'+x.id+'" style="width:170px" value="'+esc(x.fab)+'" placeholder="örn. EKRU"></div>';
   else if(info.tk)h+='<div><span class="t">Hangi kısım için?</span><select class="sel" id="xS'+x.id+'"><option'+(x.side=='ALT'?' selected':'')+'>ALT</option><option'+(x.side!='ALT'?' selected':'')+'>ÜST</option></select></div>';
   const XLt=XL[x.kind];if(XLt)h+='<div><span class="t">Kumaş eni ('+XLt+')</span><input id="xW'+x.id+'" style="width:70px" value="'+esc((info.gWx||{})[XLt]||'')+'" placeholder="cm" oninput="(info.gWx=info.gWx||{})[\''+XLt+'\']=this.value.trim()"> <span class="m">cm</span></div>';
-  if(!info.cizgili)h+='<div><span class="t">Asorti</span><div class="seg"><button type="button" class="'+(x.kat?'':'on')+'" onclick="xKatSec('+x.id+',0)">Kendi asortisi</button><button type="button" class="'+(x.kat?'on':'')+'" onclick="xKatSec('+x.id+',1)" title="Ana asortinin aynısını ya da 2, 3… katını alır; kat sayıları o oranda düşer">Ana asortinin katı</button></div></div>';
-  if(x.kat&&!info.cizgili)h+='<div><span class="t">Kaç katı?</span><input type="number" id="xNk'+x.id+'" min="1" max="20" style="width:70px" value="'+esc(x.N||'2')+'" onchange="xCalc('+x.id+')"> <span class="m">× ana asorti</span></div><div><button class="pri" onclick="xCalc('+x.id+')">Uygula</button></div></div>';
+  if(!info.asz)h+='<div><span class="t">Asorti</span><div class="seg"><button type="button" class="'+(x.kat?'':'on')+'" onclick="xKatSec('+x.id+',0)">Kendi asortisi</button><button type="button" class="'+(x.kat?'on':'')+'" onclick="xKatSec('+x.id+',1)" title="Ana asortinin aynısını ya da 2, 3… katını alır; kat sayıları o oranda düşer">Ana asortinin katı</button></div></div>';
+  if(x.kat&&!info.asz)h+='<div><span class="t">Kaç katı?</span><input type="number" id="xNk'+x.id+'" min="1" max="20" style="width:70px" value="'+esc(x.N||'2')+'" onchange="xCalc('+x.id+')"> <span class="m">× ana asorti</span></div><div><button class="pri" onclick="xCalc('+x.id+')">Uygula</button></div></div>';
   else h+='<div><span class="t">Asorti sayısı (en fazla parça)'+''+'</span><input type="number" id="xP'+x.id+'" min="1" style="width:90px" value="'+esc(x.P)+'"></div><div'+(x.one?' style="opacity:.4"':'')+'><span class="t">Max + (bir bedende)</span><input type="number" id="xT'+x.id+'" min="0" style="width:90px"'+(x.one?' disabled':'')+' value="'+esc(x.T)+'"></div><div'+(x.one?' style="opacity:.4"':'')+'><span class="t">Toplam fazla kesim en fazla %</span><input type="number" id="xY'+x.id+'" min="0" step="0.5" style="width:90px"'+(x.one?' disabled':'')+' value="'+esc(x.Y)+'"></div><div class="chips"><label title="Tek pastalda biter; artı adetler önemli değil, fazla kesimi ve katı araç kendisi bulur"><input type="checkbox" id="xO'+x.id+'" '+(x.one?'checked ':'')+'onchange="xOne('+x.id+')">Tek asortide bitir</label></div><div><button class="pri" '+(x.busy?'disabled ':'')+'onclick="xCalc('+x.id+')">'+(x.busy?'Hesaplanıyor…':'Hesapla')+'</button></div></div>';
   if(x.err)h+='<div class="e" style="margin-top:8px">'+esc(x.err)+'</div>';
-  h+='<div style="overflow-x:auto"><table style="margin:10px 0"><tr><th>'+(info.cizgili?'İHTİYAÇ (sipariş adetleri)':'İHTİYAÇ (ana asortinin çıkan adetleri)')+'</th>'+sz.map(v=>'<th>'+esc(v)+'</th>').join('')+'</tr>'+nd.O.map((o,g)=>'<tr><td class="red">'+esc(nd.names[g])+'</td>'+o.map(v=>'<td>'+v+'</td>').join('')+'</tr>').join('')+'</table></div>';
+  h+='<div style="overflow-x:auto"><table style="margin:10px 0"><tr><th>'+(info.asz?'İHTİYAÇ (sipariş adetleri)':'İHTİYAÇ (ana asortinin çıkan adetleri)')+'</th>'+sz.map(v=>'<th>'+esc(v)+'</th>').join('')+'</tr>'+nd.O.map((o,g)=>'<tr><td class="red">'+esc(nd.names[g])+'</td>'+o.map(v=>'<td>'+v+'</td>').join('')+'</tr>').join('')+'</table></div>';
   if(x.res){const r=x.res[x.cur],names=x.mode=='tot'?[x.fab||'']:x.names;
    h+='<b>'+r.pastals.length+' asorti</b>'+(XL[x.kind]?' · Gerber\'de hepsi tek pastalda':'')+' · toplam fazla kesim '+r.over+' (ihtiyacın %'+(r.over/x.tot*100).toFixed(1).replace('.',',')+')'+(x.timeout?' <span class="e">(süre doldu, en iyi bulunan)</span>':'')+
    '<div style="overflow-x:auto"><table style="margin:10px 0"><tr><th>'+esc((x.base||'EK')+' ASORTİSİ')+'</th>'+sz.map(v=>'<th>'+esc(v)+'</th>').join('')+names.map(v=>'<th style="background:#f7f0dc">'+esc(v)+'</th>').join('')+'<th style="background:#e1e5ea">BİRİM</th><th style="background:#e1e5ea">PASTAL BOYU</th></tr>'+
@@ -478,13 +512,23 @@ function xDraw(){gCizCiz();const c=$('xt');if(!c)return;const dd=$('xdesc');if(d
   return h+'</div>'}).join('')}
 /* ---- ek asorti tablosunu ayrı gönder: Gerber'de tek pastal (MODEL-URT-H) oluşur, OTOPASTAL'a gitmez ---- */
 const xTim={},xBitti=a=>['bitti','hata','iptal'].includes(a);
-function xGerberUI(x){const j=x.job,busy=j&&!xBitti((j.st||{}).asama),q='xt.find(q=>q.id=='+x.id+')';
- let h='<div class="xg" style="margin-top:12px;padding-top:10px;border-top:1px solid var(--line)"><b>Gerber</b> <span class="m">· bütün asortiler tek pastalda oluşur, OTOPASTAL\'a gönderilmez</span><div style="display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin-top:6px">';
+/* astar ve kontrast cep: pastalı OTOPASTAL yerleştirsin (boy ve verim tabloya kendiliğinden yazılır) ya da kullanıcı Gerber'de kendisi yerleştirsin */
+const XOTO=['astar','cep'],xOtoVar=x=>XOTO.includes(x.kind)&&OTO!=='yok'&&OTO!=='kapali',xOto=x=>xOtoVar(x)&&!!x.oto;
+const xOtoHat=()=>{try{return JSON.parse(localStorage.getItem('asorti-xoto')||'{}')||{}}catch(e){return{}}};
+function xOtoSec(id,v){const x=xt.find(q=>q.id==id);if(!x)return;x.oto=!!v;try{const h=xOtoHat();h[x.kind]=!!v;localStorage.setItem('asorti-xoto',JSON.stringify(h))}catch(e){}xDraw()}
+async function xDurdur(id){const x=xt.find(q=>q.id==id);if(!x||!x.job||!kOk()||!confirm(x.job.nm+' durdurulsun mu? OTOPASTAL\'da henüz başlamadıysa kuyruktan silinir.'))return;
+ if(await kDel('gelen/'+x.job.base+'.txt')){x.job.st={asama:'iptal',pastallar:[]};xDraw();return}
+ try{await kPut('iptal/'+x.job.base,'iptal')}catch(e){alert('Durdurulamadı: '+e.message);return}
+ const e=$('xg'+id);if(e)e.insertAdjacentHTML('beforeend','<div class="m">Durdurma isteği köprüye iletildi…</div>')}
+function xGerberUI(x){const j=x.job,busy=j&&!xBitti((j.st||{}).asama),q='xt.find(q=>q.id=='+x.id+')',ov=xOtoVar(x),oto=xOto(x);
+ let h='<div class="xg" style="margin-top:12px;padding-top:10px;border-top:1px solid var(--line)"><b>Gerber</b> <span class="m">· bütün asortiler tek pastalda oluşur, '+(oto?'OTOPASTAL yerleştirir; boy ve verim tabloya kendiliğinden yazılır':'OTOPASTAL\'a gönderilmez')+'</span>'+
+  (ov?'<div style="margin-top:8px"><div class="seg" role="radiogroup" aria-label="Pastalı kim yerleştirsin"><button type="button" role="radio" aria-checked="'+oto+'" class="'+(oto?'on':'')+'" '+(busy?'disabled ':'')+'onclick="xOtoSec('+x.id+',1)" title="Pastal Gerber\'de oluşur ve OTOPASTAL kuyruğuna gider; yerleşince boy ve verim tabloya yazılır">OTOPASTAL yerleştirsin</button><button type="button" role="radio" aria-checked="'+!oto+'" class="'+(oto?'':'on')+'" '+(busy?'disabled ':'')+'onclick="xOtoSec('+x.id+',0)" title="Pastal Gerber\'de boş oluşur; sen yerleştirip kaydedince Gerber\'den boy ve verimi al\'a basarsın">Kendim yerleştireceğim</button></div></div>':'')+
+  '<div style="display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin-top:6px">';
  if(!XL[x.kind])h+='<label class="m">Gerber kumaş harfi <input id="xL'+x.id+'" style="width:44px" maxlength="1" value="'+esc(x.Lt||'')+'" oninput="this.value=this.value.toUpperCase();'+q+'.Lt=this.value"></label><label class="m">Kumaş eni <input id="xW'+x.id+'" style="width:64px" value="'+esc(x.W||(info.gWx||{})[String(x.Lt||'').toUpperCase()]||'')+'" placeholder="cm" oninput="'+q+'.W=this.value.trim()"> cm</label>';
  if(x.kind!='tela'){const y=xYon(x),o=(v,t)=>'<option value="'+v+'"'+(y==v?' selected':'')+'>'+t+'</option>';h+='<select class="sel" title="Ana asortide seçili olan ilk gelir" onchange="'+q+'.gY=this.value">'+o('n','Yönsüz')+o('y','Yönlü')+'</select>'}
  else h+='<span class="m">Yönsüz</span>';
  h+='<label class="m" title="Klasörde aynı isimde pastal varsa üzerine yazar"><input type="checkbox" '+(x.ust?'checked ':'')+'onchange="'+q+'.ust=this.checked"> var olanın üzerine yaz</label>';
- h+='<button type="button" class="pri" '+(busy?'disabled ':'')+'onclick="xSend('+x.id+')">'+(busy?'Oluşturuluyor…':'Gerber\'de pastalını oluştur')+'</button>';
+ h+='<button type="button" class="pri" '+(busy?'disabled ':'')+'onclick="xSend('+x.id+')">'+(busy?(oto?'Gönderildi…':'Oluşturuluyor…'):(oto?'Gerber\'e ve OTOPASTAL\'a gönder':'Gerber\'de pastalını oluştur'))+'</button>';
  h+='<button type="button" '+(busy?'disabled ':'')+'onclick="xOku('+x.id+')" title="Pastalı Gerber\'de yerleştirip kaydettikten sonra bas: boy ve verim tabloya yazılır">Gerber\'den boy ve verimi al</button></div><div id="xg'+x.id+'">'+xJobHtml(x)+'</div><div id="xo'+x.id+'">'+(x.okuMsg||'')+'</div></div>';return h}
 const xYon=x=>x.kind=='tela'?'n':(x.gY||gYon(gMods().length>1&&x.side==='ÜST'?1:0));
 function xAd(x){const Lt=String(XL[x.kind]||x.Lt||'').toUpperCase(),M=gMods(),mm=M.length>1?(M.find(q=>q.b.id==(x.side=='ALT'?'a':'u'))||M[0]).m:M[0].m;return{Lt,nm:gAd(mm,'',Lt),mm}}
@@ -498,11 +542,16 @@ async function xOku(id){xSync();const x=xt.find(q=>q.id==id);if(!x||!x.res||!x.r
  const r=x.res[x.cur],pc=r.pastals.reduce((u,p)=>u+p.a.reduce((a,v)=>a+v,0),0),mk='x'+x.id+'|t',o=meas[mk]=meas[mk]||{};
  o.l=nl(j.boy_cm.toFixed(2));o.b=String(Math.round(j.boy_cm/pc));o.v=String(j.verim.toFixed(2)).replace('.',',');o.nm=nm;
  x.okuMsg='<div class="m" style="margin-top:6px;color:#18794e">✔ '+esc(nm)+' · boy '+esc(o.l)+' · verim %'+esc(o.v)+' · en '+String(j.en_cm).replace('.',',')+' cm → tabloya yazıldı</div>';xDraw()}
-function xJobHtml(x){const j=x.job;if(!j)return'';const s=j.st||{},a=s.asama;
- const T={gonderildi:'Köprüye bırakıldı…',sirada:'Sırada: köprü önceki işi bitirince başlayacak…',basladi:'Köprü işi aldı…',siparis:'Sipariş Gerber\'e alınıyor…',pastal:'Batch pastalı hazırlıyor…',
-  bitti:'✔ Gerber\'de oluşturuldu: <b>'+esc(j.nm)+'</b> (OTOPASTAL\'a gönderilmedi). Gerber\'de yerleştirip kaydedince <b>Gerber\'den boy ve verimi al</b>\'a bas.',iptal:'Durduruldu.',hata:'Durdu: '+esc(String(s.mesaj||'').replace(/Uzerine yazmak icin programda kutuyu isaretle\./,'"var olanın üzerine yaz" kutusunu işaretleyip tekrar gönder.'))};
+function xOtoYaz(x){const j=x.job,r=((j.st||{}).pastallar||[]).find(q=>String(q.ad).toUpperCase()==String(j.nm).toUpperCase());j.yazildi=true;if(!r||!r.tamam||!(r.boy_cm>0)||!x.res||!x.res.length)return;
+ const rs=x.res[x.cur],pc=rs.pastals.reduce((u,p)=>u+p.a.reduce((a,v)=>a+v,0),0),mk='x'+x.id+'|t',o=meas[mk]=meas[mk]||{};
+ o.l=nl(Number(r.boy_cm).toFixed(2));o.b=String(Math.round(r.boy_cm/pc));o.v=String(Number(r.verim).toFixed(2)).replace('.',',');o.nm=j.nm;
+ x.okuMsg=''}
+function xJobHtml(x){const j=x.job;if(!j)return'';const s=j.st||{},a=s.asama,r=(s.pastallar||[]).find(q=>String(q.ad).toUpperCase()==String(j.nm).toUpperCase());
+ const T={gonderildi:'Köprüye bırakıldı…',sirada:'Sırada: köprü önceki işi bitirince başlayacak…',basladi:'Köprü işi aldı…',siparis:'Sipariş Gerber\'e alınıyor…',pastal:'Batch pastalı hazırlıyor…',yerlesim:'OTOPASTAL yerleştiriyor: <b>'+esc(j.nm)+'</b> · pastal başına ~1 dk',
+  bitti:j.oto?(r&&r.tamam&&r.boy_cm>0?'✔ OTOPASTAL yerleştirdi: <b>'+esc(j.nm)+'</b> · boy '+esc(nl(Number(r.boy_cm).toFixed(2)))+' · verim %'+String(Number(r.verim).toFixed(2)).replace('.',',')+' → BİRİM ve PASTAL BOYU tabloya yazıldı'+(r.kaydedildi===false?' <span class="e">(kaydedilemedi: Gerber\'de kontrol et)</span>':''):'<span class="e">OTOPASTAL yerleştiremedi: <b>'+esc(j.nm)+'</b>'+(r&&r.sonuc?' ('+esc(r.sonuc)+')':'')+'.</span> Gerber\'de kendin yerleştirip <b>Gerber\'den boy ve verimi al</b>\'a basabilirsin.'):'✔ Gerber\'de oluşturuldu: <b>'+esc(j.nm)+'</b> (OTOPASTAL\'a gönderilmedi). Gerber\'de yerleştirip kaydedince <b>Gerber\'den boy ve verimi al</b>\'a bas.',iptal:'Durduruldu.',hata:'Durdu: '+esc(String(s.mesaj||'').replace(/Uzerine yazmak icin programda kutuyu isaretle\./,'"var olanın üzerine yaz" kutusunu işaretleyip tekrar gönder.'))};
  const old=a=='gonderildi'&&Date.now()-j.t>30000?' <span class="e">Köprü çalışmıyor olabilir: Asorti Aracı penceresini kapatıp yeniden aç.</span>':'';
- return '<div class="m" style="margin-top:8px;padding:6px 8px;border-radius:8px;background:'+(a=='hata'||a=='iptal'?'rgba(220,70,60,.13)':a=='bitti'?'rgba(40,160,90,.14)':'rgba(70,120,220,.12)')+'">⚙ '+(T[a]||esc(a||''))+old+'</div>'}
+ const dur=j.oto&&j.base&&!xBitti(a)?' <button type="button" class="sm" style="display:inline-block;width:auto;margin-left:6px" onclick="xDurdur('+x.id+')">Durdur</button>':'';
+ return '<div class="m" style="margin-top:8px;padding:6px 8px;border-radius:8px;background:'+(a=='hata'||a=='iptal'||(a=='bitti'&&j.oto&&!(r&&r.tamam))?'rgba(220,70,60,.13)':a=='bitti'?'rgba(40,160,90,.14)':'rgba(70,120,220,.12)')+'">⚙ '+(T[a]||esc(a||''))+dur+old+'</div>'}
 async function xSend(id){xSync();const x=xt.find(q=>q.id==id);if(!x||!x.res||!x.res.length){alert('Önce bu tabloyu hesapla.');return}
  if(!KHTTP){alert('Gerber\'e göndermek için programı masaüstündeki "Asorti Araci" simgesinden aç.');return}
  if(!info.gAr){alert('Önce yukarıdaki Gerber bölümünden müşteri klasörünü seç.');const e=$('gAr');if(e)e.focus();return}
@@ -511,22 +560,26 @@ async function xSend(id){xSync();const x=xt.find(q=>q.id==id);if(!x||!x.res||!x.
  const wx=gnum((!XL[x.kind]&&x.W)||(info.gWx||{})[Lt]);if(!(wx>20)){alert((x.base||'Ek')+' için kumaş enini yaz (cm).');const e=$('xW'+x.id);if(e)e.focus();return}
  const F=gFabs();if(F&&F.main!==Lt&&!F.ex.includes(Lt)&&!confirm('Modelde '+Lt+' harfli parça görünmüyor. Yine de gönderilsin mi?'))return;
  const {nm,mm}=xAd(x),r=x.res[x.cur],XP=r.pastals.filter(p=>p.a.some(v=>v)),c=gdb.cfg,lay=xYon(x)=='y'?c.ly:c.ln;
- const L=['# Asorti Araci - '+(x.base||'EK')+' asortisi - '+(info.art||'')+' - '+new Date().toLocaleString('tr'),'# alan:'+info.gAr];if(x.ust)L.push('# uzerine-yaz:evet');L.push('# kuyruksuz:'+nm);
+ const L=['# Asorti Araci - '+(x.base||'EK')+' asortisi - '+(info.art||'')+' - '+new Date().toLocaleString('tr'),'# alan:'+info.gAr];if(x.ust)L.push('# uzerine-yaz:evet');const oto=xOto(x);if(!oto)L.push('# kuyruksuz:'+nm);
  L.push('=:order','o:'+nm,'5:'+nm,'w:'+String(+wx.toFixed(2)),'l:'+lay,'a:'+c.a,'b:'+c.b,'g:'+c.g,'j:C','m:'+mm,'0:'+Lt);
  /* asortiler sırayla: önce 1. asortinin bedenleri, sonra 2. asortinin… (pastalda aralarına çizgi çekilir) */
  XP.forEach(p=>p.a.forEach((v,i)=>{if(v)L.push('q:'+v,'s:'+info.sizes[i])}));
  const z=new Date(),pd=v=>String(v).padStart(2,'0'),base=(trn(info.art)||'siparis').replace(/[^A-Za-z0-9-]/g,'')+'_'+Lt+'_'+z.getFullYear()+pd(z.getMonth()+1)+pd(z.getDate())+'-'+pd(z.getHours())+pd(z.getMinutes())+pd(z.getSeconds());
  try{await kPut('gelen/'+base+'.txt',enc1254(L.join('\r\n')+'\r\n'))}catch(e){alert('Köprüye gönderilemedi: '+e.message);return}
- x.job={base,nm,t:Date.now(),st:{asama:'gonderildi'}};xDraw();xPoll(x.id)}
+ x.job={base,nm,oto,t:Date.now(),st:{asama:'gonderildi'}};xDraw();xPoll(x.id)}
 async function xPoll(id){clearTimeout(xTim[id]);const x=xt.find(q=>q.id==id);if(!x||!x.job||!KHTTP)return;
  try{const t=await kGet('sonuc/'+x.job.base+'.json');if(t)x.job.st=JSON.parse(t.replace(/^\uFEFF/,''))}catch(e){}
- const a=(x.job.st||{}).asama;clearTimeout(xTim[id]);if(xBitti(a)){xDraw();return}const e=$('xg'+id);if(e)e.innerHTML=xJobHtml(x);xTim[id]=setTimeout(()=>xPoll(id),3000)}
+ const a=(x.job.st||{}).asama;clearTimeout(xTim[id]);if(xBitti(a)){if(x.job.oto&&!x.job.bildirildi){x.job.bildirildi=true;const nm=x.job.nm,r=((x.job.st||{}).pastallar||[]).find(q=>String(q.ad).toUpperCase()==String(nm).toUpperCase());
+  if(a=='bitti'){xOtoYaz(x);if(SAYFA)uygBildir(r&&r.tamam?{tur:'gerber',baslik:(x.base||'Ek')+' pastalı hazır',metin:nm+' · BİRİM ve PASTAL BOYU tabloya yazıldı'}:{tur:'hata',baslik:'OTOPASTAL yerleştiremedi',metin:nm})}
+  else if(a=='hata'&&SAYFA)uygBildir({tur:'hata',baslik:'Gerber işi durdu',metin:nm+' · '+String((x.job.st||{}).mesaj||'').slice(0,120)})}xDraw();return}const e=$('xg'+id);if(e)e.innerHTML=xJobHtml(x);xTim[id]=setTimeout(()=>xPoll(id),3000)}
 function kRef(){if(!info)return;const c=$('chk');if(c&&sols[cur]&&sols[cur].pastals.length)c.innerHTML=chk(sols[cur]);xSync();xDraw()}
 function xWarn(){const w=xt.filter(x=>!x.res).map(x=>(x.base||'EK')+' ASORTİSİ');let h=w.length?'<br><span class="e">⚠ Hesaplanmadığı için Excel\'e yazılmadı: '+esc(w.join(', '))+'</span>':'';
  if(info.cizgili)[[bgr,'Beden','BEDEN BİRİMLERİ']].concat(bkOn?[[bgk,'Kol','KOL BİRİMLERİ']]:[]).forEach(([L,ad,tb])=>{const gr=L.filter(g=>g.s.length),bi=bkOn?tb+' tablosunda birimi':'Birimi';
-  if(!gr.length)h+='<br><span class="e">⚠ '+ad+' birimleri girilmediği için o tablo Excel\'e yazılmadı</span>';else{const miss=info.sizes.filter((_,i)=>!gr.some(g=>g.s.includes(i)));const nob=gr.filter(g=>!g.b);if(miss.length)h+='<br><span class="e">⚠ '+bi+' verilmemiş beden: '+esc(miss.join(', '))+'</span>';if(nob.length)h+='<br><span class="e">⚠ '+bi+' boş grup var</span>'}});return h}
+  if(!gr.length)h+='<br><span class="e">⚠ '+ad+' birimleri girilmediği için o tablo Excel\'e yazılmadı</span>';else{const miss=info.sizes.filter((_,i)=>!gr.some(g=>g.s.includes(i)));const nob=gr.filter(g=>!g.b);if(miss.length)h+='<br><span class="e">⚠ '+bi+' verilmemiş beden: '+esc(miss.join(', '))+'</span>';if(nob.length)h+='<br><span class="e">⚠ '+bi+' boş grup var</span>'}});
+ if(info.panolu){const gr=pnr.filter(g=>g.s.length&&(g.b||g.k));if(!gr.length)h+='<br><span class="e">⚠ Pano birimleri girilmediği için o tablo Excel\'e yazılmadı</span>';else{const miss=info.sizes.filter((_,i)=>!gr.some(g=>g.s.includes(i)));if(miss.length)h+='<br><span class="e">⚠ Pano birimi verilmemiş beden: '+esc(miss.join(', '))+'</span>'}}return h}
 function outBlocks(){const s=sols[cur],B=[];
  if(info.cizgili){[[bgr,'z','BEDEN BİRİMLERİ'],[bkOn?bgk:[],'zk','KOL BİRİMLERİ']].forEach(([L,id,title])=>{const gr=L.filter(g=>g.s.length);if(gr.length)B.push({id,type:'birim',title,yellow:true,rows:gr.map(g=>({label:g.s.map(i=>info.sizes[i]).join(' - '),b:g.b}))})})}
+ else if(info.panolu){const gr=pnr.filter(g=>g.s.length&&(g.b||g.k));if(gr.length)B.push({id:'p',type:'pano',title:'PANO BİRİMLERİ',yellow:true,hb:gr.some(g=>g.b),hk:gr.some(g=>g.k),rows:gr.map(g=>({label:g.s.map(i=>info.sizes[i]).join(' - '),b:pnYaz(g.b),k:pnYaz(g.k)}))})}
  else mainBlocks().forEach(b=>B.push({id:b.id,title:b.title,yellow:b.yellow,names:b.ci.map(g=>info.colors[g]),pastals:s.pastals.filter(p=>p.a.some(v=>v)).map(p=>({a:p.a,k:b.ci.map(g=>p.k[g])}))}));
  xt.forEach(x=>{if(!x.res||!x.res.length)return;const r=x.res[x.cur];
   const nm=x.mode=='tot'?[x.fab]:x.names;
@@ -543,7 +596,7 @@ function gParse(t){const out=[];String(t).replace(/\r/g,'').split(/(?=Pastal ism
   const ln=(b.match(/Model\/Bdn\/Miktar\s*:\s*([^\n]+)/i)||[])[1]||'',sz=[...ln.matchAll(/([A-Za-z0-9İıŞşĞğÜüÖöÇç]+)\s*\/\s*(\d+)/g)].map(m=>({s:m[1].toLocaleUpperCase('tr').replace(/^2XL$/,'XXL').replace(/^XXXL$/,'3XL'),q:+m[2]}));
   out.push({nm,cm:bm?+bm[1]*100+parseFloat(bm[2].replace(',','.')):NaN,en,vr,sz})});return out}
 function gImport(t){const L=gParse(t);if(!L.length)return false;
- if(!info||!sols[cur]||!sols[cur].pastals.length||info.cizgili){gMsg='<div class="e">Önce asortiyi hesapla, sonra Gerber\'den yapıştır.</div>';const g=$('gpm');if(g)g.innerHTML=gMsg;return true}
+ if(!info||!sols[cur]||!sols[cur].pastals.length||info.asz){gMsg='<div class="e">Önce asortiyi hesapla, sonra Gerber\'den yapıştır.</div>';const g=$('gpm');if(g)g.innerHTML=gMsg;return true}
  const B=mainBlocks(),P=sols[cur].pastals,ms=[];
  L.forEach(m=>{const a=Array(info.n).fill(0),bad=[];m.sz.forEach(z=>{const i=info.sizes.indexOf(z.s);i<0?bad.push(z.s):a[i]+=z.q});const pc=a.reduce((x,y)=>x+y,0);
   if(bad.length){ms.push('<div class="e">⚠ '+esc(m.nm)+': bu bedenler siparişte yok: '+esc(bad.join(', '))+'</div>');return}
@@ -572,7 +625,7 @@ async function qRead(){let f=null;
   if(!f){const i=document.createElement('input');i.type='file';i.accept='.umq';i.onchange=()=>{if(i.files[0])qApply(i.files[0])};i.click();return}
   await qApply(f)}catch(x){gMsg='<div class="e">Kuyruk dosyası okunamadı: '+esc(x.message)+'</div>';show()}}
 async function qApply(f){const R=umqParse(await f.arrayBuffer());
- if(!info||!sols[cur]||!sols[cur].pastals.length||info.cizgili){gMsg='<div class="e">Önce asortiyi hesapla, sonra kuyruktan oku.</div>';show();return}
+ if(!info||!sols[cur]||!sols[cur].pastals.length||info.asz){gMsg='<div class="e">Önce asortiyi hesapla, sonra kuyruktan oku.</div>';show();return}
  if(!R.length){gMsg='<div class="e">Bu dosyada tamamlanmış pastal kaydı bulunamadı. Doğru dosya mı? (ultramrk.umq)</div>';show();return}
  const art=trn(info.art);if(!art){gMsg='<div class="e">Önce model adını (ART) yaz; kuyrukta pastallar model adıyla aranıyor.</div>';show();return}
  const last={};R.forEach(r=>{const k=r.nm.toLowerCase();if(!last[k]||r.t>=last[k].t)last[k]=r});
@@ -624,7 +677,7 @@ async function rApply(files){const H=[],MM=[];let unk=0;
   if(h&&gnum(h.length)>0&&gnum(h.t_area)>0&&+d.quant>0)m.areas[String(d.size).toLocaleUpperCase('tr')]=Math.round(gnum(h.t_area)*gnum(d.relative_marker_length)/100/+d.quant)});
  gSave();
  const ms=['<div class="m">Gerber raporu: '+H.length+' pastal'+(MM.length?', '+MM.length+' beden satırı':'')+' okundu · '+Object.keys(gdb.models).length+' modelin bilgisi kayıtlı'+(MM.length?'':' <span class="e">(beden başına kumaş için Pastal Model raporunu da seç)</span>')+'</div>'];
- if(!info||!sols[cur]||info.cizgili){gMsg=ms.join('');if(sols[cur])show();return}
+ if(!info||!sols[cur]||info.asz){gMsg=ms.join('');if(sols[cur])show();return}
  /* bu işin pastallarını bedenlerine göre doldur */
  const B=mainBlocks(),P=sols[cur].pastals,mods=B.length>1?{a:gM(info.gA||info.art),u:gM(info.gU||info.art)}:{[B[0].id]:gM(info.art)};
  const XK2={h:'hizar',hzr:'hizar',hizar:'hizar',a:'astar',ast:'astar',r:'ribana',rib:'ribana',t:'tela'};
@@ -653,7 +706,7 @@ function gDefW(k){const M=gMods(),x=M[k||0];if(!x)return'';const v=k?info.gW2:in
 function gYon(k){k=k||0;const v=k?info.gY2:info.gY;if(v)return v;const x=gMods()[k],m=x&&gdb.models[x.m];if(m&&m.yon)return m.yon;return k?gYon(0):'n'}
 function gLay(k){const c=gdb.cfg;return gYon(k)=='y'?c.ly:c.ln}
 function gYonHatirla(){gMods().forEach(({m},k)=>{const g=gdb.models[m]=gdb.models[m]||{w:0,areas:{},mk:{}};g.yon=gYon(k)});gSave()}
-function gOrdUI(){if(!info||info.cizgili)return'';const c=gdb.cfg,MM=gMods(),tk=MM.length>1,sel=(k,v,t)=>'<option value="'+v+'"'+(gYon(k)==v?' selected':'')+'>'+t+'</option>';
+function gOrdUI(){if(!info||info.asz)return'';const c=gdb.cfg,MM=gMods(),tk=MM.length>1,sel=(k,v,t)=>'<option value="'+v+'"'+(gYon(k)==v?' selected':'')+'>'+t+'</option>';
  const yok=OTO==='yok',kap=OTO==='kapali';
  return '<div><b>Gerber\'e gönder</b> <span class="m">· '+(kap?'bu bilgisayarda Gerber bağlantısı kapalı (⚙ → Gerber bağlantısı → Otomatik bul); siparişi dosya olarak kaydedip Gerber\'de CSV Getir ile alabilirsin':yok?'sipariş Gerber\'e alınır, pastallar hazırlanır; OTOPASTAL olmadığı için pastalları Gerber\'de yerleştirip <b>Gerber\'den boy ve verimi al</b>\'a bas':'sipariş Gerber\'e alınır, pastal hazırlanır, OTOPASTAL\'da yerleşir; BİRİM ve PASTAL BOYU tabloya gelir')+'</span><div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;align-items:center">'+
  MM.map((x,k)=>'<span class="gwy'+(tk?' tk':'')+'"><label class="m">'+(tk?'<b>'+esc(x.m)+'</b> ':'')+'Kumaş eni <input id="gW'+(k?'2':'')+'" style="width:70px" value="'+esc(gDefW(k))+'" oninput="info.gW'+(k?'2':'')+'=this.value.trim()"> cm</label>'+
@@ -850,7 +903,7 @@ function gEff(m,pc){const L=Object.values(m.mk||{}).filter(x=>x.u>0);const s=L.f
 function gEstLen(mdl,a){const m=gdb.models[gM(mdl)];if(!m||!m.w)return 0;let ar=0;for(let i=0;i<a.length;i++)if(a[i]){const v=gArea(m,info.sizes[i]);if(!v)return 0;ar+=a[i]*v}const pc=a.reduce((x,y)=>x+y,0);return pc?ar/(m.w*gEff(m,pc)):0}
 function gEstSol(s){const B=mainBlocks(),mods=B.length>1?{a:info.gA||info.art,u:info.gU||info.art}:{[B[0].id]:info.art};let tot=0;const per=[];
  for(const p of s.pastals){if(!p.a.some(v=>v))continue;let row=0;for(const b of B){const L=gEstLen(mods[b.id],p.a);if(!L)return null;row=Math.max(row,L);tot+=b.ci.reduce((u,g)=>u+(p.k[g]||0),0)*L}per.push(row)}return{tot,per}}
-function estHtml(){if(!info||info.cizgili||!sols.length)return'';const E=sols.map(gEstSol);if(!E[cur])return'';
+function estHtml(){if(!info||info.asz||!sols.length)return'';const E=sols.map(gEstSol);if(!E[cur])return'';
  const f=x=>(x/100).toFixed(1).replace('.',','),order=E.map((e,i)=>[e?e.tot:1e18,i]).sort((x,y)=>x[0]-y[0]),rank=order.findIndex(x=>x[1]===cur)+1,best=order[0][1];
  return '<div class="m" style="margin-top:6px">📐 <b>Tahmini kumaş</b> (Gerber\'den öğrenilen beden alanları ve verimlerle): toplam <b>'+f(E[cur].tot)+' m</b> · pastal boyları '+E[cur].per.map((x,j)=>(j+1)+'. ≈'+f(x)+' m').join(', ')+
   (sols.length>1?' · bu seçenek kumaşa göre <b>'+rank+'.</b>/'+sols.length+(best!==cur?' · <button class="sm" style="display:inline-block;width:auto" onclick="cur='+best+';show()">En az kumaşlı seçeneği göster ('+f(E[best].tot)+' m, %'+((1-E[best].tot/E[cur].tot)*100).toFixed(1).replace('.',',')+' az)</button>':''):'')+'</div>'}
@@ -861,8 +914,8 @@ const b64d=t=>new TextDecoder().decode(Uint8Array.from(atob(t),c=>c.charCodeAt(0
 function getState(){exRd();xSync();const s=sols[cur];
  return{app:'asorti-araci',v:1,date:new Date().toISOString(),gA:info.gA||'',gU:info.gU||'',gW:info.gW||'',gW2:info.gW2||'',gFab:info.gFab||{},gWx:info.gWx||{},gY:info.gY||'',gY2:info.gY2||'',gAs:info.gAs||null,area:info.area||'',ord:Object.assign({},info.snap||{},{art:info.art||''}),
   set:{P:$('P').value,T:$('T').value,Y:$('Y').value,K:$('K').value,S:$('S').checked,pc:[...document.querySelectorAll('.pc:checked')].map(x=>x.value)},
-  sol:s&&!info.cizgili?{pastals:s.pastals.map(p=>({a:p.a.slice(),k:p.k.slice()})),over:s.over}:null,meas,extras,bgr,bgk:bkOn?bgk:null,
-  xt:xt.map(x=>({id:x.id,kind:x.kind,base:x.base,mode:x.mode,fab:x.fab,side:x.side,P:x.P,T:x.T,Y:x.Y,one:x.one,kat:!!x.kat,N:x.N||'2',Lt:x.Lt||'',W:x.W||'',ust:!!x.ust,gY:x.gY||'',job:x.job||null,okuMsg:x.okuMsg||'',res:x.res?[x.res[x.cur]]:null,cur:0,names:x.names,need:x.need,tot:x.tot,timeout:x.timeout,err:x.res?'':x.err}))}}
+  sol:s&&!info.asz?{pastals:s.pastals.map(p=>({a:p.a.slice(),k:p.k.slice()})),over:s.over}:null,meas,extras,bgr,bgk:bkOn?bgk:null,pnr:info.panolu?pnr:null,
+  xt:xt.map(x=>({id:x.id,kind:x.kind,base:x.base,mode:x.mode,fab:x.fab,side:x.side,P:x.P,T:x.T,Y:x.Y,one:x.one,kat:!!x.kat,N:x.N||'2',Lt:x.Lt||'',W:x.W||'',ust:!!x.ust,oto:!!x.oto,gY:x.gY||'',job:x.job||null,okuMsg:x.okuMsg||'',res:x.res?[x.res[x.cur]]:null,cur:0,names:x.names,need:x.need,tot:x.tot,timeout:x.timeout,err:x.res?'':x.err}))}}
 function stateParts(){const id='{'+'xxxxxxxx-xxxx-4xxx-8xxx-xxxxxxxxxxxx'.replace(/x/g,()=>(Math.random()*16|0).toString(16)).toUpperCase()+'}',d=((new Date().getFullYear()-1980)<<9)|((new Date().getMonth()+1)<<5)|new Date().getDate();
  const E=(name,text)=>({name,text,flags:0,method:8,time:0,date:d});
  return[E('customXml/item1.xml','<?xml version="1.0" encoding="UTF-8" standalone="no"?>\r\n<asortiAraci xmlns="urn:asorti-araci" v="1">'+b64e(JSON.stringify(getState()))+'</asortiAraci>'),
@@ -877,7 +930,7 @@ async function openSaved(){let f,h=null;
  await loadSaved(f,h)}
 async function applyState(st){
   const o=st.ord||{};if(!o.sizes||!o.sizes.length||!o.rows||!o.rows.length)throw new Error('kayıt eksik');
-  ord={art:o.art||'',sizes:o.sizes.slice(),rows:o.rows.map(r=>({name:r.name,g:r.g||'',v:r.v.slice()})),stage:2,ser:o.ser||null,takim:!!o.takim,cizgili:!!o.cizgili,made:false};
+  ord={art:o.art||'',sizes:o.sizes.slice(),rows:o.rows.map(r=>({name:r.name,g:r.g||'',v:r.v.slice()})),stage:2,ser:o.ser||null,takim:!!o.takim,cizgili:!!o.cizgili,panolu:!!o.panolu,made:false};
   $('nw').style.display='block';nwDraw();await mkBase(true);if(!info||!info.snap)return false;
   const S=st.set||{};$('P').value=S.P==null?'':S.P;$('T').value=S.T==null?7:S.T;$('Y').value=S.Y==null?7:S.Y;$('K').value=S.K==null?3:S.K;$('S').checked=S.S!==false;
   document.querySelectorAll('.pc').forEach(x=>x.checked=(S.pc||[]).includes(x.value));
@@ -885,9 +938,10 @@ async function applyState(st){
   xt=(st.xt||[]).map(x=>Object.assign({res:null,cur:0,sig:'',err:'',busy:false},x));xid=xt.reduce((a,x)=>Math.max(a,x.id||0),0);
   setTimeout(()=>xt.forEach(x=>{if(x.job&&!xBitti((x.job.st||{}).asama)&&Date.now()-x.job.t<6*3600e3)xPoll(x.id)}),600);
   if(info.cizgili){bgr=st.bgr&&st.bgr.length?st.bgr:[{s:[],b:''}];bkOn=!!(st.bgk&&st.bgk.length);bgk=bkOn?st.bgk:[{s:[],b:''}];bgDraw()}
+  if(info.panolu){pnr=st.pnr&&st.pnr.length?st.pnr:pnBos();pnDraw()}
   else if(st.sol&&st.sol.pastals&&st.sol.pastals.length&&st.sol.pastals.every(p=>p.a.length==info.n&&p.k.length==info.G)){sols=[st.sol];cur=0;info.timeout=false}
   xt.forEach(x=>{if(x.res)x.sig=xSig(x)});
-  if(!info.cizgili&&sols[cur]&&sols[cur].pastals.length)show();else{$('act').innerHTML=actBtn();xDraw()}
+  if(!info.asz&&sols[cur]&&sols[cur].pastals.length)show();else{$('act').innerHTML=actBtn();xDraw()}
   return true}
 async function loadSaved(f,h){try{const es=await readZip(await f.arrayBuffer()),st=await readState(es);
   if(!st)return loadForeign(es,f.name);
@@ -907,7 +961,7 @@ async function loadForeign(es,name){
  const sh=new Sheet(await txt(pe),ss),sizes=[];for(let c=2;c<60;c++){const v=String(sh.val(cl(c)+'7')).trim();if(!v||/toplam/i.test(v))break;sizes.push(v.toLocaleUpperCase('tr'))}
  const rows=[];for(let r=8;r<400;r++){const nm=String(sh.val('A'+r)).trim();if(!nm||/^ASORT/i.test(nm))break;const tp=/TOPLAM/i.test(nm);rows.push({name:nm.toLocaleUpperCase('tr'),g:'',v:sizes.map((_,i)=>tp?0:Math.max(0,Math.round(+sh.val(cl(2+i)+r)||0)))})}
  if(!sizes.length||!rows.length)throw new Error('Bu dosyada beden ya da renk satırı bulunamadı');
- ord={art:String(sh.val('B3')||'').trim().toLocaleUpperCase('tr'),sizes,rows,stage:2,ser:null,takim:false,cizgili:false,made:false};
+ ord={art:String(sh.val('B3')||'').trim().toLocaleUpperCase('tr'),sizes,rows,stage:2,ser:null,takim:false,cizgili:false,panolu:false,made:false};
  info=null;sols=[];xt=[];$('nw').style.display='block';nwDraw();
  ldMsg('<b>'+esc(name)+'</b>: <span class="e">bu dosya Asorti Aracı ile kaydedilmemiş.</span> Sipariş adetleri aşağıdaki forma alındı; kontrol edip "Tabloyu hazırla"ya bas.');
  $('nw').scrollIntoView({behavior:'smooth'})}
@@ -1008,7 +1062,7 @@ function setTk(){const G=info.G,all=[...Array(G).keys()];info.tk=null;info.mi=al
 function expandK(k){const t=info.tk,f=Array(info.G).fill(0);if(!t)return k.slice();
  t.master.forEach((g,i)=>f[g]=k[i]);if(t.mode=='pair')t.other.forEach((g,i)=>f[g]=k[i]);else f[t.other[0]]=k.reduce((a,b)=>a+b,0);return f}
 function mainBlocks(){if(info.tk)return[{id:'a',title:'ALT',yellow:true,ci:info.tk.A},{id:'u',title:'ÜST',yellow:true,ci:info.tk.B}];return[{id:'m',title:'ASORTİ',yellow:false,ci:info.colors.map((_,g)=>g)}]}
-function infoHtml(){const{colors,sizes,O,art,total}=info;$('info').innerHTML='<b id="artb">'+esc(art||'(model adı girilmedi)')+'</b> · '+colors.length+' renk · '+total+' adet'+(info.takim?' · alt-üst takım':'')+(info.cizgili?' · çizgili ürün':'')+'<table style="margin-top:6px"><tr><th></th>'+sizes.map(x=>'<th>'+x+'</th>').join('')+'</tr>'+colors.map((c,g)=>'<tr><td class="red">'+esc(c)+(info.grp&&info.grp[g]?'<span class="gtag">'+info.grp[g]+'</span>':'')+'</td>'+O[g].map(v=>'<td>'+v+'</td>').join('')+'<td style="border:0;text-align:left" class="m">'+pt(g)+'</td></tr>').join('')+'</table>'}
+function infoHtml(){const{colors,sizes,O,art,total}=info;$('info').innerHTML='<b id="artb">'+esc(art||'(model adı girilmedi)')+'</b> · '+colors.length+' renk · '+total+' adet'+(info.takim?' · alt-üst takım':'')+(info.cizgili?' · çizgili ürün':'')+(info.panolu?' · panolu iş':'')+'<table style="margin-top:6px"><tr><th></th>'+sizes.map(x=>'<th>'+x+'</th>').join('')+'</tr>'+colors.map((c,g)=>'<tr><td class="red">'+esc(c)+(info.grp&&info.grp[g]?'<span class="gtag">'+info.grp[g]+'</span>':'')+'</td>'+O[g].map(v=>'<td>'+v+'</td>').join('')+'<td style="border:0;text-align:left" class="m">'+pt(g)+'</td></tr>').join('')+'</table>'}
 const pt=g=>{const p=info.parts[g];if(!p.length)return'';const bad=p.warn;
  return 'toplam = '+p.map(q=>esc(q.name)+' '+q.v.reduce((a,b)=>a+b,0)).join(' + ')+(bad?' <span class="e">⚠ dosyadaki toplam satırı müşteri toplamıyla uyuşmuyordu, müşteri toplamı kullanıldı</span>':'')};
 const ed=(j,i,v)=>{const s=sols[cur];s.pastals[j].a[i]=Math.max(0,Math.floor(+v||0));s.over=info.mi.reduce((t,g)=>t+info.O[g].reduce((u,x,ii)=>u+s.pastals.reduce((a,p)=>a+p.k[g]*p.a[ii],0)-x,0),0);show()};
@@ -1028,7 +1082,7 @@ function chk(s){const{sizes,colors,O}=info,L=[],T=+$('T').value;
  if(s.over>Math.floor((+$('Y').value||0)/100*info.mtotal+1e-9))L.push('⚠ toplam fazla kesim siparişin %'+$('Y').value+'’ünü aşıyor');
  if(!L.some(x=>x.startsWith('⚠')))L.unshift('✔ Kontroller tamam: sipariş karşılanıyor, fazla kesim sınırda');
  return L.join('<br>')}
-let _sh=0;function show(){if(info&&info.cizgili){xDraw();return}if(_sh)return;_sh=1;try{show0()}finally{_sh=0}}
+let _sh=0;function show(){if(info&&info.asz){xDraw();return}if(_sh)return;_sh=1;try{show0()}finally{_sh=0}}
 function show0(){const s=sols[cur],{sizes,colors,O}=info,B=mainBlocks(),ord2=B.flatMap(b=>b.ci),hasV=Object.keys(meas).some(q=>meas[q]&&meas[q].v);$('st3').style.display='block';$('stx').style.display='block';
  const bt=b=>info.tk?b.title+' ':'';
  let h='<div class="box"><b>Seçenek '+(cur+1)+'/'+sols.length+'</b> · '+s.pastals.length+' pastal · toplam fazla kesim '+s.over+' (siparişin %'+(s.over/info.mtotal*100).toFixed(1).replace('.',',')+')'+(info.tk?' <span class="m">· ALT ve ÜST aynı asorti, aynı fazla kesim</span>':'')+(info.timeout?' <span class="e">(süre doldu, en iyi bulunan)</span>':'')+
@@ -1060,6 +1114,9 @@ async function exportX(dl){try{$('msg').textContent='Hazırlanıyor…';const{n,
   const grpR=[],xfsX=X0.match(/<xf\b[^>]*?(?:\/>|>[\s\S]*?<\/xf>)/g),sDV=sL+2+nx.length;nx.push(xfsX[1].replace(/<alignment[^>]*\/>/,'<alignment horizontal="center" vertical="center"/>'));
   BL.forEach((b,bi)=>{const pv=BL[bi-1],inG=!!(b.grp&&pv&&pv.grp===b.grp);if(bi>0)r+=inG?2:3;if(b.grp&&!inG)grpR.push({r1:r,r2:r,c2:1});let bcol=1;
    if(b.type=='birim'){put(1,r,b.title,sY);put(2,r,'BİRİM',sB);sh0.ht(r,h17);b.rows.forEach(q=>{r++;put(1,r,q.label,sL);put(2,r,q.b?nb(q.b):null,sD);sh0.ht(r,35.1)});bcol=2}
+   else if(b.type=='pano'){/* kullanıcının elle yaptığı gibi: BEDEN PANO BİRİMİ ve KOL PANO BİRİMİ ikişer sütun birleşik */
+    const K=[];if(b.hb)K.push(['BEDEN PANO BİRİMİ','b']);if(b.hk)K.push(['KOL PANO BİRİMİ','k']);const m2=(c,rr,v,sty)=>{put(c,rr,v,sty);put(c+1,rr,null,sty);sh0.merge(cl(c)+rr+':'+cl(c+1)+rr)};
+    put(1,r,b.title,sY);K.forEach(([t],q)=>m2(2+2*q,r,t,sB));sh0.ht(r,h17);b.rows.forEach(q=>{r++;put(1,r,q.label,sL);K.forEach(([,f],k)=>m2(2+2*k,r,q[f]||null,sD));sh0.ht(r,35.1)});bcol=1+2*K.length}
    else if(b.type=='adet'){put(1,r,b.title,sY);info.sizes.forEach((x,i)=>put(2+i,r,x,sSz));put(n+2,r,'TOPLAM',sTop);sh0.ht(r,h17);
     b.rows.forEach(q=>{r++;put(1,r,q.name,sNm);q.v.forEach((v,i)=>put(2+i,r,v||null,sQ));sh0.setF(cl(n+2)+r,'SUM(B'+r+':'+cl(n+1)+r+')',q.v.reduce((a,c)=>a+c,0));sh0.style(cl(n+2)+r,sTV);sh0.ht(r,35.1)});bcol=n+2}
    else{const nm=b.names,Gb=nm.length;Gx=Math.max(Gx,Gb);
@@ -1079,8 +1136,9 @@ async function exportX(dl){try{$('msg').textContent='Hazırlanıyor…';const{n,
    grpR.forEach(g=>{for(let rr=g.r1;rr<=g.r2;rr++)for(let c=1;c<=g.c2;c++){const sd=[];if(rr==g.r1)sd.push('top');if(rr==g.r2)sd.push('bottom');if(c==1)sd.push('left');if(c==g.c2)sd.push('right');
      if(!sd.length)continue;const ref=cl(c)+rr;sh0.style(ref,frm(sh0.styleOf(ref),sd))}});
    if(nb2.length)st=st.replace(/<borders count="\d+"/,'<borders count="'+(bl.length+nb2.length)+'"').replace('</borders>',nb2.join('')+'</borders>')}
-  const Wd={},upw=(c,w)=>Wd[c]=Math.max(Wd[c]||0,w);BL.forEach(b=>{if(b.type=='birim')return;if(b.type=='adet'){upw(n+2,21.7109375);return}const Gb=b.names.length;for(let g=0;g<Gb;g++)upw(n+2+g,33.7109375);upw(n+2+Gb,21.7109375);upw(n+3+Gb,32.7109375)});
+  const Wd={},upw=(c,w)=>Wd[c]=Math.max(Wd[c]||0,w);BL.forEach(b=>{if(b.type=='birim')return;if(b.type=='pano'){for(let c=n+2;c<=1+2*((b.hb?1:0)+(b.hk?1:0));c++)upw(c,21.7109375);return}if(b.type=='adet'){upw(n+2,21.7109375);return}const Gb=b.names.length;for(let g=0;g<Gb;g++)upw(n+2+g,33.7109375);upw(n+2+Gb,21.7109375);upw(n+3+Gb,32.7109375)});
   if(extras.some(e=>e.k||e.v)){upw(n+2+Gx,21.7109375);upw(n+3+Gx,32.7109375)}
+  if(info.asz)upw(n+2,21.7109375);
   sh0.pre=sh0.pre.replace(/<cols>[\s\S]*?<\/cols>/,'<cols><col min="1" max="1" width="65.42578125" customWidth="1"/><col min="2" max="'+(n+1)+'" width="21.7109375" customWidth="1"/>'+Object.keys(Wd).map(Number).sort((a,b)=>a-b).map(c=>'<col min="'+c+'" max="'+c+'" width="'+Wd[c]+'" customWidth="1"/>').join('')+'</cols>');
   const r0=r+2,exl=extras.filter(e=>e.k||e.v);
   exl.forEach((e,i)=>{const rr=r0+i,a=cl(n+2+Gx)+rr,b=cl(n+3+Gx)+rr;sh0.set(a,(e.k?e.k+': ':'')+e.v,1);sh0.style(a,sX);sh0.style(b,sX);sh0.merge(a+':'+b);sh0.ht(rr,35.1)});
@@ -1113,11 +1171,21 @@ async function exportX(dl){try{$('msg').textContent='Hazırlanıyor…';const{n,
  catch(x){alert('Dosya oluşturulamadı: '+x.message)}}
 
 const PRE={'Standart (XS–5XL)':['XS','S','M','L','XL','XXL','3XL','4XL','5XL'],'Rakamlı (34–50)':['34','36','38','40','42','44','46','48','50'],'Çocuk/UK (8–20)':['8','10','12','14','16','18','20']};
-let ord={art:'',sizes:[],rows:[{name:'',v:[]}],stage:0,ser:null,takim:false,cizgili:false},extras=[],skipEx=false;
+let ord={art:'',sizes:[],rows:[{name:'',v:[]}],stage:0,ser:null,takim:false,cizgili:false,panolu:false},extras=[],skipEx=false;
 function rd(){const a=$('nart');if(a)ord.art=a.value.trim().toLocaleUpperCase('tr');const ga=$('ngA'),gu=$('ngU');if(ga)ord.gA=ga.value.trim().toLocaleUpperCase('tr');if(gu)ord.gU=gu.value.trim().toLocaleUpperCase('tr');
  if($('ng'))ord.rows=[...document.querySelectorAll('#ng tr.rw')].map(tr=>({name:tr.querySelector('.nm').value.trim().toLocaleUpperCase('tr'),g:(tr.querySelector('.gs')||{}).value||'',v:[...tr.querySelectorAll('.q')].map(i=>Math.max(0,Math.round(+i.value||0)))}))}
-function cizTog(v){rd();ord.cizgili=v;if(v)ord.takim=false;nwDraw()}
-function tkTog(v){rd();ord.takim=v;if(v){ord.cizgili=false;while(ord.rows.length<2)ord.rows.push({name:'',v:[],g:''});ord.rows.forEach((r,i)=>{if(!r.g)r.g=i%2?'ALT':'ÜST'})}nwDraw();if(v&&!ord.made){const u=$('ngU');if(u&&!u.value)u.focus()}}
+/* iş türü: tek seçim. Alt-üst takımda iki satır (üstte ÜST, altta ALT) ve iki artikel alanı hemen açılır */
+const TUR=[['normal','Normal','Asorti ve pastal','Asorti hesaplanır, pastallar Gerber\'e gönderilir','<path d="M12 3.5 3.5 8 12 12.5 20.5 8z"/><path d="m3.5 12 8.5 4.5 8.5-4.5"/><path d="m3.5 16 8.5 4.5 8.5-4.5"/>'],
+ ['takim','Alt-üst takım','ALT ve ÜST ayrı kumaş, adetler aynı','Alt ve üst farklı kumaşlardan kesilir ama takım olarak satılır; fazla kesimler dahil adetler aynı olur','<path d="M9.2 3.5 5 5.6l1.4 3 1.6-.7v3.6h8V7.9l1.6.7 1.4-3-4.2-2.1c-.5.9-1.6 1.5-2.8 1.5s-2.3-.6-2.8-1.5z"/><path d="M8 14h8l-.6 6.5h-2.6L12 16.3l-.8 4.2H8.6z"/>'],
+ ['cizgili','Çizgili ürün','Asortisiz · beden birimleri','Çizgili ürün: beden beden pastal çizdirilir, asorti yapılmaz. Beden birimleri ve (varsa) hızar, tela gibi ek asortiler hazırlanır','<rect x="4" y="4" width="16" height="16" rx="3.5"/><path d="M4 9.3h16M4 14.7h16"/>'],
+ ['panolu','Panolu iş','Asortisiz · pano birimleri','Pano baskılı kumaş: asorti yapılmaz. 1 panodan kaç iş çıktığı (beden, kol) yazılır; hızar, kontrast cep gibi diğer parçalar için ek asorti tabloları hazırlanır','<rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="m6.5 16 3.6-4.2 2.6 2.6 2.4-2.9 2.4 4.5"/><circle cx="9" cy="8.8" r="1.3"/>']];
+const turAl=()=>ord.takim?'takim':ord.cizgili?'cizgili':ord.panolu?'panolu':'normal';
+function turUI(){const t=turAl();return '<div style="margin-top:14px"><span class="t">İş türü</span><div class="turlar" role="radiogroup" aria-label="İş türü">'+TUR.map(([k,ad,alt,ip,ik])=>'<button type="button" role="radio" aria-checked="'+(t==k)+'" class="trb'+(t==k?' on':'')+'" title="'+esc(ip)+'" onclick="turSec(\''+k+'\')"><span class="tri"><svg viewBox="0 0 24 24" aria-hidden="true">'+ik+'</svg></span><span class="trm"><b>'+ad+'</b><span>'+alt+'</span></span></button>').join('')+'</div></div>'}
+function turSec(k){rd();ord.takim=k=='takim';ord.cizgili=k=='cizgili';ord.panolu=k=='panolu';
+ if(ord.takim){while(ord.rows.length<2)ord.rows.push({name:'',v:[],g:''});ord.rows.forEach((r,i)=>{if(!r.g)r.g=i%2?'ALT':'ÜST'})}
+ nwDraw();if(ord.takim&&!ord.made){const u=$('ngU');if(u&&!u.value)u.focus()}}
+function cizTog(v){turSec(v?'cizgili':'normal')}
+function tkTog(v){turSec(v?'takim':'normal')}
 function pre(k){rd();ord.ser=k||null;ord.stage=1;nwDraw();const f=$(k?'nfrom':'nsz');if(f)f.focus()}
 function setSz(arr){const old=ord.sizes;ord.rows.forEach(r=>{const m={};old.forEach((x,i)=>m[x]=r.v[i]);r.v=arr.map(x=>m[x]||0)});ord.sizes=arr;ord.stage=2;nwDraw()}
 function okSz(){rd();let arr;if(ord.ser){const L=PRE[ord.ser],i=+$('nfrom').value,j=+$('nto').value;if(j<i)return alert('Son beden, ilk bedenden önce olamaz');arr=L.slice(i,j+1)}else{arr=expSz($('nsz').value);if(!arr.length)return alert('Bedenleri yaz (örn: S,M,L,XL  ya da  S-3XL)')}setSz(arr)}
@@ -1144,15 +1212,16 @@ function nwDraw(){const sz=ord.sizes,st=ord.stage,L=ord.ser?PRE[ord.ser]:null;
       h+='<div style="margin-top:14px"><span class="t">Hangi beden aralığını istiyorsun?</span><div class="rng"><div class="fld"><label for="nfrom">İlk beden</label><select class="sel" id="nfrom" onchange="rngPrev()">'+op(i0)+'</select></div><span class="arr">→</span><div class="fld"><label for="nto">Son beden</label><select class="sel" id="nto" onchange="rngPrev()">'+op(j0)+'</select></div><button type="button" class="pri" onclick="okSz()">Bedenleri ekle</button></div><div class="prev" id="nprev"></div></div>';setTimeout(rngPrev,0)}
   else h+='<div style="margin-top:10px"><span class="t">Bedenleri yaz (virgülle ayır · aralık: S-3XL)</span><div class="row" style="align-items:center;gap:8px;margin-top:4px"><input id="nsz" style="width:320px" value="'+esc(sz.join(','))+'" onkeydown="if(event.key===\'Enter\'){event.preventDefault();okSz()}"><button type="button" class="pri" onclick="okSz()">Bedenleri ekle</button></div></div>'}
  if(st==2){
-  h+='<div class="chips" style="margin-top:12px"><label title="Alt ve üst farklı kumaşlardan kesilir ama takım olarak satılır; fazla kesimler dahil adetler aynı olur"><input type="checkbox" id="ntk" '+(ord.takim?'checked ':'')+'onchange="tkTog(this.checked)">Alt-üst takım (ALT ve ÜST ayrı kumaş, çıkan adetler aynı olacak)</label><label title="Çizgili ürün: beden beden pastal çizdirilir, asorti yapılmaz. Sadece beden birimleri ve (varsa) hızar, tela gibi ek asortiler hazırlanır"><input type="checkbox" id="ncz" '+(ord.cizgili?'checked ':'')+'onchange="cizTog(this.checked)">Çizgili ürün (asortisiz · beden birimleri)</label></div>'+(ord.takim&&!ord.made?'<div class="tkm"><div><span class="t">ÜST artikeli</span><input id="ngU" style="width:200px" value="'+esc(ord.gU||'')+'" placeholder="örn. STELLA" onchange="this.value=this.value.toLocaleUpperCase(\'tr\')"></div><div><span class="t">ALT artikeli</span><input id="ngA" style="width:200px" value="'+esc(ord.gA||'')+'" placeholder="örn. BRIONY" onchange="this.value=this.value.toLocaleUpperCase(\'tr\')"></div><div class="m" style="padding-bottom:9px">Gerber\'deki model adları · boş bırakırsan ART kullanılır</div></div>':'')+'<div style="overflow-x:auto;margin-top:8px"><table id="ng"><tr><th>Renk / satır adı</th>'+(ord.takim?'<th>Kısım</th>':'')+sz.map(s=>'<th>'+esc(s)+'</th>').join('')+'<th>Toplam</th><th style="border:0;background:none"></th></tr>'+
+  h+=turUI()+(ord.takim&&!ord.made?'<div class="tkm"><div><span class="t">ÜST artikeli</span><input id="ngU" style="width:200px" value="'+esc(ord.gU||'')+'" placeholder="örn. STELLA" onchange="this.value=this.value.toLocaleUpperCase(\'tr\')"></div><div><span class="t">ALT artikeli</span><input id="ngA" style="width:200px" value="'+esc(ord.gA||'')+'" placeholder="örn. BRIONY" onchange="this.value=this.value.toLocaleUpperCase(\'tr\')"></div><div class="m" style="padding-bottom:9px">Gerber\'deki model adları · boş bırakırsan ART kullanılır</div></div>':'')+'<div style="overflow-x:auto;margin-top:8px"><table id="ng"><tr><th>Renk / satır adı</th>'+(ord.takim?'<th>Kısım</th>':'')+sz.map(s=>'<th>'+esc(s)+'</th>').join('')+'<th>Toplam</th><th style="border:0;background:none"></th></tr>'+
   ord.rows.map((r,j)=>'<tr class="rw"><td><input class="nm" value="'+esc(r.name)+'" onchange="this.value=this.value.toLocaleUpperCase(\'tr\')"></td>'+(ord.takim?'<td><select class="sel gs" style="min-width:84px;padding:6px 28px 6px 10px"><option'+(r.g!='ÜST'?' selected':'')+'>ALT</option><option'+(r.g=='ÜST'?' selected':'')+'>ÜST</option></select></td>':'')+sz.map((_,i)=>'<td><input type="number" min="0" class="q" step="1" value="'+(r.v[i]||'')+'" oninput="tt(this)"></td>').join('')+
   '<td class="tot">'+(r.v.reduce((a,b)=>a+(b||0),0)||'')+'</td><td style="border:0"><button type="button" class="sm" onclick="rdel('+j+')">×</button></td></tr>').join('')+'</table></div>'+
   '<div style="margin-top:8px"><button type="button" onclick="radd()">+ Satır ekle</button><button type="button" class="pri" onclick="mkBase()">Tabloyu hazırla</button></div>'+
   '<div class="m" style="margin-top:6px">Bir renk birden fazla müşteriye bölünüyorsa: müşteri satırlarını "RENK - MÜŞTERİ" biçiminde yaz, toplam satırının adını "RENK TOPLAM" yap ve adetlerini boş bırak. Toplamı araç hesaplar.</div>'}
  $('nw').innerHTML=h}
 async function mkBase(fromLoad){rd();if(gJob&&['bitti','hata','iptal'].includes((gJob.st||{}).asama)){gJob=null;gMsg=''}const o=ord,sz=o.sizes,R=o.rows.filter(r=>r.name);
- const prev=!fromLoad&&info&&!info.cizgili&&!o.cizgili&&sols[cur]&&sols[cur].pastals.length&&info.sizes.join('|')===sz.join('|')?{colors:info.colors.slice(),sol:sols[cur],xt:(xSync(),xt),meas}:null;
+ const prev=!fromLoad&&info&&!info.asz&&!o.cizgili&&!o.panolu&&sols[cur]&&sols[cur].pastals.length&&info.sizes.join('|')===sz.join('|')?{colors:info.colors.slice(),sol:sols[cur],xt:(xSync(),xt),meas}:null;
  const prevCz=!fromLoad&&info&&info.cizgili&&o.cizgili&&info.sizes.join('|')===sz.join('|')?{bgr,bgk,bkOn}:null;
+ const prevPn=!fromLoad&&info&&info.panolu&&o.panolu&&!o.cizgili&&info.sizes.join('|')===sz.join('|')?pnr:null;
  if(!sz.length)return alert('Önce beden dizilimini ve aralığını seçip "Bedenleri ekle"ye bas');if(!R.length)return alert('En az bir renk satırı yaz');{const nm=R.map(r=>r.name),d=nm.filter((x,i)=>nm.indexOf(x)!=i);if(d.length)return alert('Aynı isimde iki satır var: '+d[0]+'. Her satırın adı farklı olmalı.')}if(o.takim&&(!R.some(r=>r.g!='ÜST')||!R.some(r=>r.g=='ÜST')))return alert('Alt-üst takımda hem ALT hem ÜST için en az bir satır olmalı');
  try{ents=await readZip(Uint8Array.from(atob(TPL),c=>c.charCodeAt(0)).buffer);
   const n=sz.length,Rn=R.length,H=Rn<=9?17:8+Rn+2,sh=new Sheet(await txt(ents.find(x=>x.name=='xl/worksheets/sheet1.xml')),[]),S=r=>sh.styleOf(r);
@@ -1171,11 +1240,11 @@ async function mkBase(fromLoad){rd();if(gJob&&['bitti','hata','iptal'].includes(
   sh.pre=sh.pre.replace(/<cols>[\s\S]*?<\/cols>/,'<cols>'+cw(1,1,65.42578125)+cw(2,n+1,21.7109375)+cw(n+2,n+1+Rn,33.7109375)+cw(n+2+Rn,n+2+Rn,21.7109375)+cw(n+3+Rn,n+3+Rn,32.7109375)+'</cols>');
   ents.find(x=>x.name=='xl/worksheets/sheet1.xml').text=sh.toString();
   ents=await readZip(await(await writeZip(ents)).arrayBuffer());
-  fname=o.art||'';fh=null;skipEx=true;$('fn').textContent='✔ Tablo hazırlandı';$('msg').textContent='';await parse();info.snap=JSON.parse(JSON.stringify({sizes:sz,rows:R,ser:o.ser,takim:!!o.takim,cizgili:!!o.cizgili}));info.takim=!!o.takim;info.cizgili=!!o.cizgili;if(o.takim){info.gA=o.gA||'';info.gU=o.gU||''}info.grp=info.colors.map(nm=>{const r=R.find(q=>q.name===nm||q.name.replace(/[-–]?\s*TOPLAM\s*/i,'').trim()===nm);return o.takim&&r?(r.g=='ÜST'?'ÜST':'ALT'):''});setTk();xt=[];sols=[];cur=0;xDraw();$('stx').style.display='none';$('st3').style.display='none';infoHtml();ord.made=true;if(!ord.art)ord.art=info.art||'';showArt();nwDraw();
+  fname=o.art||'';fh=null;skipEx=true;$('fn').textContent='✔ Tablo hazırlandı';$('msg').textContent='';await parse();info.snap=JSON.parse(JSON.stringify({sizes:sz,rows:R,ser:o.ser,takim:!!o.takim,cizgili:!!o.cizgili,panolu:!!o.panolu}));info.takim=!!o.takim;info.cizgili=!!o.cizgili;info.panolu=!o.cizgili&&!!o.panolu;info.asz=info.cizgili||info.panolu;if(o.takim){info.gA=o.gA||'';info.gU=o.gU||''}info.grp=info.colors.map(nm=>{const r=R.find(q=>q.name===nm||q.name.replace(/[-–]?\s*TOPLAM\s*/i,'').trim()===nm);return o.takim&&r?(r.g=='ÜST'?'ÜST':'ALT'):''});setTk();xt=[];sols=[];cur=0;xDraw();$('stx').style.display='none';$('st3').style.display='none';infoHtml();ord.made=true;if(!ord.art)ord.art=info.art||'';showArt();nwDraw();
   let wb=await txt(ents.find(x=>x.name=='xl/workbook.xml'));
   info.colors.forEach((c,g)=>{if(g>6)return;const nm=(g+1)+'. '+c.replace(/[\[\]:*?\/\\"]/g,'-').slice(0,26);wb=wb.split('name="'+(g+1)+'. RENK"').join('name="'+esc(nm)+'"').split("'"+(g+1)+". RENK'!").join("'"+nm.replace(/'/g,"''")+"'!")});
-  ents.find(x=>x.name=='xl/workbook.xml').text=wb;ents=await readZip(await(await writeZip(ents)).arrayBuffer());info.cp=info.colors.map((_,g)=>g<7?info.paths[g+1]:null);if(info.cizgili){$('st2').style.display='none';$('res').innerHTML='';setupCz();if(prevCz){bgr=prevCz.bgr;bgk=prevCz.bgk;bkOn=prevCz.bkOn;bgDraw()}$('stb').scrollIntoView({behavior:'smooth',block:'nearest'})}else{$('stb').style.display='none';$('act').innerHTML='';$('st2').style.display='block';$('st2').scrollIntoView({behavior:'smooth',block:'nearest'})}
-  if(prev&&!info.cizgili){const pk=nm=>prev.colors.indexOf(nm);
+  ents.find(x=>x.name=='xl/workbook.xml').text=wb;ents=await readZip(await(await writeZip(ents)).arrayBuffer());info.cp=info.colors.map((_,g)=>g<7?info.paths[g+1]:null);$('stb').style.display='none';$('stp').style.display='none';if(info.asz){$('st2').style.display='none';$('res').innerHTML='';if(info.cizgili){setupCz();if(prevCz){bgr=prevCz.bgr;bgk=prevCz.bgk;bkOn=prevCz.bkOn;bgDraw()}}else{setupPn();if(prevPn){pnr=prevPn;pnDraw()}}$(info.cizgili?'stb':'stp').scrollIntoView({behavior:'smooth',block:'nearest'})}else{$('act').innerHTML='';$('st2').style.display='block';$('st2').scrollIntoView({behavior:'smooth',block:'nearest'})}
+  if(prev&&!info.asz){const pk=nm=>prev.colors.indexOf(nm);
    sols=[{pastals:prev.sol.pastals.map(p=>({a:p.a.slice(),k:info.colors.map(nm=>pk(nm)<0?0:p.k[pk(nm)])})),over:0}];cur=0;meas=prev.meas;xt=prev.xt;
    show();$('fn').innerHTML='✔ Tablo hazırlandı · <span class="m">asortiler korundu, katlar yeni adetlere göre yeniden hesaplanıyor</span>';fixMode=true;$('go').click()}}
  catch(x){alert('Tablo hazırlanamadı: '+x.message)}}
@@ -1241,18 +1310,20 @@ function printSheet(){const s=sols[cur];if(!s)return;const{sizes,colors,parts,O,
    return '<tr><td class="nm pn">'+(j+1)+'. PASTAL</td>'+p.a.map(v=>'<td>'+(v||'')+'</td>').join('')+p.k.map((v,q)=>'<td class="kc'+(q?'':' k1')+'">'+v+'</td>').join('')+rs+'</tr>'}).join(''))};
  const adet=b=>T(hd(b.title,sizes,'<th class="tt">TOPLAM</th>',true)+b.rows.map(q=>'<tr><td class="nm">'+E(q.name)+'</td>'+q.v.map(v=>'<td>'+v+'</td>').join('')+'<td class="tt">'+sm(q.v)+'</td></tr>').join(''));
  const birim=b=>T('<tr><th class="ti y">'+E(b.title)+'</th><th class="bm k1">BİRİM</th></tr>'+b.rows.map(q=>'<tr><td class="nm pn">'+E(q.label)+'</td><td class="bm k1">'+E(q.b?nb(q.b):'')+'</td></tr>').join(''));
+ const pano=b=>T('<tr><th class="ti y">'+E(b.title)+'</th>'+(b.hb?'<th class="bm k1">BEDEN PANO BİRİMİ</th>':'')+(b.hk?'<th class="bm k1">KOL PANO BİRİMİ</th>':'')+'</tr>'+b.rows.map(q=>'<tr><td class="nm pn">'+E(q.label)+'</td>'+(b.hb?'<td class="bm k1">'+E(q.b||'')+'</td>':'')+(b.hk?'<td class="bm k1">'+E(q.k||'')+'</td>':'')+'</tr>').join(''));
  const fazla=()=>{const C=cutM();return T(hd('FAZLA KESİM',sizes,'<th class="tt">TOPLAM</th>')+mi.map(g=>{const d=sizes.map((_,i)=>C[g][i]-O[g][i]);
    return '<tr><td class="nm">'+E(info.tk?'ALT = ÜST':colors[g])+'</td>'+d.map(v=>'<td'+(v?' class="fz"':'')+'>'+(v?'+'+v:'–')+'</td>').join('')+'<td class="tt">'+(sm(d)?'+'+sm(d):'–')+'</td></tr>'}).join(''))};
  const BL=outBlocks();
  for(let i=0;i<BL.length;i++){const b=BL[i];
   if(b.grp){const g=[];while(i<BL.length&&BL[i].grp===b.grp){g.push(BL[i]);i++}i--;body+='<div class="grp">'+g.map(q=>q.type=='adet'?adet(q):asorti(q)).join('')+'</div>';continue}
   if(b.type=='birim'){body+=birim(b);continue}
+  if(b.type=='pano'){body+=pano(b);continue}
   body+=asorti(b);
-  if(!info.cizgili&&(i==BL.length-1||BL[i+1].grp||(info.tk&&b.id=='u')))body+=fazla()}
+  if(!info.asz&&(i==BL.length-1||BL[i+1].grp||(info.tk&&b.id=='u')))body+=fazla()}
  const X=ex.length?'<div class="ft">'+ex.map(e=>'<span>'+E((e.k?e.k+': ':'')+e.v)+'</span>').join('')+'</div>':'';
- const kind=(info.takim?'ALT-ÜST TAKIM':'')+(info.cizgili?'ÇİZGİLİ ÜRÜN':'');
+ const kind=(info.takim?'ALT-ÜST TAKIM':'')+(info.cizgili?'ÇİZGİLİ ÜRÜN':'')+(info.panolu?'PANOLU İŞ':'');
  const head='<table class="hd"><tr><td class="al">ART :</td><td class="av">'+E(art||'')+(kind?' <span class="kd">('+kind+')</span>':'')+'</td>'+
-  '<td class="ml">TOPLAM ADET</td><td class="mv">'+info.mtotal+'</td>'+(info.cizgili?'':'<td class="ml">FAZLA KESİM</td><td class="mv">'+(s.over?'+'+s.over:'0')+'</td>')+
+  '<td class="ml">TOPLAM ADET</td><td class="mv">'+info.mtotal+'</td>'+(info.asz?'':'<td class="ml">FAZLA KESİM</td><td class="mv">'+(s.over?'+'+s.over:'0')+'</td>')+
   '<td class="ml">TARİH</td><td class="mv">'+new Date().toLocaleDateString('tr-TR')+'</td></tr></table>';
  const css='#pw{font:16px Arial,Helvetica,sans-serif;color:#111;background:#fff;display:inline-block;text-align:left;-webkit-print-color-adjust:exact;print-color-adjust:exact;--b:1.2px;--B:2.4px;--ln:#2b2b2b}'+
  '#pw table{border-collapse:collapse;margin:0 0 16px}'+
