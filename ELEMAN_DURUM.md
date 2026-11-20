@@ -453,6 +453,13 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
     sayfa kaydı, yeniden hazırlama, 3.4.0 kaydı; satır sayısı her tür geçişinde. Eski / yeni normal iş Excel'i bayt bayt aynı,
     çizgili yalnız TOPLAM sütunu (3.4.0'dan beri); çizgili denemeleri yeniden geçti.
 
+- 2026-11-20 öğleden sonra (Asorti sohbeti): **Eleman 3.4.2**, alt-üst takımda ÜST'ün asorti tablosu üstte, ALT'ınki altta
+  (kullanıcı yazdırma görüntüsünü gönderdi: "üstün asorti tablosu üstte olsun, altınki de altta olsun").
+  - Yalnız görünen sıra: `mainSira()` (takımda mainBlocks'un tersi) Excel (`outBlocks`), yazdırma ve ekrandaki sonuç tablosu
+    (`show0`) için. `mainBlocks()` sırası (k: 0 ALT, 1 ÜST) aynı kaldı: Gerber kumaş eni (gW / gW2), model adları ve kayıtlı
+    sayfalar ona bağlı. Yazdırmada FAZLA KESİM son ana tablodan (artık ALT) sonra; etiketler "ÜST = ALT", "ÜST ve ALT aynı asorti".
+  - Denendi: takım işinde ekran, yazdırma, Excel sırası ÜST → ALT; normal iş Excel'i eskisiyle bayt bayt aynı.
+
 ## Sıradaki işler
 0. **Sürüm arşivi = GitHub Releases.** 32 sürüm (ilk-deneme, v1.0.0–v1.1.22, v2.0.0–v2.0.4) bir kerelik GitHub Actions işiyle
    taşındı, `surum-v*`, `arsiv`, `surum-test` dalları silindi (dallar: eleman, main, exe-deneme). Bu oturumlardan etiket ve

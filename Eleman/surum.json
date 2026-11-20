@@ -1,9 +1,7 @@
 {
- "surum": "3.4.1",
+ "surum": "3.4.2",
  "tarih": "2026-11-20",
  "notlar": [
-  "Asorti · Panolu iş: beden ve kol pano birimleri ayrı bölümlerde, her birinin kendi beden grupları var",
-  "Asorti · Pano birimini işe göre serbest yazarsın (1 PANODAN 1,5 İŞ · 2 PANODAN 1 İŞ · ÖN ARKA 1 KOL…); yalnız sayı yazarsan «1 PANODAN … İŞ» olur. Excel'e BEDEN PANO BİRİMİ ve KOL PANO BİRİMİ diye iki ayrı tablo yazılır",
-  "Asorti · Alt-üst takım dışındaki iş türlerinde sipariş tablosu tek renk satırıyla başlar; takımdan başka türe geçince boş ikinci satır kalmaz"
+  "Asorti · Alt-üst takımda ÜST'ün asorti tablosu üstte, ALT'ınki altta: Excel'de, yazdırmada ve ekrandaki sonuç tablosunda"
  ]
 }

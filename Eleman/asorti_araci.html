@@ -586,7 +586,7 @@ function xWarn(){const w=xt.filter(x=>!x.res).map(x=>(x.base||'EK')+' ASORTİSİ
 function outBlocks(){const s=sols[cur],B=[];
  if(info.cizgili){[[bgr,'z','BEDEN BİRİMLERİ'],[bkOn?bgk:[],'zk','KOL BİRİMLERİ']].forEach(([L,id,title])=>{const gr=L.filter(g=>g.s.length);if(gr.length)B.push({id,type:'birim',title,yellow:true,rows:gr.map(g=>({label:g.s.map(i=>info.sizes[i]).join(' - '),b:g.b}))})})}
  else if(info.panolu)[[pnB,'pb','BEDEN PANO BİRİMİ'],[pnK,'pk','KOL PANO BİRİMİ']].forEach(([L,id,title])=>{const gr=L.filter(g=>g.s.length&&g.b);if(gr.length)B.push({id,type:'birim',title,yellow:true,metin:true,gen:3,rows:gr.map(g=>({label:g.s.map(i=>info.sizes[i]).join(' - '),b:pnYaz(g.b)}))})})
- else mainBlocks().forEach(b=>B.push({id:b.id,title:b.title,yellow:b.yellow,names:b.ci.map(g=>info.colors[g]),pastals:s.pastals.filter(p=>p.a.some(v=>v)).map(p=>({a:p.a,k:b.ci.map(g=>p.k[g])}))}));
+ else mainSira().forEach(b=>B.push({id:b.id,title:b.title,yellow:b.yellow,names:b.ci.map(g=>info.colors[g]),pastals:s.pastals.filter(p=>p.a.some(v=>v)).map(p=>({a:p.a,k:b.ci.map(g=>p.k[g])}))}));
  xt.forEach(x=>{if(!x.res||!x.res.length)return;const r=x.res[x.cur];
   const nm=x.mode=='tot'?[x.fab]:x.names;
   B.push({id:'xa'+x.id,grp:x.id,type:'adet',title:(x.base||'EK')+' ADETLERİ',yellow:true,rows:nm.map((q,g)=>({name:q,v:x.need[g]}))});
@@ -1070,6 +1070,8 @@ function setTk(){const G=info.G,all=[...Array(G).keys()];info.tk=null;info.mi=al
  info.tk={A,B,master,other,mode};info.mi=master;info.mtotal=master.reduce((a,g)=>a+info.O[g].reduce((x,y)=>x+y,0),0);return null}
 function expandK(k){const t=info.tk,f=Array(info.G).fill(0);if(!t)return k.slice();
  t.master.forEach((g,i)=>f[g]=k[i]);if(t.mode=='pair')t.other.forEach((g,i)=>f[g]=k[i]);else f[t.other[0]]=k.reduce((a,b)=>a+b,0);return f}
+/* görünen sıra: alt-üst takımda ÜST üstte, ALT altta (Excel, yazdırma, ekran). mainBlocks'un sırası (k: 0 ALT, 1 ÜST) Gerber eni ve model alanlarına bağlı, değişmez */
+const mainSira=()=>{const B=mainBlocks();return info.tk?B.slice().reverse():B};
 function mainBlocks(){if(info.tk)return[{id:'a',title:'ALT',yellow:true,ci:info.tk.A},{id:'u',title:'ÜST',yellow:true,ci:info.tk.B}];return[{id:'m',title:'ASORTİ',yellow:false,ci:info.colors.map((_,g)=>g)}]}
 function infoHtml(){const{colors,sizes,O,art,total}=info;$('info').innerHTML='<b id="artb">'+esc(art||'(model adı girilmedi)')+'</b> · '+colors.length+' renk · '+total+' adet'+(info.takim?' · alt-üst takım':'')+(info.cizgili?' · çizgili ürün':'')+(info.panolu?' · panolu iş':'')+'<table style="margin-top:6px"><tr><th></th>'+sizes.map(x=>'<th>'+x+'</th>').join('')+'</tr>'+colors.map((c,g)=>'<tr><td class="red">'+esc(c)+(info.grp&&info.grp[g]?'<span class="gtag">'+info.grp[g]+'</span>':'')+'</td>'+O[g].map(v=>'<td>'+v+'</td>').join('')+'<td style="border:0;text-align:left" class="m">'+pt(g)+'</td></tr>').join('')+'</table>'}
 const pt=g=>{const p=info.parts[g];if(!p.length)return'';const bad=p.warn;
@@ -1092,9 +1094,9 @@ function chk(s){const{sizes,colors,O}=info,L=[],T=+$('T').value;
  if(!L.some(x=>x.startsWith('⚠')))L.unshift('✔ Kontroller tamam: sipariş karşılanıyor, fazla kesim sınırda');
  return L.join('<br>')}
 let _sh=0;function show(){if(info&&info.asz){xDraw();return}if(_sh)return;_sh=1;try{show0()}finally{_sh=0}}
-function show0(){const s=sols[cur],{sizes,colors,O}=info,B=mainBlocks(),ord2=B.flatMap(b=>b.ci),hasV=Object.keys(meas).some(q=>meas[q]&&meas[q].v);$('st3').style.display='block';$('stx').style.display='block';
+function show0(){const s=sols[cur],{sizes,colors,O}=info,B=mainSira(),ord2=B.flatMap(b=>b.ci),hasV=Object.keys(meas).some(q=>meas[q]&&meas[q].v);$('st3').style.display='block';$('stx').style.display='block';
  const bt=b=>info.tk?b.title+' ':'';
- let h='<div class="box"><b>Seçenek '+(cur+1)+'/'+sols.length+'</b> · '+s.pastals.length+' pastal · toplam fazla kesim '+s.over+' (siparişin %'+(s.over/info.mtotal*100).toFixed(1).replace('.',',')+')'+(info.tk?' <span class="m">· ALT ve ÜST aynı asorti, aynı fazla kesim</span>':'')+(info.timeout?' <span class="e">(süre doldu, en iyi bulunan)</span>':'')+
+ let h='<div class="box"><b>Seçenek '+(cur+1)+'/'+sols.length+'</b> · '+s.pastals.length+' pastal · toplam fazla kesim '+s.over+' (siparişin %'+(s.over/info.mtotal*100).toFixed(1).replace('.',',')+')'+(info.tk?' <span class="m">· ÜST ve ALT aynı asorti, aynı fazla kesim</span>':'')+(info.timeout?' <span class="e">(süre doldu, en iyi bulunan)</span>':'')+
  '<div style="overflow-x:auto"><table style="margin:10px 0"><tr><th>ASORTİ</th>'+sizes.map(x=>'<th>'+x+'</th>').join('')+B.map(b=>b.ci.map(g=>'<th style="background:#f7f0dc">'+esc(colors[g])+'</th>').join('')+'<th style="background:#e1e5ea">'+bt(b)+'BİRİM</th><th style="background:#e1e5ea">'+bt(b)+'PASTAL BOYU</th>'+(hasV?'<th style="background:#e1e5ea" title="Gerber\'den gelen verimlilik">'+bt(b)+'VERİM</th>':'')).join('')+'</tr>';
  s.pastals.forEach((p,j)=>{const k=p.a.join();h+='<tr><td class="red">'+(j+1)+'. PASTAL</td>'+p.a.map((v,i)=>'<td><input type="number" min="0" max="9" value="'+(v||'')+'" style="text-align:center" onchange="ed('+j+','+i+',this.value)"></td>').join('')+
   B.map(b=>{const mk=b.id+'|'+k;return b.ci.map(g=>'<td><b>'+p.k[g]+'</b></td>').join('')+'<td><input class="ib" value="'+((meas[mk]||{}).b||'')+'" oninput="sm(\''+mk+'\',\'b\',this.value)"></td><td><input class="il" value="'+((meas[mk]||{}).l||'')+'" oninput="sm(\''+mk+'\',\'l\',this.value)"></td>'+(hasV?'<td title="'+esc((meas[mk]||{}).nm||'')+'">'+((meas[mk]||{}).v?'<b>%'+esc(meas[mk].v)+'</b>':'')+'</td>':'')}).join('')+
@@ -1319,13 +1321,13 @@ function printSheet(){const s=sols[cur];if(!s)return;const{sizes,colors,parts,O,
  const adet=b=>T(hd(b.title,sizes,'<th class="tt">TOPLAM</th>',true)+b.rows.map(q=>'<tr><td class="nm">'+E(q.name)+'</td>'+q.v.map(v=>'<td>'+v+'</td>').join('')+'<td class="tt">'+sm(q.v)+'</td></tr>').join(''));
  const birim=b=>T('<tr><th class="ti y">'+E(b.title)+'</th><th class="bm k1">BİRİM</th></tr>'+b.rows.map(q=>'<tr><td class="nm pn">'+E(q.label)+'</td><td class="bm k1">'+E(q.b?(b.metin?q.b:nb(q.b)):'')+'</td></tr>').join(''));
  const fazla=()=>{const C=cutM();return T(hd('FAZLA KESİM',sizes,'<th class="tt">TOPLAM</th>')+mi.map(g=>{const d=sizes.map((_,i)=>C[g][i]-O[g][i]);
-   return '<tr><td class="nm">'+E(info.tk?'ALT = ÜST':colors[g])+'</td>'+d.map(v=>'<td'+(v?' class="fz"':'')+'>'+(v?'+'+v:'–')+'</td>').join('')+'<td class="tt">'+(sm(d)?'+'+sm(d):'–')+'</td></tr>'}).join(''))};
+   return '<tr><td class="nm">'+E(info.tk?'ÜST = ALT':colors[g])+'</td>'+d.map(v=>'<td'+(v?' class="fz"':'')+'>'+(v?'+'+v:'–')+'</td>').join('')+'<td class="tt">'+(sm(d)?'+'+sm(d):'–')+'</td></tr>'}).join(''))};
  const BL=outBlocks();
  for(let i=0;i<BL.length;i++){const b=BL[i];
   if(b.grp){const g=[];while(i<BL.length&&BL[i].grp===b.grp){g.push(BL[i]);i++}i--;body+='<div class="grp">'+g.map(q=>q.type=='adet'?adet(q):asorti(q)).join('')+'</div>';continue}
   if(b.type=='birim'){body+=birim(b);continue}
   body+=asorti(b);
-  if(!info.asz&&(i==BL.length-1||BL[i+1].grp||(info.tk&&b.id=='u')))body+=fazla()}
+  if(!info.asz&&(i==BL.length-1||BL[i+1].grp||(info.tk&&b.id==mainSira().slice(-1)[0].id)))body+=fazla()}
  const X=ex.length?'<div class="ft">'+ex.map(e=>'<span>'+E((e.k?e.k+': ':'')+e.v)+'</span>').join('')+'</div>':'';
  const kind=(info.takim?'ALT-ÜST TAKIM':'')+(info.cizgili?'ÇİZGİLİ ÜRÜN':'')+(info.panolu?'PANOLU İŞ':'');
  const head='<table class="hd"><tr><td class="al">ART :</td><td class="av">'+E(art||'')+(kind?' <span class="kd">('+kind+')</span>':'')+'</td>'+
