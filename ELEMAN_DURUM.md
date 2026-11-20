@@ -437,6 +437,22 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
     bitti, yerleşemedi, bildirim), astar kendim. Eski ve yeni sürümle aynı normal iş: Excel bayt bayt aynı; çizgili işte yalnız
     TOPLAM sütun genişliği farklı. Çizgili ve Gerber ad denemeleri yeniden geçti.
 
+- 2026-11-20 öğlen (Asorti sohbeti): **Eleman 3.4.1**, panolu iş düzeltmeleri (kullanıcı: "1 panodan değil de mesela 2 panodan
+  1 iş olacak … sadece 1 pano üzerinden düşünme"; "bedenin ayrı olsun kolun ayrı olsun, yan yana olunca kafa karıştırıyor …
+  ön arka 1 adet kol şeklinde birim vericem … biraz özgür olmalı"; "alt üst takım hariç … tek satırla başlaması lazım").
+  - Panolu iş artık çizgilideki "kol birimi ayrı" gibi: iki kutu (BEDEN PANO BİRİMİ, KOL PANO BİRİMİ), her birinin kendi beden
+    grupları `pnB` / `pnK` [{s:[beden], b:'serbest yazı'}], varsayılan birer grup bütün bedenler. Birim serbest yazı; yalnız sayı
+    yazılırsa "1 PANODAN … İŞ" olur (yanında önizleme), kolda "N PANODAN M İŞ" ise "= 2M kol" ipucu. Kol boşsa kol tablosu
+    yazılmaz (uyarı yok); bedende birim yoksa uyarı.
+  - Excel / yazdırma: 3.4.0'daki yan yana tek tablo kalktı; çizgilinin `birim` tablosu kullanılıyor (`metin:true` yazıyı olduğu
+    gibi yazar, `gen:3` birimi 3 sütun birleşik yazar): sarı BEDEN PANO BİRİMİ | BİRİM, altında KOL PANO BİRİMİ | BİRİM.
+    Çizgili çıktısı aynı (gen 1).
+  - 3.4.0 kaydı (`pnr`, b/k ve bp/kp) açılınca pnB/pnK'ye çevrilir.
+  - İş türü: takım dışındaki türe geçince boş satırlar silinir (yazılı satır kalır), tek satır kalır.
+  - Denendi (Playwright, açık ve koyu): iki bölüm, serbest yazı, ipuçları, uyarılar, Excel (LibreOffice ile bakıldı), yazdırma,
+    sayfa kaydı, yeniden hazırlama, 3.4.0 kaydı; satır sayısı her tür geçişinde. Eski / yeni normal iş Excel'i bayt bayt aynı,
+    çizgili yalnız TOPLAM sütunu (3.4.0'dan beri); çizgili denemeleri yeniden geçti.
+
 ## Sıradaki işler
 0. **Sürüm arşivi = GitHub Releases.** 32 sürüm (ilk-deneme, v1.0.0–v1.1.22, v2.0.0–v2.0.4) bir kerelik GitHub Actions işiyle
    taşındı, `surum-v*`, `arsiv`, `surum-test` dalları silindi (dallar: eleman, main, exe-deneme). Bu oturumlardan etiket ve

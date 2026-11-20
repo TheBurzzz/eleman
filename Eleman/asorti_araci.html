@@ -148,7 +148,7 @@ html[data-theme=dark] button.trb.on,html[data-theme=dark] button.trb.on:hover:no
 html[data-theme=dark] button.trb .tri{background:rgba(255,255,255,.09);color:rgba(235,235,245,.72)}
 html[data-theme=dark] button.trb.on .tri{background:linear-gradient(180deg,#3d9bff,#0a84ff);color:#fff}
 /* panolu iş: "1 panodan [1,5] iş" alanı */
-.pnv{display:flex;align-items:center;gap:7px}.pnv input{width:84px}.pnv .pnk{min-width:52px}
+.pnv{display:flex;align-items:center;gap:10px}.pnv input{width:260px}.pnv .pnk{min-width:190px}
 .gpb{margin:10px 0 4px;padding:10px 12px;border:1px dashed var(--tb);border-radius:14px;background:var(--inbg)}.gpb textarea{display:block;width:100%;max-width:520px;margin-top:6px;font:inherit;padding:6px 10px;border:1px solid var(--line);border-radius:10px;background:var(--inbg);color:var(--ink);resize:vertical}#gpm div{margin-top:4px}
 /* Sipariş kartı: "Kayıtlı Excel'i aç" yumuşak Excel yeşili, "Sıfırla" dikkat isteyen iş olduğu için kırmızı yazı (Apple'daki gibi) */
 #ldb{background:linear-gradient(180deg,rgba(33,163,102,.15),rgba(33,163,102,.08)),var(--btn);border-color:rgba(33,163,102,.32);color:#157347}
@@ -174,7 +174,7 @@ html[data-theme=dark] #rst:hover:not(:disabled){background:linear-gradient(180de
 <div style="margin-top:14px"><button class="pri" id="go" disabled>Hesapla</button><span id="st" class="m"></span></div></div>
 <div id="res"></div>
 <div class="card" id="stb" style="display:none"><h2><span class="step">2</span><span id="stbt">Beden birimleri</span> <span class="m">(çizgili ürün)</span></h2><div class="m" style="margin-bottom:6px">Çizgili üründe asorti / pastal yok. Birimi aynı olan bedenleri işaretle, yanına birimini yaz (örn. 10 · 12 · 14 → 92). Tablo Excel'de adetlerin hemen altına yazılır.</div><div class="chips" style="margin:10px 0 4px"><label title="Beden birimi ile kol birimi farklıysa: ikisini ayrı ayrı gir. Excel'e BEDEN BİRİMLERİ ve KOL BİRİMLERİ diye iki ayrı sarı tablo yazılır."><input type="checkbox" id="bkt" onchange="bkTog(this.checked)">Kol birimi ayrı</label></div><div id="bg"></div></div>
-<div class="card" id="stp" style="display:none"><h2><span class="step">2</span>Pano birimleri <span class="m">(panolu iş)</span></h2><div class="m" style="margin-bottom:6px">Panolu işte asorti / pastal yok. Pano birimi aynı olan bedenleri işaretle, 1 panodan kaç iş çıktığını yaz (örn. ön · arka · ön yan yana → 1,5 iş; kolda 1 panodan 2 iş = 4 kol). Tablo Excel'de adetlerin hemen altına yazılır.</div><div id="pn"></div></div>
+<div class="card" id="stp" style="display:none"><h2><span class="step">2</span>Pano birimleri <span class="m">(panolu iş)</span></h2><div class="m" style="margin-bottom:6px">Panolu işte asorti / pastal yok. Beden ve kol ayrı: pano birimi aynı olan bedenleri işaretle, birimi işe göre istediğin gibi yaz (örn. 1 panodan 1,5 iş · 2 panodan 1 iş · ön arka 1 kol). Yalnız sayı yazarsan "1 PANODAN … İŞ" olur. Kol boş kalırsa kol tablosu yazılmaz. Tablolar Excel'de adetlerin hemen altına yazılır.</div><div id="pn"></div></div>
 <div class="card" id="stx" style="display:none"><h2><span class="step">3</span>Ek asorti tabloları <span class="m">(Hızar, Tela, Kontrast cep…)</span></h2><div class="m" id="xdesc" style="margin-bottom:6px">Ana asortinin çıkan (artılı) adetleri üzerinden ayrı bir asorti hazırlar. Excel'de sarı başlıklı ayrı tablo olarak yazılır. Bu tablo ne için olacak?</div><div id="xgz"></div><div id="xt"></div><div style="margin-top:8px"><button type="button" onclick="xAdd('hizar')">+ Hızar asortisi</button><button type="button" onclick="xAdd('tela')">+ Tela asortisi</button><button type="button" onclick="xAdd('ribana')">+ Ribana asortisi</button><button type="button" onclick="xAdd('astar')">+ Astar asortisi</button><button type="button" onclick="xAdd('cep')">+ Kontrast cep</button><button type="button" onclick="xAdd('diger')">+ Başka tablo</button></div></div>
 <div class="card" id="st3" style="display:none"><h2><span class="step">4</span>Ek satırlar <span class="m">(Biye, Hızar…)</span></h2><div id="ex"></div><div style="margin-top:8px"><button type="button" onclick="exAdd('BİYE')">+ BİYE</button><button type="button" onclick="exAdd('HIZAR')">+ HIZAR</button><button type="button" onclick="exAdd('')">+ Başka satır</button></div><div class="m" style="margin-top:6px">Bu satırlar Excel'de pastalların bir satır altına, sağa yaslı ve alt alta yazılır.</div></div>
 <div id="act"></div><div id="msg"></div>
@@ -432,23 +432,27 @@ function bgSec(k){const L=bgL(k),sz=info.sizes,cnt=sz.map((_,i)=>L.filter(g=>g.s
   '<div style="margin-top:8px"><button type="button" onclick="bgAdd('+k+')">+ '+(k?'Kol':'Beden')+' grubu ekle</button>'+(k&&!L.some(g=>g.s.length)&&bgr.some(g=>g.s.length)?'<button type="button" onclick="bgKopya()">Beden gruplarını kopyala</button>':'')+'</div>'}
 function bgDraw(){const c=$('bg');if(!c||!info)return;const t=$('bkt'),h=$('stbt');if(t)t.checked=bkOn;if(h)h.textContent=bkOn?'Beden ve kol birimleri':'Beden birimleri';
  c.innerHTML=bkOn?'<div class="xc">'+bgSec(0)+'</div><div class="xc">'+bgSec(1)+'</div>':bgSec(0)}
-/* panolu iş: beden grupları için 1 panodan kaç iş çıktığı (beden ve kol). Grup: {s:[beden sırası], b:'1,5', k:'2'} */
-let pnr=[];const pnBos=()=>[{s:info?info.sizes.map((_,i)=>i):[],b:'',k:''}];
-function setupPn(){info.mi=info.colors.map((_,g)=>g);info.mtotal=info.total;info.tk=null;sols=[{pastals:[],over:0}];cur=0;pnr=pnBos();lock=[];ban=[];
+/* panolu iş: beden ve kol ayrı. Her birinin kendi beden grupları: {s:[beden sırası], b:'birim'}. Birim serbest yazı
+   (1 PANODAN 1,5 İŞ · 2 PANODAN 1 İŞ · ÖN ARKA 1 KOL…); yalnız sayı yazılırsa "1 PANODAN … İŞ" olur */
+let pnB=[],pnK=[];const pnL=k=>k?pnK:pnB,pnTum=()=>[{s:info?info.sizes.map((_,i)=>i):[],b:''}];
+function setupPn(){info.mi=info.colors.map((_,g)=>g);info.mtotal=info.total;info.tk=null;sols=[{pastals:[],over:0}];cur=0;pnB=pnTum();pnK=pnTum();lock=[];ban=[];
  $('act').innerHTML=actBtn();$('stp').style.display='block';$('stx').style.display='block';$('st3').style.display='block';pnDraw();xDraw()}
 const pnSayi=v=>{const m=String(v||'').trim().match(/^(\d+(?:[.,]\d+)?)(?:\s*(?:İŞ|IŞ|IS|İS))?$/i);return m?m[1].replace('.',','):null};
-/* Excel'e: "1 PANODAN 1,5 İŞ" (sayı yazıldıysa), yazı yazıldıysa olduğu gibi */
 const pnYaz=v=>{v=String(v||'').trim();if(!v)return'';const n=pnSayi(v);return n?'1 PANODAN '+n+' İŞ':v.toLocaleUpperCase('tr')};
-const pnKol=v=>{const n=pnSayi(v);if(!n)return'';const k=+n.replace(',','.')*2;return '= '+String(+k.toFixed(2)).replace('.',',')+' kol'};
-function pnAdd(){pnr.push({s:[],b:'',k:''});pnDraw()}
-function pnDel(j){pnr.splice(j,1);if(!pnr.length)pnr.push({s:[],b:'',k:''});pnDraw()}
-function pnSet(j,f,v){pnr[j][f]=String(v||'').trim();if(f=='k'){const e=$('pnk'+j);if(e)e.textContent=pnKol(v)}}
-function pnTog(j,i){const a=pnr[j].s,q=a.indexOf(i);q<0?a.push(i):a.splice(q,1);a.sort((x,y)=>x-y);pnDraw()}
-function pnDraw(){const c=$('pn');if(!c||!info)return;const sz=info.sizes,cnt=sz.map((_,i)=>pnr.filter(g=>g.s.includes(i)).length);
- const miss=sz.filter((_,i)=>!cnt[i]),dup=sz.filter((_,i)=>cnt[i]>1),fld=(j,f,g,ph)=>'<div class="pnv"><input inputmode="decimal" value="'+esc(g[f])+'" placeholder="'+ph+'" oninput="pnSet('+j+',\''+f+'\',this.value)"><span class="m">iş</span>'+(f=='k'?'<span class="m pnk" id="pnk'+j+'">'+esc(pnKol(g.k))+'</span>':'')+'</div>';
- c.innerHTML=pnr.map((g,j)=>'<div class="row" style="align-items:center;margin:8px 0;gap:14px 18px"><div class="szs">'+sz.map((x,i)=>'<button type="button" class="szb'+(g.s.includes(i)?' on':'')+'" onclick="pnTog('+j+','+i+')">'+esc(x)+'</button>').join('')+'</div><div><span class="t">Beden · 1 panodan</span>'+fld(j,'b',g,'örn. 1,5')+'</div><div><span class="t">Kol · 1 panodan</span>'+fld(j,'k',g,'örn. 2')+'</div><button type="button" class="sm" style="width:auto" onclick="pnDel('+j+')">× Sil</button></div>').join('')+
- (miss.length&&pnr.some(g=>g.s.length)?'<div class="m e">Pano birimi verilmemiş beden: '+esc(miss.join(', '))+'</div>':'')+(dup.length?'<div class="m e">Birden fazla grupta olan beden: '+esc(dup.join(', '))+'</div>':'')+
- '<div style="margin-top:8px"><button type="button" onclick="pnAdd()">+ Beden grubu ekle</button></div>'}
+/* yazının yanında: sayı yazıldıysa Excel'e ne gideceği; kolda "N PANODAN M İŞ" ise kaç kol parçası */
+function pnIpucu(k,v){const t=pnYaz(v);if(!t)return'';const m=t.match(/^\d+(?:,\d+)? PANODAN (\d+(?:,\d+)?) İŞ$/);let h=pnSayi(v)?'→ '+t:'';
+ if(k&&m)h+=(h?' · ':'')+'= '+String(+(+m[1].replace(',','.')*2).toFixed(2)).replace('.',',')+' kol';return h}
+function pnAdd(k){pnL(k).push({s:[],b:''});pnDraw()}
+function pnDel(k,j){const L=pnL(k);L.splice(j,1);if(!L.length)L.push({s:[],b:''});pnDraw()}
+function pnSet(k,j,v){pnL(k)[j].b=String(v||'').trim();const e=$('pni'+k+'_'+j);if(e)e.textContent=pnIpucu(k,v)}
+function pnTog(k,j,i){const a=pnL(k)[j].s,q=a.indexOf(i);q<0?a.push(i):a.splice(q,1);a.sort((x,y)=>x-y);pnDraw()}
+function pnSec(k){const L=pnL(k),sz=info.sizes,cnt=sz.map((_,i)=>L.filter(g=>g.s.includes(i)).length),ad=k?'Kol':'Beden';
+ const miss=sz.filter((_,i)=>!cnt[i]),dup=sz.filter((_,i)=>cnt[i]>1);
+ return '<h3><span class="tag">'+ad.toLocaleUpperCase('tr')+' PANO BİRİMİ</span></h3>'+
+  L.map((g,j)=>'<div class="row" style="align-items:center;margin:8px 0;gap:14px"><div class="szs">'+sz.map((x,i)=>'<button type="button" class="szb'+(g.s.includes(i)?' on':'')+'" onclick="pnTog('+k+','+j+','+i+')">'+esc(x)+'</button>').join('')+'</div><div><span class="t">'+ad+' pano birimi</span><div class="pnv"><input value="'+esc(g.b)+'" placeholder="örn. '+(k?'1 panodan 2 iş':'1 panodan 1,5 iş')+'" oninput="pnSet('+k+','+j+',this.value)"><span class="m pnk" id="pni'+k+'_'+j+'">'+esc(pnIpucu(k,g.b))+'</span></div></div><button type="button" class="sm" style="width:auto" onclick="pnDel('+k+','+j+')">× Sil</button></div>').join('')+
+  (miss.length&&L.some(g=>g.s.length&&g.b)?'<div class="m e">Birimi verilmemiş beden: '+esc(miss.join(', '))+'</div>':'')+(dup.length?'<div class="m e">Birden fazla grupta olan beden: '+esc(dup.join(', '))+'</div>':'')+
+  '<div style="margin-top:8px"><button type="button" onclick="pnAdd('+k+')">+ '+ad+' grubu ekle</button></div>'}
+function pnDraw(){const c=$('pn');if(!c||!info)return;c.innerHTML='<div class="xc">'+pnSec(0)+'</div><div class="xc">'+pnSec(1)+'</div>'}
 
 /* ---- ek asorti tabloları (hızar / tela / kontrast cep) ---- */
 const XK={hizar:{base:'HIZAR',mode:'col'},tela:{base:'TELA',mode:'tot'},ribana:{base:'RİBANA',mode:'col'},astar:{base:'ASTAR',mode:'tot'},cep:{base:'KONTRAST CEP',mode:'tot'},diger:{base:'',mode:'col'}};
@@ -576,10 +580,12 @@ function kRef(){if(!info)return;const c=$('chk');if(c&&sols[cur]&&sols[cur].past
 function xWarn(){const w=xt.filter(x=>!x.res).map(x=>(x.base||'EK')+' ASORTİSİ');let h=w.length?'<br><span class="e">⚠ Hesaplanmadığı için Excel\'e yazılmadı: '+esc(w.join(', '))+'</span>':'';
  if(info.cizgili)[[bgr,'Beden','BEDEN BİRİMLERİ']].concat(bkOn?[[bgk,'Kol','KOL BİRİMLERİ']]:[]).forEach(([L,ad,tb])=>{const gr=L.filter(g=>g.s.length),bi=bkOn?tb+' tablosunda birimi':'Birimi';
   if(!gr.length)h+='<br><span class="e">⚠ '+ad+' birimleri girilmediği için o tablo Excel\'e yazılmadı</span>';else{const miss=info.sizes.filter((_,i)=>!gr.some(g=>g.s.includes(i)));const nob=gr.filter(g=>!g.b);if(miss.length)h+='<br><span class="e">⚠ '+bi+' verilmemiş beden: '+esc(miss.join(', '))+'</span>';if(nob.length)h+='<br><span class="e">⚠ '+bi+' boş grup var</span>'}});
- if(info.panolu){const gr=pnr.filter(g=>g.s.length&&(g.b||g.k));if(!gr.length)h+='<br><span class="e">⚠ Pano birimleri girilmediği için o tablo Excel\'e yazılmadı</span>';else{const miss=info.sizes.filter((_,i)=>!gr.some(g=>g.s.includes(i)));if(miss.length)h+='<br><span class="e">⚠ Pano birimi verilmemiş beden: '+esc(miss.join(', '))+'</span>'}}return h}
+ if(info.panolu)[[pnB,'BEDEN PANO BİRİMİ'],[pnK,'KOL PANO BİRİMİ']].forEach(([L,tb],k)=>{const gr=L.filter(g=>g.s.length&&g.b);
+  if(!gr.length){if(!k)h+='<br><span class="e">⚠ Beden pano birimi girilmediği için o tablo Excel\'e yazılmadı</span>';return}
+  const miss=info.sizes.filter((_,i)=>!gr.some(g=>g.s.includes(i)));if(miss.length)h+='<br><span class="e">⚠ '+tb+' tablosunda birimi verilmemiş beden: '+esc(miss.join(', '))+'</span>'});return h}
 function outBlocks(){const s=sols[cur],B=[];
  if(info.cizgili){[[bgr,'z','BEDEN BİRİMLERİ'],[bkOn?bgk:[],'zk','KOL BİRİMLERİ']].forEach(([L,id,title])=>{const gr=L.filter(g=>g.s.length);if(gr.length)B.push({id,type:'birim',title,yellow:true,rows:gr.map(g=>({label:g.s.map(i=>info.sizes[i]).join(' - '),b:g.b}))})})}
- else if(info.panolu){const gr=pnr.filter(g=>g.s.length&&(g.b||g.k));if(gr.length)B.push({id:'p',type:'pano',title:'PANO BİRİMLERİ',yellow:true,hb:gr.some(g=>g.b),hk:gr.some(g=>g.k),rows:gr.map(g=>({label:g.s.map(i=>info.sizes[i]).join(' - '),b:pnYaz(g.b),k:pnYaz(g.k)}))})}
+ else if(info.panolu)[[pnB,'pb','BEDEN PANO BİRİMİ'],[pnK,'pk','KOL PANO BİRİMİ']].forEach(([L,id,title])=>{const gr=L.filter(g=>g.s.length&&g.b);if(gr.length)B.push({id,type:'birim',title,yellow:true,metin:true,gen:3,rows:gr.map(g=>({label:g.s.map(i=>info.sizes[i]).join(' - '),b:pnYaz(g.b)}))})})
  else mainBlocks().forEach(b=>B.push({id:b.id,title:b.title,yellow:b.yellow,names:b.ci.map(g=>info.colors[g]),pastals:s.pastals.filter(p=>p.a.some(v=>v)).map(p=>({a:p.a,k:b.ci.map(g=>p.k[g])}))}));
  xt.forEach(x=>{if(!x.res||!x.res.length)return;const r=x.res[x.cur];
   const nm=x.mode=='tot'?[x.fab]:x.names;
@@ -914,7 +920,7 @@ const b64d=t=>new TextDecoder().decode(Uint8Array.from(atob(t),c=>c.charCodeAt(0
 function getState(){exRd();xSync();const s=sols[cur];
  return{app:'asorti-araci',v:1,date:new Date().toISOString(),gA:info.gA||'',gU:info.gU||'',gW:info.gW||'',gW2:info.gW2||'',gFab:info.gFab||{},gWx:info.gWx||{},gY:info.gY||'',gY2:info.gY2||'',gAs:info.gAs||null,area:info.area||'',ord:Object.assign({},info.snap||{},{art:info.art||''}),
   set:{P:$('P').value,T:$('T').value,Y:$('Y').value,K:$('K').value,S:$('S').checked,pc:[...document.querySelectorAll('.pc:checked')].map(x=>x.value)},
-  sol:s&&!info.asz?{pastals:s.pastals.map(p=>({a:p.a.slice(),k:p.k.slice()})),over:s.over}:null,meas,extras,bgr,bgk:bkOn?bgk:null,pnr:info.panolu?pnr:null,
+  sol:s&&!info.asz?{pastals:s.pastals.map(p=>({a:p.a.slice(),k:p.k.slice()})),over:s.over}:null,meas,extras,bgr,bgk:bkOn?bgk:null,pnB:info.panolu?pnB:null,pnK:info.panolu?pnK:null,
   xt:xt.map(x=>({id:x.id,kind:x.kind,base:x.base,mode:x.mode,fab:x.fab,side:x.side,P:x.P,T:x.T,Y:x.Y,one:x.one,kat:!!x.kat,N:x.N||'2',Lt:x.Lt||'',W:x.W||'',ust:!!x.ust,oto:!!x.oto,gY:x.gY||'',job:x.job||null,okuMsg:x.okuMsg||'',res:x.res?[x.res[x.cur]]:null,cur:0,names:x.names,need:x.need,tot:x.tot,timeout:x.timeout,err:x.res?'':x.err}))}}
 function stateParts(){const id='{'+'xxxxxxxx-xxxx-4xxx-8xxx-xxxxxxxxxxxx'.replace(/x/g,()=>(Math.random()*16|0).toString(16)).toUpperCase()+'}',d=((new Date().getFullYear()-1980)<<9)|((new Date().getMonth()+1)<<5)|new Date().getDate();
  const E=(name,text)=>({name,text,flags:0,method:8,time:0,date:d});
@@ -938,7 +944,10 @@ async function applyState(st){
   xt=(st.xt||[]).map(x=>Object.assign({res:null,cur:0,sig:'',err:'',busy:false},x));xid=xt.reduce((a,x)=>Math.max(a,x.id||0),0);
   setTimeout(()=>xt.forEach(x=>{if(x.job&&!xBitti((x.job.st||{}).asama)&&Date.now()-x.job.t<6*3600e3)xPoll(x.id)}),600);
   if(info.cizgili){bgr=st.bgr&&st.bgr.length?st.bgr:[{s:[],b:''}];bkOn=!!(st.bgk&&st.bgk.length);bgk=bkOn?st.bgk:[{s:[],b:''}];bgDraw()}
-  if(info.panolu){pnr=st.pnr&&st.pnr.length?st.pnr:pnBos();pnDraw()}
+  if(info.panolu){const eski=(g,f,p)=>{const v=g[f];if(!v)return'';const n=pnSayi(v);return n?(pnSayi(g[p])||'1')+' PANODAN '+n+' İŞ':v};
+   if(st.pnB||st.pnK){pnB=st.pnB&&st.pnB.length?st.pnB:pnTum();pnK=st.pnK&&st.pnK.length?st.pnK:pnTum()}
+   else if(st.pnr&&st.pnr.length){pnB=st.pnr.map(g=>({s:g.s.slice(),b:eski(g,'b','bp')}));pnK=st.pnr.map(g=>({s:g.s.slice(),b:eski(g,'k','kp')}))}
+   else{pnB=pnTum();pnK=pnTum()}pnDraw()}
   else if(st.sol&&st.sol.pastals&&st.sol.pastals.length&&st.sol.pastals.every(p=>p.a.length==info.n&&p.k.length==info.G)){sols=[st.sol];cur=0;info.timeout=false}
   xt.forEach(x=>{if(x.res)x.sig=xSig(x)});
   if(!info.asz&&sols[cur]&&sols[cur].pastals.length)show();else{$('act').innerHTML=actBtn();xDraw()}
@@ -1113,10 +1122,8 @@ async function exportX(dl){try{$('msg').textContent='Hazırlanıyor…';const{n,
   const BL=outBlocks(),put=(c,rr,v,sty)=>{const ref=cl(c)+rr;if(v!=null&&v!=='')sh0.set(ref,v,1);sh0.style(ref,sty)};let r=H,lastCol=0,Gx=0;
   const grpR=[],xfsX=X0.match(/<xf\b[^>]*?(?:\/>|>[\s\S]*?<\/xf>)/g),sDV=sL+2+nx.length;nx.push(xfsX[1].replace(/<alignment[^>]*\/>/,'<alignment horizontal="center" vertical="center"/>'));
   BL.forEach((b,bi)=>{const pv=BL[bi-1],inG=!!(b.grp&&pv&&pv.grp===b.grp);if(bi>0)r+=inG?2:3;if(b.grp&&!inG)grpR.push({r1:r,r2:r,c2:1});let bcol=1;
-   if(b.type=='birim'){put(1,r,b.title,sY);put(2,r,'BİRİM',sB);sh0.ht(r,h17);b.rows.forEach(q=>{r++;put(1,r,q.label,sL);put(2,r,q.b?nb(q.b):null,sD);sh0.ht(r,35.1)});bcol=2}
-   else if(b.type=='pano'){/* kullanıcının elle yaptığı gibi: BEDEN PANO BİRİMİ ve KOL PANO BİRİMİ ikişer sütun birleşik */
-    const K=[];if(b.hb)K.push(['BEDEN PANO BİRİMİ','b']);if(b.hk)K.push(['KOL PANO BİRİMİ','k']);const m2=(c,rr,v,sty)=>{put(c,rr,v,sty);put(c+1,rr,null,sty);sh0.merge(cl(c)+rr+':'+cl(c+1)+rr)};
-    put(1,r,b.title,sY);K.forEach(([t],q)=>m2(2+2*q,r,t,sB));sh0.ht(r,h17);b.rows.forEach(q=>{r++;put(1,r,q.label,sL);K.forEach(([,f],k)=>m2(2+2*k,r,q[f]||null,sD));sh0.ht(r,35.1)});bcol=1+2*K.length}
+   if(b.type=='birim'){/* panolu işte birim yazısı olduğu gibi ve 3 sütun birleşik (gen) */const Gn=b.gen||1,m2=(c,rr,v,sty)=>{put(c,rr,v,sty);for(let q=1;q<Gn;q++)put(c+q,rr,null,sty);if(Gn>1)sh0.merge(cl(c)+rr+':'+cl(c+Gn-1)+rr)};
+    put(1,r,b.title,sY);m2(2,r,'BİRİM',sB);sh0.ht(r,h17);b.rows.forEach(q=>{r++;put(1,r,q.label,sL);m2(2,r,q.b?(b.metin?q.b:nb(q.b)):null,sD);sh0.ht(r,35.1)});bcol=1+Gn}
    else if(b.type=='adet'){put(1,r,b.title,sY);info.sizes.forEach((x,i)=>put(2+i,r,x,sSz));put(n+2,r,'TOPLAM',sTop);sh0.ht(r,h17);
     b.rows.forEach(q=>{r++;put(1,r,q.name,sNm);q.v.forEach((v,i)=>put(2+i,r,v||null,sQ));sh0.setF(cl(n+2)+r,'SUM(B'+r+':'+cl(n+1)+r+')',q.v.reduce((a,c)=>a+c,0));sh0.style(cl(n+2)+r,sTV);sh0.ht(r,35.1)});bcol=n+2}
    else{const nm=b.names,Gb=nm.length;Gx=Math.max(Gx,Gb);
@@ -1136,7 +1143,7 @@ async function exportX(dl){try{$('msg').textContent='Hazırlanıyor…';const{n,
    grpR.forEach(g=>{for(let rr=g.r1;rr<=g.r2;rr++)for(let c=1;c<=g.c2;c++){const sd=[];if(rr==g.r1)sd.push('top');if(rr==g.r2)sd.push('bottom');if(c==1)sd.push('left');if(c==g.c2)sd.push('right');
      if(!sd.length)continue;const ref=cl(c)+rr;sh0.style(ref,frm(sh0.styleOf(ref),sd))}});
    if(nb2.length)st=st.replace(/<borders count="\d+"/,'<borders count="'+(bl.length+nb2.length)+'"').replace('</borders>',nb2.join('')+'</borders>')}
-  const Wd={},upw=(c,w)=>Wd[c]=Math.max(Wd[c]||0,w);BL.forEach(b=>{if(b.type=='birim')return;if(b.type=='pano'){for(let c=n+2;c<=1+2*((b.hb?1:0)+(b.hk?1:0));c++)upw(c,21.7109375);return}if(b.type=='adet'){upw(n+2,21.7109375);return}const Gb=b.names.length;for(let g=0;g<Gb;g++)upw(n+2+g,33.7109375);upw(n+2+Gb,21.7109375);upw(n+3+Gb,32.7109375)});
+  const Wd={},upw=(c,w)=>Wd[c]=Math.max(Wd[c]||0,w);BL.forEach(b=>{if(b.type=='birim'){for(let c=n+2;c<=1+(b.gen||1);c++)upw(c,21.7109375);return}if(b.type=='adet'){upw(n+2,21.7109375);return}const Gb=b.names.length;for(let g=0;g<Gb;g++)upw(n+2+g,33.7109375);upw(n+2+Gb,21.7109375);upw(n+3+Gb,32.7109375)});
   if(extras.some(e=>e.k||e.v)){upw(n+2+Gx,21.7109375);upw(n+3+Gx,32.7109375)}
   if(info.asz)upw(n+2,21.7109375);
   sh0.pre=sh0.pre.replace(/<cols>[\s\S]*?<\/cols>/,'<cols><col min="1" max="1" width="65.42578125" customWidth="1"/><col min="2" max="'+(n+1)+'" width="21.7109375" customWidth="1"/>'+Object.keys(Wd).map(Number).sort((a,b)=>a-b).map(c=>'<col min="'+c+'" max="'+c+'" width="'+Wd[c]+'" customWidth="1"/>').join('')+'</cols>');
@@ -1183,6 +1190,7 @@ const turAl=()=>ord.takim?'takim':ord.cizgili?'cizgili':ord.panolu?'panolu':'nor
 function turUI(){const t=turAl();return '<div style="margin-top:14px"><span class="t">İş türü</span><div class="turlar" role="radiogroup" aria-label="İş türü">'+TUR.map(([k,ad,alt,ip,ik])=>'<button type="button" role="radio" aria-checked="'+(t==k)+'" class="trb'+(t==k?' on':'')+'" title="'+esc(ip)+'" onclick="turSec(\''+k+'\')"><span class="tri"><svg viewBox="0 0 24 24" aria-hidden="true">'+ik+'</svg></span><span class="trm"><b>'+ad+'</b><span>'+alt+'</span></span></button>').join('')+'</div></div>'}
 function turSec(k){rd();ord.takim=k=='takim';ord.cizgili=k=='cizgili';ord.panolu=k=='panolu';
  if(ord.takim){while(ord.rows.length<2)ord.rows.push({name:'',v:[],g:''});ord.rows.forEach((r,i)=>{if(!r.g)r.g=i%2?'ALT':'ÜST'})}
+ else{const D=ord.rows.filter(r=>r.name||(r.v||[]).some(x=>+x>0));ord.rows=D.length?D:[{name:'',v:[]}]}
  nwDraw();if(ord.takim&&!ord.made){const u=$('ngU');if(u&&!u.value)u.focus()}}
 function cizTog(v){turSec(v?'cizgili':'normal')}
 function tkTog(v){turSec(v?'takim':'normal')}
@@ -1221,7 +1229,7 @@ function nwDraw(){const sz=ord.sizes,st=ord.stage,L=ord.ser?PRE[ord.ser]:null;
 async function mkBase(fromLoad){rd();if(gJob&&['bitti','hata','iptal'].includes((gJob.st||{}).asama)){gJob=null;gMsg=''}const o=ord,sz=o.sizes,R=o.rows.filter(r=>r.name);
  const prev=!fromLoad&&info&&!info.asz&&!o.cizgili&&!o.panolu&&sols[cur]&&sols[cur].pastals.length&&info.sizes.join('|')===sz.join('|')?{colors:info.colors.slice(),sol:sols[cur],xt:(xSync(),xt),meas}:null;
  const prevCz=!fromLoad&&info&&info.cizgili&&o.cizgili&&info.sizes.join('|')===sz.join('|')?{bgr,bgk,bkOn}:null;
- const prevPn=!fromLoad&&info&&info.panolu&&o.panolu&&!o.cizgili&&info.sizes.join('|')===sz.join('|')?pnr:null;
+ const prevPn=!fromLoad&&info&&info.panolu&&o.panolu&&!o.cizgili&&info.sizes.join('|')===sz.join('|')?{pnB,pnK}:null;
  if(!sz.length)return alert('Önce beden dizilimini ve aralığını seçip "Bedenleri ekle"ye bas');if(!R.length)return alert('En az bir renk satırı yaz');{const nm=R.map(r=>r.name),d=nm.filter((x,i)=>nm.indexOf(x)!=i);if(d.length)return alert('Aynı isimde iki satır var: '+d[0]+'. Her satırın adı farklı olmalı.')}if(o.takim&&(!R.some(r=>r.g!='ÜST')||!R.some(r=>r.g=='ÜST')))return alert('Alt-üst takımda hem ALT hem ÜST için en az bir satır olmalı');
  try{ents=await readZip(Uint8Array.from(atob(TPL),c=>c.charCodeAt(0)).buffer);
   const n=sz.length,Rn=R.length,H=Rn<=9?17:8+Rn+2,sh=new Sheet(await txt(ents.find(x=>x.name=='xl/worksheets/sheet1.xml')),[]),S=r=>sh.styleOf(r);
@@ -1243,7 +1251,7 @@ async function mkBase(fromLoad){rd();if(gJob&&['bitti','hata','iptal'].includes(
   fname=o.art||'';fh=null;skipEx=true;$('fn').textContent='✔ Tablo hazırlandı';$('msg').textContent='';await parse();info.snap=JSON.parse(JSON.stringify({sizes:sz,rows:R,ser:o.ser,takim:!!o.takim,cizgili:!!o.cizgili,panolu:!!o.panolu}));info.takim=!!o.takim;info.cizgili=!!o.cizgili;info.panolu=!o.cizgili&&!!o.panolu;info.asz=info.cizgili||info.panolu;if(o.takim){info.gA=o.gA||'';info.gU=o.gU||''}info.grp=info.colors.map(nm=>{const r=R.find(q=>q.name===nm||q.name.replace(/[-–]?\s*TOPLAM\s*/i,'').trim()===nm);return o.takim&&r?(r.g=='ÜST'?'ÜST':'ALT'):''});setTk();xt=[];sols=[];cur=0;xDraw();$('stx').style.display='none';$('st3').style.display='none';infoHtml();ord.made=true;if(!ord.art)ord.art=info.art||'';showArt();nwDraw();
   let wb=await txt(ents.find(x=>x.name=='xl/workbook.xml'));
   info.colors.forEach((c,g)=>{if(g>6)return;const nm=(g+1)+'. '+c.replace(/[\[\]:*?\/\\"]/g,'-').slice(0,26);wb=wb.split('name="'+(g+1)+'. RENK"').join('name="'+esc(nm)+'"').split("'"+(g+1)+". RENK'!").join("'"+nm.replace(/'/g,"''")+"'!")});
-  ents.find(x=>x.name=='xl/workbook.xml').text=wb;ents=await readZip(await(await writeZip(ents)).arrayBuffer());info.cp=info.colors.map((_,g)=>g<7?info.paths[g+1]:null);$('stb').style.display='none';$('stp').style.display='none';if(info.asz){$('st2').style.display='none';$('res').innerHTML='';if(info.cizgili){setupCz();if(prevCz){bgr=prevCz.bgr;bgk=prevCz.bgk;bkOn=prevCz.bkOn;bgDraw()}}else{setupPn();if(prevPn){pnr=prevPn;pnDraw()}}$(info.cizgili?'stb':'stp').scrollIntoView({behavior:'smooth',block:'nearest'})}else{$('act').innerHTML='';$('st2').style.display='block';$('st2').scrollIntoView({behavior:'smooth',block:'nearest'})}
+  ents.find(x=>x.name=='xl/workbook.xml').text=wb;ents=await readZip(await(await writeZip(ents)).arrayBuffer());info.cp=info.colors.map((_,g)=>g<7?info.paths[g+1]:null);$('stb').style.display='none';$('stp').style.display='none';if(info.asz){$('st2').style.display='none';$('res').innerHTML='';if(info.cizgili){setupCz();if(prevCz){bgr=prevCz.bgr;bgk=prevCz.bgk;bkOn=prevCz.bkOn;bgDraw()}}else{setupPn();if(prevPn){pnB=prevPn.pnB;pnK=prevPn.pnK;pnDraw()}}$(info.cizgili?'stb':'stp').scrollIntoView({behavior:'smooth',block:'nearest'})}else{$('act').innerHTML='';$('st2').style.display='block';$('st2').scrollIntoView({behavior:'smooth',block:'nearest'})}
   if(prev&&!info.asz){const pk=nm=>prev.colors.indexOf(nm);
    sols=[{pastals:prev.sol.pastals.map(p=>({a:p.a.slice(),k:info.colors.map(nm=>pk(nm)<0?0:p.k[pk(nm)])})),over:0}];cur=0;meas=prev.meas;xt=prev.xt;
    show();$('fn').innerHTML='✔ Tablo hazırlandı · <span class="m">asortiler korundu, katlar yeni adetlere göre yeniden hesaplanıyor</span>';fixMode=true;$('go').click()}}
@@ -1309,15 +1317,13 @@ function printSheet(){const s=sols[cur];if(!s)return;const{sizes,colors,parts,O,
    rs=b.single?(j==0?'<td class="bm k1" rowspan="'+N+'">'+v1+'</td><td class="bm" rowspan="'+N+'">'+v2+'</td>':''):'<td class="bm k1">'+v1+'</td><td class="bm">'+v2+'</td>';
    return '<tr><td class="nm pn">'+(j+1)+'. PASTAL</td>'+p.a.map(v=>'<td>'+(v||'')+'</td>').join('')+p.k.map((v,q)=>'<td class="kc'+(q?'':' k1')+'">'+v+'</td>').join('')+rs+'</tr>'}).join(''))};
  const adet=b=>T(hd(b.title,sizes,'<th class="tt">TOPLAM</th>',true)+b.rows.map(q=>'<tr><td class="nm">'+E(q.name)+'</td>'+q.v.map(v=>'<td>'+v+'</td>').join('')+'<td class="tt">'+sm(q.v)+'</td></tr>').join(''));
- const birim=b=>T('<tr><th class="ti y">'+E(b.title)+'</th><th class="bm k1">BİRİM</th></tr>'+b.rows.map(q=>'<tr><td class="nm pn">'+E(q.label)+'</td><td class="bm k1">'+E(q.b?nb(q.b):'')+'</td></tr>').join(''));
- const pano=b=>T('<tr><th class="ti y">'+E(b.title)+'</th>'+(b.hb?'<th class="bm k1">BEDEN PANO BİRİMİ</th>':'')+(b.hk?'<th class="bm k1">KOL PANO BİRİMİ</th>':'')+'</tr>'+b.rows.map(q=>'<tr><td class="nm pn">'+E(q.label)+'</td>'+(b.hb?'<td class="bm k1">'+E(q.b||'')+'</td>':'')+(b.hk?'<td class="bm k1">'+E(q.k||'')+'</td>':'')+'</tr>').join(''));
+ const birim=b=>T('<tr><th class="ti y">'+E(b.title)+'</th><th class="bm k1">BİRİM</th></tr>'+b.rows.map(q=>'<tr><td class="nm pn">'+E(q.label)+'</td><td class="bm k1">'+E(q.b?(b.metin?q.b:nb(q.b)):'')+'</td></tr>').join(''));
  const fazla=()=>{const C=cutM();return T(hd('FAZLA KESİM',sizes,'<th class="tt">TOPLAM</th>')+mi.map(g=>{const d=sizes.map((_,i)=>C[g][i]-O[g][i]);
    return '<tr><td class="nm">'+E(info.tk?'ALT = ÜST':colors[g])+'</td>'+d.map(v=>'<td'+(v?' class="fz"':'')+'>'+(v?'+'+v:'–')+'</td>').join('')+'<td class="tt">'+(sm(d)?'+'+sm(d):'–')+'</td></tr>'}).join(''))};
  const BL=outBlocks();
  for(let i=0;i<BL.length;i++){const b=BL[i];
   if(b.grp){const g=[];while(i<BL.length&&BL[i].grp===b.grp){g.push(BL[i]);i++}i--;body+='<div class="grp">'+g.map(q=>q.type=='adet'?adet(q):asorti(q)).join('')+'</div>';continue}
   if(b.type=='birim'){body+=birim(b);continue}
-  if(b.type=='pano'){body+=pano(b);continue}
   body+=asorti(b);
   if(!info.asz&&(i==BL.length-1||BL[i+1].grp||(info.tk&&b.id=='u')))body+=fazla()}
  const X=ex.length?'<div class="ft">'+ex.map(e=>'<span>'+E((e.k?e.k+': ':'')+e.v)+'</span>').join('')+'</div>':'';

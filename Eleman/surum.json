@@ -1,10 +1,9 @@
 {
- "surum": "3.4.0",
+ "surum": "3.4.1",
  "tarih": "2026-11-20",
  "notlar": [
-  "Asorti · Sipariş girerken iş türü yeni görünümde tek seçim: Normal, Alt-üst takım, Çizgili ürün, Panolu iş",
-  "Asorti · Panolu iş: asorti yapılmaz. Aynı pano birimli bedenler için 1 panodan kaç iş çıktığını (beden ve kol) yazarsın; Excel'e ve yazdırmaya PANO BİRİMLERİ tablosu çıkar (1 PANODAN 1,5 İŞ). Hızar, kontrast cep gibi ek asorti tabloları duruyor",
-  "Asorti · Astar ve kontrast cep tablolarında «OTOPASTAL yerleştirsin» seçeneği: pastal Gerber'de oluşur, OTOPASTAL yerleştirir, BİRİM ve PASTAL BOYU tabloya kendiliğinden yazılır. «Kendim yerleştireceğim» de duruyor",
-  "Asorti · Çizgili ve panolu işlerde Excel'deki TOPLAM sütunu artık dar kalmıyor"
+  "Asorti · Panolu iş: beden ve kol pano birimleri ayrı bölümlerde, her birinin kendi beden grupları var",
+  "Asorti · Pano birimini işe göre serbest yazarsın (1 PANODAN 1,5 İŞ · 2 PANODAN 1 İŞ · ÖN ARKA 1 KOL…); yalnız sayı yazarsan «1 PANODAN … İŞ» olur. Excel'e BEDEN PANO BİRİMİ ve KOL PANO BİRİMİ diye iki ayrı tablo yazılır",
+  "Asorti · Alt-üst takım dışındaki iş türlerinde sipariş tablosu tek renk satırıyla başlar; takımdan başka türe geçince boş ikinci satır kalmaz"
  ]
 }
