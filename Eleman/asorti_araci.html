@@ -201,16 +201,13 @@ main .fzk th+th,main .fzk td+td{width:46px;padding:2px 3px}
 .fzp.fzr{background:rgba(255,59,48,.14);color:#c4291c}
 html[data-theme=dark] .fzp{background:rgba(10,132,255,.24);color:#a8d2ff}
 html[data-theme=dark] .fzp.fzr{background:rgba(255,69,58,.22);color:#ffb4ab}
-/* Gerber: pastala girecek kumaş tipleri (K ana kumaş, S işaret kalıbı…); ek asorti tablosundan gidenler kesik çizgili */
+/* Gerber: modeldeki kumaş tipleri (yalnız bilgi): K bu siparişle gider (mavi), ek asorti tablosundan gidenler kesik çizgili, ötekiler (S işaret kalıbı…) düz */
 .fbr{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:10px}.fbr>.m:first-child{margin-right:4px}
-.fb{display:inline-flex;align-items:center;gap:6px;padding:4px 12px 4px 9px;border-radius:999px;border:1px solid var(--line);background:var(--inbg);font-size:13px;line-height:20px;color:var(--ink);cursor:pointer;transition:background .15s,border-color .15s}
-.fb:hover{background:var(--hov)}
-.fb input{margin:0;width:15px;height:15px;accent-color:var(--acc);cursor:pointer}
-.fb b{font-weight:700}.fb span{color:var(--mut)}
-.fb i{font-style:normal;font-size:12px;color:var(--mut)}
-.fb:has(input:checked){border-color:rgba(0,113,227,.42);background:rgba(0,113,227,.09)}.fb:has(input:checked) b{color:#0062c4}
-.fb.fbx{cursor:default;border-style:dashed;background:transparent}.fb.fbx:hover{background:transparent}.fb.fbx b{color:var(--mut)}
-html[data-theme=dark] .fb:has(input:checked){border-color:rgba(10,132,255,.55);background:rgba(10,132,255,.16)}html[data-theme=dark] .fb:has(input:checked) b{color:#a8d2ff}
+.fb{display:inline-flex;align-items:center;gap:6px;padding:3px 12px;border-radius:999px;border:1px solid var(--line);background:var(--inbg);font-size:13px;line-height:20px;color:var(--ink);cursor:default}
+.fb b{font-weight:700}.fb span{color:var(--mut)}.fb i{font-style:normal;font-size:12px;color:var(--mut)}
+.fb.fbk{border-color:rgba(0,113,227,.42);background:rgba(0,113,227,.09)}.fb.fbk b{color:#0062c4}
+.fb.fbx{border-style:dashed;background:transparent}.fb.fbx b{color:var(--mut)}
+html[data-theme=dark] .fb.fbk{border-color:rgba(10,132,255,.55);background:rgba(10,132,255,.16)}html[data-theme=dark] .fb.fbk b{color:#a8d2ff}
 </style></head><body>
 <header><div><h1>Asorti Aracı</h1><span>Siparişi yaz, asortiyi hesapla, Excel'e kaydet</span></div><div class="rt"><button id="th" class="tgl" type="button" title="Gece / gündüz modu" aria-label="Gece / gündüz modu"><i class="k"></i></button><div class="cr">Created by <b>Şamil Yeşil</b></div></div></header>
 <main>
@@ -779,24 +776,20 @@ function gOrdUI(){if(!info||info.asz)return'';const c=gdb.cfg,MM=gMods(),tk=MM.l
  [['ln','Yönsüz serim lmt'],['ly','Yönlü serim lmt'],['a','Yazdırım'],['b','Blok bafır'],['g','Çıt'],['f','Kumaş tipi']].map(([k,t])=>t+' <input style="width:190px" value="'+esc(c[k])+'" onchange="gdb.cfg.'+k+'=this.value.trim().toLocaleUpperCase(\'tr\');gSave();show()">').join(' ')+'</div></details></div>'+gFabUI()+(kOk()?'':'<div class="m" style="margin-top:4px">Gerber\'e göndermek için programı masaüstündeki <b>Asorti Araci</b> simgesinden aç.</div>')+'<div id="gSt">'+gStHtml()+'</div></div>'}
 function enc1254(t){const M={'Ç':0xC7,'ç':0xE7,'Ğ':0xD0,'ğ':0xF0,'İ':0xDD,'ı':0xFD,'Ö':0xD6,'ö':0xF6,'Ş':0xDE,'ş':0xFE,'Ü':0xDC,'ü':0xFC};
  const o=new Uint8Array(t.length);for(let i=0;i<t.length;i++){const c=t[i],k=c.charCodeAt(0);o[i]=M[c]!=null?M[c]:k<128?k:63}return o}
-function gBuild(){if(!info||!sols[cur])return null;const c=gdb.cfg,M=gMods(),W=M.map((_,k)=>gnum(gDefW(k))),F0=gFabs(),skipK=F0&&(info.gFab||{}).K===false;
- for(let k=0;k<M.length;k++)if(!skipK&&!(W[k]>20)){alert((M.length>1?M[k].m+' için k':'K')+'umaş enini yaz (cm).');const e=$('gW'+(k?'2':''));e&&e.focus();return null}
+function gBuild(){if(!info||!sols[cur])return null;const c=gdb.cfg,M=gMods(),W=M.map((_,k)=>gnum(gDefW(k))),F0=gFabs();
+ for(let k=0;k<M.length;k++)if(!(W[k]>20)){alert((M.length>1?M[k].m+' için k':'K')+'umaş enini yaz (cm).');const e=$('gW'+(k?'2':''));e&&e.focus();return null}
  const L=[],names=[],map={},P=sols[cur].pastals.filter(p=>p.a.some(v=>v)),WS=W.map(w=>String(+w.toFixed(2))),ws=[...new Set(WS)].join(' / ');
  L.push('# Asorti Araci - '+(info.art||'')+' - '+new Date().toLocaleString('tr'));
  if(info.gAr)L.push('# alan:'+info.gAr);if(info.gOv)L.push('# uzerine-yaz:evet');L.push('# temizle-deneme:evet');const hp=L.length,kq=[];
- const F=F0,fo=f=>(info.gFab||{})[f]!==undefined?info.gFab[f]:f==='K';
+ const F=F0;
  const addO=(nm,w,m,fab,a,lay)=>{L.push('=:order','o:'+nm,'5:'+nm,'w:'+w,'l:'+lay,'a:'+c.a,'b:'+c.b,'g:'+c.g,'j:C','m:'+m);if(fab)L.push('0:'+fab);a.forEach((v,i)=>{if(v)L.push('q:'+v,'s:'+info.sizes[i])})};
  const AS=info.gAs,asI=AS&&gAsImza(M,WS,F?F.main:c.f),kopya=[],asOk=k=>!!(AS&&AS.ad&&AS.alan===asI.alan&&AS.sz===asI.sz&&AS.cfg===asI.cfg&&JSON.stringify(AS.mods[k]||0)===JSON.stringify(asI.mods[k]));
- if(!F||fo('K'))M.forEach(({m,b},k)=>P.forEach((p,j)=>{const nm=gAd(m,j+1);names.push(nm);if(OTO!=='yok'&&asOk(k)&&AS.ad[k+'|'+p.a.join()])kopya.push(nm+'='+AS.ad[k+'|'+p.a.join()]);map[nm]={key:b.id+'|'+p.a.join(),pc:p.a.reduce((x,y)=>x+y,0),t:(M.length>1?b.title+' ':'')+(j+1)+'. pastal'};
+ M.forEach(({m,b},k)=>P.forEach((p,j)=>{const nm=gAd(m,j+1);names.push(nm);if(OTO!=='yok'&&asOk(k)&&AS.ad[k+'|'+p.a.join()])kopya.push(nm+'='+AS.ad[k+'|'+p.a.join()]);map[nm]={key:b.id+'|'+p.a.join(),pc:p.a.reduce((x,y)=>x+y,0),t:(M.length>1?b.title+' ':'')+(j+1)+'. pastal'};
   addO(nm,WS[k],m,F?F.main:c.f,p.a,gLay(k))}));
- if(F)for(const Lt of F.ex){if(FABX[Lt]||!fo(Lt))continue;const x=gXfor(Lt);
-  if(!FABX[Lt]){const wx=gnum((info.gWx||{})[Lt]);if(!(wx>20)){alert(Lt+' kumaşı için kumaş enini yaz.');return null}
-   M.forEach(({m},k)=>P.forEach((p,j)=>{const nm=gAd(m,j+1,Lt);names.push(nm);addO(nm,String(+wx.toFixed(2)),m,Lt,p.a,gLay(k))}));continue}
-  }
  if(OTO==='yok')names.forEach(n=>{if(!kq.includes(n))kq.push(n)});
  if(kq.length)L.splice(hp,0,'# kuyruksuz:'+kq.join(','));
  if(kopya.length)L.splice(hp,0,'# kopya:'+kopya.join(','));
- if(!names.length){alert('Gönderilecek pastal yok: en az bir kumaş tipi seç.');return null}
+ if(!names.length){alert('Gönderilecek pastal yok.');return null}
  if(gAdCift(names))return null;
  return{data:enc1254(L.join('\r\n')+'\r\n'),names,map,ws,kq,kopya}}
 async function gOrder(){const g=gBuild();if(!g)return;const fn=(trn(info.art)||'siparis').replace(/[\\/:*?"<>|]/g,'')+'_gerber.txt';
@@ -812,14 +805,9 @@ const fbAd=L=>FABN[L]?'<span>'+FABN[L]+'</span>':'';
 function gFabs(){if(!gAlan||!info.gAr)return null;const a=gAlan.find(x=>x.ad===info.gAr);if(!a||!a.mk)return null;const M=gArMods(),set=new Set();let any=false;
  a.mk.filter(m=>M.includes(m.ad)&&m.k).forEach(m=>{any=true;m.k.forEach(f=>set.add(f))});if(!any)return null;
  const main=set.has('K')?'K':set.has('_')?'':'K';const ex=[...set].filter(f=>f!=='K'&&f!=='_').sort();return{main,ex}}
-function gXfor(L){const k=FABX[L];return k?xt.find(x=>x.kind===k&&x.res&&x.res.length):null}
-function gFabUI(){const F=gFabs();info.gFab=info.gFab||{};if(!F)return'';const on=f=>info.gFab[f]!==undefined?info.gFab[f]:f==='K';
- let h='<div class="fbr"><span class="m">Kumaş</span>';
- h+='<label class="fb" title="Ana kumaş parçaları bu siparişle pastala girer"><input type="checkbox"'+(on('K')?' checked':'')+' onchange="info.gFab.K=this.checked"><b>'+(F.main||'K')+'</b>'+fbAd('K')+'</label>';
- F.ex.forEach(L=>{if(FABX[L]){h+='<span class="fb fbx" title="Ek asorti tablosundaki Gerber düğmesiyle gönderilir"><b>'+esc(L)+'</b>'+fbAd(L)+'<i>→ ek asorti tablosundan</i></span>';return}const x=gXfor(L),c=on(L);h+='<label class="fb"><input type="checkbox"'+(c?' checked':'')+' onchange="info.gFab[\''+L+'\']=this.checked;show()"><b>'+esc(L)+'</b>'+fbAd(L)+'</label>';
-  if(c&&x&&FABX[L]){const w=(info.gWx||{})[L];h+=w?'<span class="m">'+esc(L)+' eni '+esc(w)+' cm · tek pastal, OTOPASTAL\'a gitmez</span>':'<span class="e">'+esc(L)+' enini ek asorti tablosuna yaz</span>'}
-  else if(c)h+=(x||!FABX[L])?'<label class="m">'+esc(L)+' eni <input style="width:60px" value="'+esc((info.gWx||{})[L]||'')+'" oninput="(info.gWx=info.gWx||{})[\''+L+'\']=this.value.trim()"> cm</label>':'<span class="e">'+esc(L)+': önce ek asortiyi hesapla</span>'});
- return h+'</div>'}
+function gFabUI(){const F=gFabs();if(!F)return'';
+ return '<div class="fbr"><span class="m">Modelde</span><span class="fb fbk" title="Bu siparişle Gerber\'e gider"><b>'+(F.main||'K')+'</b>'+fbAd('K')+'</span>'+
+  F.ex.map(L=>FABX[L]?'<span class="fb fbx" title="Ek asorti tablosundaki Gerber düğmesiyle gönderilir"><b>'+esc(L)+'</b>'+fbAd(L)+'<i>→ ek asorti tablosundan</i></span>':'<span class="fb" title="Gerber\'e gönderilmez"><b>'+esc(L)+'</b>'+fbAd(L)+'</span>').join('')+'</div>'}
 
 /* ---- OTOPASTAL durumu: ayri (başka bilgisayar) | ayni (bu bilgisayar) | yok (sadece Gerber) | kapali (Gerber yok) ---- */
 let OTO='ayri';

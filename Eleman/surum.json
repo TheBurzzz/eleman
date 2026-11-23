@@ -1,7 +1,7 @@
 {
- "surum": "3.4.6",
+ "surum": "3.4.7",
  "tarih": "2026-11-23",
  "notlar": [
-  "Asorti · Gerber bölümündeki kumaş seçimi sade etiketlerde: harfin yanında adı da yazıyor (K ana kumaş, H hızar, S işaret kalıbı); seçili olan mavi, ek asorti tablosundan gidenler kesik çizgili"
+  "Asorti · Gerber bölümündeki kumaş satırı artık yalnız bilgi veriyor: modelde hangi parçalar varsa (K ana kumaş, H hızar, S işaret kalıbı…) etiket olarak görünür; seçim kutuları ve en kutusu kalktı, işaret kalıbı Gerber'e gönderilmez"
  ]
 }

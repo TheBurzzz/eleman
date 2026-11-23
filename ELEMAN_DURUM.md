@@ -500,6 +500,14 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
     tablosundan gidenler (FABX) kesik çizgili, tıklanmaz: "H hızar → ek asorti tablosundan". Seçim mantığı, en kutusu aynı.
   - Denendi (Playwright, açık ve koyu): K kaldır/işaretle (info.gFab), S işaretleyince en kutusu, bilinmeyen harf.
 
+- 2026-11-23 öğle (Asorti sohbeti): **Eleman 3.4.7**, kumaş satırı yalnız bilgi (kullanıcı: "işaret kalıbı için en yazmana gerek
+  yok, onu ben kendim yapacağım; sadece model dosyasında hangi parçaların olduğunu oradan öğrenmek istiyorum").
+  - `gFabUI`: "Modelde" + etiketler: K ana kumaş (mavi, "bu siparişle Gerber'e gider"), FABX harfleri kesik çizgili
+    "→ ek asorti tablosundan", ötekiler (S işaret kalıbı, bilinmeyen harf) düz, "Gerber'e gönderilmez". Onay kutusu, en kutusu yok.
+  - `gBuild`: ana kumaş her zaman gider; modeldeki öteki harfler için sipariş yazılmaz (eski kayıttaki `gFab` seçimi, ör. K kapalı
+    ya da S açık, artık etkisiz; `gFab` kayıtta duruyor, okunmuyor). `gXfor` kalktı.
+  - Denendi (Playwright, açık ve koyu): satır, kutu yok; eski seçim {K:false,S:true} ile gBuild yalnız K siparişleri, uyarı yok.
+
 ## Sıradaki işler
 0. **Sürüm arşivi = GitHub Releases.** 32 sürüm (ilk-deneme, v1.0.0–v1.1.22, v2.0.0–v2.0.4) bir kerelik GitHub Actions işiyle
    taşındı, `surum-v*`, `arsiv`, `surum-test` dalları silindi (dallar: eleman, main, exe-deneme). Bu oturumlardan etiket ve
