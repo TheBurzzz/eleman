@@ -482,6 +482,17 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
   - Denendi (Playwright, açık ve koyu): iki tık 1/15 → 3/15, şerit güncel; tek çözümde kapalı; konsol hatası yok.
   - Not: kullanıcı tamamen Türkçe konuşulmasını istedi (3.4.3 sonrası bir yanıt yanlışlıkla İngilizce gitmişti).
 
+- 2026-11-23 öğle (Asorti sohbeti): **Eleman 3.4.5**, sonuç tablosunun altındaki "Fazla — RENK: XS 0 · S 0 …" satırları küçük
+  tabloya döndü (kullanıcı: temaya uygun, az yer kaplasın, abartılı olmasın ama bedenlerdeki fazlalıklar dikkat çeksin).
+  - `fzTab(R,T,id)`: başlık satırı "Fazla kesim | bedenler", her renk bir satır; 0 soluk, artı mavi etiket (`.fzp`), Max + (T)
+    sınırını aşan ya da eksik (−) kırmızı etiket (`.fzr`, title açıklamalı). Kart `.fzk` (inbg, ince kenar, 14px köşe,
+    `width:fit-content`), beden sütunları eşit (46px), sayılar tabular.
+  - `fzOz(s)` ana sonuç için (renk sırası mainSira: takımda ÜST üstte); ek asorti tablolarında da aynı tablo (T = tablonun
+    Max +'sı; tek asortide bitir / ana asortinin katı modunda sınırsız). "Max +" (T) ve Y değişince `fkTazele()` tabloyu da yeniler.
+  - chk satırı "+T’i aşıyor" yerine "bir bedende fazla kesim +T sınırını aşıyor" (ek her sayıya uymuyordu).
+  - Denendi (Playwright, açık ve koyu): normal, T düşürülünce kırmızı, elle azaltınca eksik (−), takım (ÜST üstte), hızar ek
+    tablosu; konsol hatası yok.
+
 ## Sıradaki işler
 0. **Sürüm arşivi = GitHub Releases.** 32 sürüm (ilk-deneme, v1.0.0–v1.1.22, v2.0.0–v2.0.4) bir kerelik GitHub Actions işiyle
    taşındı, `surum-v*`, `arsiv`, `surum-test` dalları silindi (dallar: eleman, main, exe-deneme). Bu oturumlardan etiket ve

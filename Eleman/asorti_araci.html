@@ -188,6 +188,19 @@ html[data-theme=dark] .fky.asim{background:rgba(255,69,58,.14);border-color:rgba
 html[data-theme=dark] .fky.asim .fkm{background:rgba(255,69,58,.26)}html[data-theme=dark] .fky.asim .fkm i{background:#ff453a}
 html[data-theme=dark] .fky.asim .fkd{background:#d92d20;color:#fff}
 @media(prefers-reduced-motion:reduce){.fky.asim{animation:none}}
+/* bedenlerde fazla kesim: küçük tablo (sonuç tablosunun altında) */
+.fzk{display:block;width:fit-content;max-width:100%;overflow-x:auto;margin:0 0 6px;padding:3px 10px 4px 8px;border-radius:14px;background:var(--inbg);border:1px solid var(--line)}
+.fzk table{border-collapse:collapse;background:none}
+main .fzk td,main .fzk th{border:0;background:none;padding:2px 6px;font-size:13px;line-height:19px;text-align:center;font-variant-numeric:tabular-nums}
+main .fzk th{font-size:12px;font-weight:500;color:var(--mut)}
+main .fzk th:first-child,main .fzk td:first-child{text-align:left;padding:2px 16px 2px 4px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+main .fzk td:first-child{font-size:12.5px;font-weight:600}
+main .fzk th+th,main .fzk td+td{width:46px;padding:2px 3px}
+.fz0{color:var(--mut);opacity:.7}
+.fzp{display:inline-block;min-width:30px;padding:0 7px;border-radius:999px;background:rgba(0,113,227,.13);color:#0062c4;font-weight:700}
+.fzp.fzr{background:rgba(255,59,48,.14);color:#c4291c}
+html[data-theme=dark] .fzp{background:rgba(10,132,255,.24);color:#a8d2ff}
+html[data-theme=dark] .fzp.fzr{background:rgba(255,69,58,.22);color:#ffb4ab}
 </style></head><body>
 <header><div><h1>Asorti Aracı</h1><span>Siparişi yaz, asortiyi hesapla, Excel'e kaydet</span></div><div class="rt"><button id="th" class="tgl" type="button" title="Gece / gündüz modu" aria-label="Gece / gündüz modu"><i class="k"></i></button><div class="cr">Created by <b>Şamil Yeşil</b></div></div></header>
 <main>
@@ -195,7 +208,7 @@ html[data-theme=dark] .fky.asim .fkd{background:#d92d20;color:#fff}
 <div class="card" id="nw" style="display:none"></div>
 <div class="card" id="st2" style="display:none"><h2><span class="step">2</span>Ayarlar</h2>
 <div class="row"><div><span class="t">Asorti sayısı (pastaldaki en fazla parça)</span><input type="number" id="P" value="" min="2" max="6"></div>
-<div><span class="t">Max + (bir bedende fazla kesim)</span><input type="number" id="T" value="7" min="0" max="15"></div>
+<div><span class="t">Max + (bir bedende fazla kesim)</span><input type="number" id="T" value="7" min="0" max="15" oninput="fkTazele()"></div>
 <div><span class="t">Toplam fazla kesim en fazla %</span><input type="number" id="Y" value="7" min="0" max="30" step="0.5" oninput="fkTazele()"></div>
 <div><span class="t">İstenmeyen asorti sayıları <i style="font-style:normal;color:#9aa3ae">· işaretli olanlar kullanılmaz</i></span><div class="seg"><label class="tg" title="2'li pastallar kullanılmasın"><input type="checkbox" class="pc" value="2"><span>2'li</span></label><label class="tg" title="3'lü pastallar kullanılmasın"><input type="checkbox" class="pc" value="3"><span>3'lü</span></label><label class="tg" title="4'lü pastallar kullanılmasın"><input type="checkbox" class="pc" value="4"><span>4'lü</span></label><label class="tg" title="5'li pastallar kullanılmasın"><input type="checkbox" class="pc" value="5"><span>5'li</span></label><label class="tg" title="6'lı pastallar kullanılmasın"><input type="checkbox" class="pc" value="6"><span>6'lı</span></label></div></div>
 <div><span class="t">En az kat · bu sayı ve altı olmasın</span><input type="number" id="K" value="3" min="0" max="99" title="Bir pastalda tüm renklerin toplam katı bu sayıya eşit ya da az olamaz (ör. 4 yazarsan en az 5 kat). Ek tablolarda da geçerli. 0 yazarsan sınır kapanır. Değiştirdikten sonra Hesapla'ya bas." oninput="kRef()"></div>
@@ -540,7 +553,7 @@ function xDraw(){gCizCiz();const c=$('xt');if(!c)return;const dd=$('xdesc');if(d
    '<div style="overflow-x:auto"><table style="margin:10px 0"><tr><th>'+esc((x.base||'EK')+' ASORTİSİ')+'</th>'+sz.map(v=>'<th>'+esc(v)+'</th>').join('')+names.map(v=>'<th style="background:#f7f0dc">'+esc(v)+'</th>').join('')+'<th style="background:#e1e5ea">BİRİM</th><th style="background:#e1e5ea">PASTAL BOYU</th></tr>'+
    r.pastals.map((p,j)=>{const mk='x'+x.id+'|t',N=r.pastals.length;return '<tr><td class="red">'+(j+1)+(XL[x.kind]?'. ASORTİ':'. PASTAL')+'</td>'+p.a.map(v=>'<td>'+(v||'')+'</td>').join('')+p.k.map(v=>'<td><b>'+v+'</b></td>').join('')+(j==0?'<td rowspan="'+N+'"><input class="ib" value="'+((meas[mk]||{}).b||'')+'" oninput="sm(\''+mk+'\',\'b\',this.value)"></td><td rowspan="'+N+'"><input class="il" value="'+((meas[mk]||{}).l||'')+'" oninput="sm(\''+mk+'\',\'l\',this.value)"></td>'+((meas[mk]||{}).v?'<td rowspan="'+N+'" title="Gerber verimi"><b>%'+esc(meas[mk].v)+'</b></td>':''):'')+'</tr>'}).join('')+'</table></div>'+
    (()=>{const K=+$('K').value||0;if(!K)return'';return r.pastals.map((p,j)=>{const tk=p.k.reduce((a,b)=>a+b,0);return tk<=K?'<div class="e">⚠ '+(j+1)+'. pastal: toplam '+tk+' kat (az kat)</div>':''}).join('')})()+
-   names.map((nm,g)=>'<div class="m">Fazla — '+esc(nm)+': '+sz.map((z,i)=>z+' '+(()=>{const d=r.pastals.reduce((a,p)=>a+p.a[i]*p.k[g],0)-x.need[g][i];return d?'+'+d:'0'})()).join(' · ')+'</div>').join('')+
+   fzTab(names.map((nm,g)=>[nm||'Toplam',sz.map((_,i)=>r.pastals.reduce((a,p)=>a+p.a[i]*p.k[g],0)-x.need[g][i])]),x.one||x.kat||x.T===''?Infinity:+x.T)+
    (x.res.length>1?'<button onclick="xNext('+x.id+')">Başka çözüm ('+(x.cur+1)+'/'+x.res.length+')</button>':'')+xGerberUI(x)}
   return h+'</div>'}).join('')}
 /* ---- ek asorti tablosunu ayrı gönder: Gerber'de tek pastal (MODEL-URT-H) oluşur, OTOPASTAL'a gitmez ---- */
@@ -1112,7 +1125,7 @@ const nl=s=>{const c=pl(s);return isNaN(c)?String(s).trim():Math.floor(c/100)+'m
 const nb=s=>{const c=pl(s);return isNaN(c)?String(s).trim():Math.round(c)+' CM'};
 function chk(s){const{sizes,colors,O}=info,L=[],T=+$('T').value;
  colors.forEach((c,g)=>{const d=sizes.map((_,i)=>s.pastals.reduce((a,p)=>a+p.k[g]*p.a[i],0)-O[g][i]);
-  if(d.some(x=>x<0))L.push('⚠ '+c+': eksik kesim var');if(d.some(x=>x>T))L.push('⚠ '+c+': fazla kesim +'+T+'’i aşıyor');
+  if(d.some(x=>x<0))L.push('⚠ '+c+': eksik kesim var');if(d.some(x=>x>T))L.push('⚠ '+c+': bir bedende fazla kesim +'+T+' sınırını aşıyor');
   if(O[g].some(x=>!x))L.push('⚠ '+c+': siparişte 0 veya boş adet var')});
  if(info.tk){const t=info.tk,tot=g=>sizes.map((_,i)=>s.pastals.reduce((a,p)=>a+p.k[g]*p.a[i],0)),sv=l=>sizes.map((_,i)=>l.reduce((a,g)=>a+tot(g)[i],0));
   if(sv(t.A).join()!==sv(t.B).join())L.push('⚠ ALT ve ÜST çıkan adetleri farklı, katları yeniden hesapla')}
@@ -1133,8 +1146,12 @@ function fkOz(s){const as=fkAsim(s),L=fkLim(),p=info.mtotal?s.over/info.mtotal*1
   (nt?'<div class="fkn">'+nt+'</div>':'')+'</div>'}
 const fkUy=()=>{const s=info&&!info.asz&&sols[cur];if(!s||!s.pastals.length||!fkAsim(s))return'';
  return '<div class="bildir hata fkuy"><span class="bik">'+IK.soru+'</span><div class="bmt"><b>Fazla kesim %'+fkYz(s)+' — %'+fkLs()+' sınırını aşıyor</b><div class="balt">Kaydetmeden ya da yazdırmadan önce asortiyi gözden geçir; gerekirse Baştan hesapla’ya bas.</div></div></div>'};
+/* bedenlerde fazla kesim: renk başına bir satır, bedenler sütun. 0 soluk; artı mavi etiket; "Max + (bir bedende)" sınırını aşan ya da eksik kalan kırmızı */
+function fzTab(R,T,id){return '<div class="fzk"'+(id?' id="'+id+'"':'')+'><table><tr><th>Fazla kesim</th>'+info.sizes.map(z=>'<th>'+esc(z)+'</th>').join('')+'</tr>'+
+ R.map(([nm,d])=>'<tr><td title="'+esc(nm)+'">'+esc(nm)+'</td>'+d.map(x=>'<td>'+(x>0?'<span class="fzp'+(x>T?' fzr" title="Max + ('+T+') sınırını aşıyor':'')+'">+'+x+'</span>':x<0?'<span class="fzp fzr" title="eksik kesim">−'+(-x)+'</span>':'<span class="fz0">0</span>')+'</td>').join('')+'</tr>').join('')+'</table></div>'}
+function fzOz(s){const{sizes,colors,O}=info;return fzTab(mainSira().flatMap(b=>b.ci).map(g=>[colors[g],sizes.map((_,i)=>s.pastals.reduce((a,p)=>a+p.k[g]*p.a[i],0)-O[g][i])]),+$('T').value,'fzk')}
 function fkSira(){if($('go').disabled||sols.length<2)return;cur=(cur+1)%sols.length;show()}
-function fkTazele(){const s=info&&!info.asz&&sols[cur];if(!s||!s.pastals.length)return;const o=$('fko'),c=$('chk'),u=$('fkuy');if(o)o.outerHTML=fkOz(s);if(c)c.innerHTML=chk(s);if(u)u.innerHTML=fkUy()}
+function fkTazele(){const s=info&&!info.asz&&sols[cur];if(!s||!s.pastals.length)return;const o=$('fko'),c=$('chk'),u=$('fkuy'),z=$('fzk');if(o)o.outerHTML=fkOz(s);if(z)z.outerHTML=fzOz(s);if(c)c.innerHTML=chk(s);if(u)u.innerHTML=fkUy()}
 let _sh=0;function show(){if(info&&info.asz){xDraw();return}if(_sh)return;_sh=1;try{show0()}finally{_sh=0}}
 function show0(){const s=sols[cur],{sizes,colors,O}=info,B=mainSira(),ord2=B.flatMap(b=>b.ci),hasV=Object.keys(meas).some(q=>meas[q]&&meas[q].v);$('st3').style.display='block';$('stx').style.display='block';
  const bt=b=>info.tk?b.title+' ':'';
@@ -1143,7 +1160,7 @@ function show0(){const s=sols[cur],{sizes,colors,O}=info,B=mainSira(),ord2=B.fla
  s.pastals.forEach((p,j)=>{const k=p.a.join();h+='<tr><td class="red">'+(j+1)+'. PASTAL</td>'+p.a.map((v,i)=>'<td><input type="number" min="0" max="9" value="'+(v||'')+'" style="text-align:center" onchange="ed('+j+','+i+',this.value)"></td>').join('')+
   B.map(b=>{const mk=b.id+'|'+k;return b.ci.map(g=>'<td><b>'+p.k[g]+'</b></td>').join('')+'<td><input class="ib" value="'+((meas[mk]||{}).b||'')+'" oninput="sm(\''+mk+'\',\'b\',this.value)"></td><td><input class="il" value="'+((meas[mk]||{}).l||'')+'" oninput="sm(\''+mk+'\',\'l\',this.value)"></td>'+(hasV?'<td title="'+esc((meas[mk]||{}).nm||'')+'">'+((meas[mk]||{}).v?'<b>%'+esc(meas[mk].v)+'</b>':'')+'</td>':'')}).join('')+
   '</tr>'});
- h+='</table></div>';ord2.forEach(g=>{const c=colors[g],d=sizes.map((_,i)=>s.pastals.reduce((a,p)=>a+p.k[g]*p.a[i],0)-O[g][i]);h+='<div class="m">Fazla — '+esc(c)+': '+d.map((x,i)=>sizes[i]+' '+(x?'+'+x:'0')).join(' · ')+'</div>'});
+ h+='</table></div>'+fzOz(s);
  $('res').innerHTML=h+'<div class="gpb">'+gOrdUI()+'<details style="margin-top:8px"'+(gElOpen?' open':'')+' ontoggle="gElOpen=this.open"><summary class="m" style="cursor:pointer">elle çizdirdiğin pastalları oku (Gerber raporu / kuyruk)</summary><div style="margin-top:6px"><button type="button" onclick="rRead()" title="AccuMark Explorer → Otomasyon → CSV Raporları → Pastal (ve Pastal Model) raporlarını okur; pastalları bedenlerine göre eşleştirir">Gerber raporunu oku</button><button type="button" onclick="qRead()" title="QueueSubmit\'in ultramrk.umq dosyasından bu modelin pastallarını okur">Gerber kuyruğundan oku</button><span class="m" style="margin-left:6px">'+(qh?'(dosya seçili: '+esc(qh.name)+' · tekrar basınca yeniden okur)':'(ultramrk.umq)')+'</span></div></details><div id="gpm">'+gMsg+'</div></div>'+estHtml()+'<div id="chk" style="margin-top:8px;padding:8px;background:#f4f5f7">'+chk(s)+'</div><div class="m">İstenmeyen asorti sayısı: '+([...document.querySelectorAll('.pc:checked')].map(x=>x.value).join(', ')||'yok')+'</div><br><button title="Ayarları uygulayıp asortiyi baştan hesaplar" onclick="$(\'go\').click()">↻ Baştan hesapla</button><button title="Tablodaki asorti sayılarını elle değiştirdiysen bunu kullan: asortiler aynı kalır, sadece kat sayıları yeniden hesaplanır" onclick="if(!$(\'go\').disabled){fixMode=true;$(\'go\').click()}">Katları yeniden hesapla</button></div>';
  $('act').innerHTML=actBtn();
  xSync();xStale();xDraw()}

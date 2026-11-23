@@ -1,7 +1,7 @@
 {
- "surum": "3.4.4",
+ "surum": "3.4.5",
  "tarih": "2026-11-23",
  "notlar": [
-  "Asorti · Sonuçtaki özet şeridinde Pastal kutusu kalktı, yerine Sıradaki çözüm düğmesi geldi: çözümler arasında gezerken fazla kesim oranı hemen yanında görünür (alttaki aynı düğme kaldırıldı)"
+  "Asorti · Bedenlerdeki fazla kesim artık küçük bir tabloda: bedenler sütun, renkler satır; 0'lar soluk, artılar mavi etiketli, Max + sınırını aşan ya da eksik kalan kırmızı. Ek asorti tablolarında da aynı görünüm"
  ]
 }
