@@ -1,7 +1,7 @@
 {
- "surum": "3.4.3",
+ "surum": "3.4.4",
  "tarih": "2026-11-23",
  "notlar": [
-  "Asorti · Sonuçta pastal sayısı, fazla kesim ve siparişe oranı küçük kutucuklarda; oran Ayarlar'da yazdığın sınırı (Toplam fazla kesim en fazla %) geçerse kutu kırmızı olur, Yazdır / Excel düğmelerinin üstünde de uyarı çıkar"
+  "Asorti · Sonuçtaki özet şeridinde Pastal kutusu kalktı, yerine Sıradaki çözüm düğmesi geldi: çözümler arasında gezerken fazla kesim oranı hemen yanında görünür (alttaki aynı düğme kaldırıldı)"
  ]
 }

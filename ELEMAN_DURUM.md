@@ -474,6 +474,14 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
   - Denendi (Playwright, açık ve koyu, geniş ve dar): sınır içinde, Y düşürülünce aşım, elle değişiklikle aşım, Y geri alınınca
     yeşile dönme, takım + süre doldu notları, ek tablo hesabı, yuvarlama.
 
+- 2026-11-23 öğle (Asorti sohbeti): **Eleman 3.4.4**, özet şeridinde Pastal kutusu yerine "Sıradaki çözüm" düğmesi
+  (kullanıcı: "pastal sayısını göstermesi gereksiz olmuş, onun yerine sıradaki çözüm butonu oraya gelebilir").
+  - `fkOz`: Seçenek · [Sıradaki çözüm ›] · Fazla kesim · Siparişe oranı. `fkSira()` (hesap sürerken ya da tek çözümde bir şey
+    yapmaz; tek çözümde düğme kapalı, "Bu ayarlarla başka çözüm bulunmadı"). Alttaki aynı düğme kaldırıldı; altta Baştan hesapla
+    ve Katları yeniden hesapla kaldı. Düğme şeritte sabit yerde: art arda basınca oran yanında değişir.
+  - Denendi (Playwright, açık ve koyu): iki tık 1/15 → 3/15, şerit güncel; tek çözümde kapalı; konsol hatası yok.
+  - Not: kullanıcı tamamen Türkçe konuşulmasını istedi (3.4.3 sonrası bir yanıt yanlışlıkla İngilizce gitmişti).
+
 ## Sıradaki işler
 0. **Sürüm arşivi = GitHub Releases.** 32 sürüm (ilk-deneme, v1.0.0–v1.1.22, v2.0.0–v2.0.4) bir kerelik GitHub Actions işiyle
    taşındı, `surum-v*`, `arsiv`, `surum-test` dalları silindi (dallar: eleman, main, exe-deneme). Bu oturumlardan etiket ve
