@@ -534,6 +534,9 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
   boş olmasını istiyorum"). 3.5.0'daki son kullanılan değeri hatırlama (`localStorage asorti-boy`) kalktı, anahtar açılışta silinir;
   kayıtlı iş açılınca o işin `set.L` değeri gelir. Denendi: yeni iş boş, kayıtlı iş 4,5, yeni sayfada anahtar yok.
 
+- 2026-11-23 akşam (Asorti sohbeti): **Eleman 3.5.2**, `#L` kutusundaki "ör. 3,5" placeholder'ı kalktı (kullanıcı: "ör. 3 yazıyor, o da
+  yazmasın, asorti sayısı gibi boş olsun"; dar kutuda "ör. 3" diye kesik görünüyordu).
+
 ## Sıradaki işler
 0. **Sürüm arşivi = GitHub Releases.** 32 sürüm (ilk-deneme, v1.0.0–v1.1.22, v2.0.0–v2.0.4) bir kerelik GitHub Actions işiyle
    taşındı, `surum-v*`, `arsiv`, `surum-test` dalları silindi (dallar: eleman, main, exe-deneme). Bu oturumlardan etiket ve
