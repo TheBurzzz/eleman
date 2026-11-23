@@ -1,10 +1,7 @@
 {
- "surum": "3.5.0",
+ "surum": "3.5.1",
  "tarih": "2026-11-23",
  "notlar": [
-  "Asorti · En verimli asortiyi bul artık Ayarlar'da, Hesapla'nın yanında; önce Hesapla'ya basmak ve asorti sayısı yazmak gerekmez",
-  "Asorti · Yeni ayar: Pastal boyu en fazla (m). Program önce bir ölçüm pastalıyla bir adedin boyunu öğrenir, sonra yalnız bu sınıra sığan asortileri OTOPASTAL'da dener (en fazla 8 deneme pastalı, yaklaşık 10 dk)",
-  "Asorti · Sınır katı değil: kısa sınırda biraz daha uzun pastala izin verilir (3,5 m → 3,89 m), uzun sınırda daha az (5 m → 5,25 m); 6 m asla geçilmez. Sınırı geçen seçenek ancak belirgin şekilde daha verimliyse seçilir",
-  "Asorti · Aynı model aynı kumaş eniyle daha önce yerleştiyse ölçüm pastalı atlanır"
+  "Asorti · Pastal boyu en fazla (m) kutusu yeni işte boş gelir; son yazılan değer artık hatırlanmıyor (kayıtlı bir işi açınca o işin değeri gelir)"
  ]
 }

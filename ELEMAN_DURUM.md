@@ -530,6 +530,10 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
     1,2 m (tolerans içi 1,27 seçildi), 6,5 yazınca 6 m, takım (2 ölçüm + 12 deneme), durdurma, Kapat / yeniden aç, Hesapla, Excel,
     kopya satırı (URT1=AS05…), önceki şerit ve fazla tablosu testleri.
 
+- 2026-11-23 akşam (Asorti sohbeti): **Eleman 3.5.1**, "Pastal boyu en fazla (m)" yeni işte boş (kullanıcı: "varsayılan olarak 5 geldi,
+  boş olmasını istiyorum"). 3.5.0'daki son kullanılan değeri hatırlama (`localStorage asorti-boy`) kalktı, anahtar açılışta silinir;
+  kayıtlı iş açılınca o işin `set.L` değeri gelir. Denendi: yeni iş boş, kayıtlı iş 4,5, yeni sayfada anahtar yok.
+
 ## Sıradaki işler
 0. **Sürüm arşivi = GitHub Releases.** 32 sürüm (ilk-deneme, v1.0.0–v1.1.22, v2.0.0–v2.0.4) bir kerelik GitHub Actions işiyle
    taşındı, `surum-v*`, `arsiv`, `surum-test` dalları silindi (dallar: eleman, main, exe-deneme). Bu oturumlardan etiket ve

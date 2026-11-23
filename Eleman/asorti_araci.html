@@ -234,7 +234,7 @@ html[data-theme=dark] .fb.fbk{border-color:rgba(10,132,255,.55);background:rgba(
 <script>
 const KHTTP=/^https?:$/.test(location.protocol),SAYFA=new URLSearchParams(location.search).get('sayfa')||'',JK='asorti-gjob'+(SAYFA?'-'+SAYFA:'');
 const $=i=>document.getElementById(i);
-try{const v=localStorage.getItem('asorti-boy');if(v&&$('L'))$('L').value=v}catch(e){}
+try{localStorage.removeItem('asorti-boy')}catch(e){}   // 3.5.0'da son kullanılan pastal boyu hatırlanıyordu; artık yeni işte boş gelir
 /* tarayıcının "kaydedilen bilgiler" önerileri (daha önce yazılanlar, kişisel bilgiler) hiçbir kutuda çıkmasın;
    müşteri klasörü listesi gibi programın kendi listeleri çalışmaya devam eder */
 (function(){const S='input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]):not([type=button]),textarea',
@@ -884,7 +884,7 @@ async function araBasla(){if(!info)return;if(araSurer()||(gJob&&gJob.base&&!gSon
  if(gAlan&&!gAlan.some(a=>a.ad===info.gAr)){alert(info.gAr+' diye bir Gerber klasörü yok.');return}
  const M=gMods(),W=M.map((_,k)=>gnum(gDefW(k)));for(let k=0;k<M.length;k++)if(!(W[k]>20)){alert((M.length>1?M[k].m+' için k':'K')+'umaş enini yaz (cm).');const e=$('aW'+(k?'2':''));e&&e.focus();return}
  const d=await gDir();if(!d)return;const tkE=setTk();if(tkE){alert(tkE);return}
- try{localStorage.setItem('asorti-boy',String(sn.L))}catch(e){}gYonHatirla();
+ gYonHatirla();
  const P=+$('P').value||0,prm={sinir:sn,P:P>=2?P:0,W:W.map(w=>String(+w.toFixed(2))),T:+$('T').value,S:$('S').checked,kmin:+$('K').value||0,cap:Math.floor((+$('Y').value||0)/100*info.mtotal+1e-9),
   pc:[...document.querySelectorAll('.pc:checked')].map(x=>+x.value),ban:ban.map(k=>k.split(',').map(Number)),fab:araFab(),s:M.map((_,k)=>araBilinen(k))};
  araAcik=false;araSon=true;if(prm.s.every(x=>x>0))return araDeneme(prm,{});
@@ -1063,7 +1063,7 @@ async function applyState(st){
   const o=st.ord||{};if(!o.sizes||!o.sizes.length||!o.rows||!o.rows.length)throw new Error('kayıt eksik');
   ord={art:o.art||'',sizes:o.sizes.slice(),rows:o.rows.map(r=>({name:r.name,g:r.g||'',v:r.v.slice()})),stage:2,ser:o.ser||null,takim:!!o.takim,cizgili:!!o.cizgili,panolu:!!o.panolu,made:false};
   $('nw').style.display='block';nwDraw();await mkBase(true);if(!info||!info.snap)return false;
-  const S=st.set||{};$('P').value=S.P==null?'':S.P;$('T').value=S.T==null?7:S.T;$('Y').value=S.Y==null?7:S.Y;$('K').value=S.K==null?3:S.K;$('L').value=S.L==null?(()=>{try{return localStorage.getItem('asorti-boy')||''}catch(e){return''}})():S.L;$('S').checked=S.S!==false;
+  const S=st.set||{};$('P').value=S.P==null?'':S.P;$('T').value=S.T==null?7:S.T;$('Y').value=S.Y==null?7:S.Y;$('K').value=S.K==null?3:S.K;$('L').value=S.L==null?'':S.L;$('S').checked=S.S!==false;
   document.querySelectorAll('.pc').forEach(x=>x.checked=(S.pc||[]).includes(x.value));
   meas=st.meas||{};extras=st.extras||[];exDraw();info.gA=st.gA||'';info.gU=st.gU||'';ord.gA=info.gA;ord.gU=info.gU;info.gW=st.gW||'';info.gW2=st.gW2||'';info.gFab=st.gFab||{};info.gWx=st.gWx||{};info.gY=st.gY||'';info.gY2=st.gY2||'';info.gAs=st.gAs||null;info.area=st.area||'';showArt();
   xt=(st.xt||[]).map(x=>Object.assign({res:null,cur:0,sig:'',err:'',busy:false},x));xid=xt.reduce((a,x)=>Math.max(a,x.id||0),0);
