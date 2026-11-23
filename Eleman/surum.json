@@ -1,7 +1,10 @@
 {
- "surum": "3.4.7",
+ "surum": "3.5.0",
  "tarih": "2026-11-23",
  "notlar": [
-  "Asorti · Gerber bölümündeki kumaş satırı artık yalnız bilgi veriyor: modelde hangi parçalar varsa (K ana kumaş, H hızar, S işaret kalıbı…) etiket olarak görünür; seçim kutuları ve en kutusu kalktı, işaret kalıbı Gerber'e gönderilmez"
+  "Asorti · En verimli asortiyi bul artık Ayarlar'da, Hesapla'nın yanında; önce Hesapla'ya basmak ve asorti sayısı yazmak gerekmez",
+  "Asorti · Yeni ayar: Pastal boyu en fazla (m). Program önce bir ölçüm pastalıyla bir adedin boyunu öğrenir, sonra yalnız bu sınıra sığan asortileri OTOPASTAL'da dener (en fazla 8 deneme pastalı, yaklaşık 10 dk)",
+  "Asorti · Sınır katı değil: kısa sınırda biraz daha uzun pastala izin verilir (3,5 m → 3,89 m), uzun sınırda daha az (5 m → 5,25 m); 6 m asla geçilmez. Sınırı geçen seçenek ancak belirgin şekilde daha verimliyse seçilir",
+  "Asorti · Aynı model aynı kumaş eniyle daha önce yerleştiyse ölçüm pastalı atlanır"
  ]
 }

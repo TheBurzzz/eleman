@@ -508,6 +508,28 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
     ya da S açık, artık etkisiz; `gFab` kayıtta duruyor, okunmuyor). `gXfor` kalktı.
   - Denendi (Playwright, açık ve koyu): satır, kutu yok; eski seçim {K:false,S:true} ile gBuild yalnız K siparişleri, uyarı yok.
 
+- 2026-11-23 öğleden sonra (Asorti sohbeti): **Eleman 3.5.0**, "En verimli asortiyi bul" yenilendi (kullanıcı: bazen 15 dk bekleyip
+  6-7 metrelik pastal çıkıyor; metre sınırı olsun ama katı olmasın, toleransı ben belirlemeyeyim; asorti sayısı vermeden çalışsın,
+  bazen verebilirim). Kullanıcının cevapları: önemli olan masa değil bir pastalın en fazla boyu; 3 m'nin toleransı yüksek, 5 m'nin
+  düşük olsun; 5 m az yapılıyor ama yapılıyor; 6,5 ve 7 m asla. Bekleme ~10 dk (takımda iki katı). Düğme Ayarlar'da, Hesapla'nın yanında.
+  - Ayarlar: "Pastal boyu en fazla (m)" (`#L`, işle saklanır `set.L`, son kullanılan `localStorage asorti-boy`), "🔎 En verimli asortiyi
+    bul" (`#araB`) ve panel (`#araP`): kumaş eni / yön (takımda iki model) ve müşteri klasörü (`aW`, `aW2`, `aY`, `aY2`, `aAr`, info'ya
+    yazılır, `araEs` sonuçtaki Gerber kutularını da günceller), Başlat / Vazgeç, süre tahmini; iş sürerken gStHtml durumu, bitince Kapat.
+    Gerber bölümündeki eski düğme kalktı. Hesapla eskisi gibi asorti sayısı ister.
+  - Tolerans `araTol(L)`: oran %13 − (L−3)·%4, %3–%17 arası, 15–40 cm; 3 m → 3,39 · 3,5 → 3,89 · 4 → 4,36 · 5 → 5,25 m; `ARA_SERT` 6 m asla.
+  - Akış: (1) ölçüm işi `_olc_` (MODEL-AS00, gereken her bedenden 1 adet, takımda iki model) → bir adedin boyu: ölçek s, beden başına
+    büyüme %4 (`araR`); önbellek `gdb.models[m].olc` (anahtar: en # yön # kumaş # beden dizisi) ya da tablodaki PASTAL BOYU varsa atlanır;
+    üretim pastalları ve denemeler bitince de öğrenilir (`araOgren`). (2) `araDeneme`: beden başına tahmini boy w, P = en çok
+    min(6, (L+tol)/en kısa adet, Ayarlar'daki asorti sayısı); çözücüye `lw:{w,max}` (tahmini boyu L+tol'u aşan asorti hiç üretilmez),
+    plus:1; `araAday`: en iyi çözüm + her adımda en az yeni asorti isteyen çözüm, en çok `ARA_BUT`=8 yeni asorti (ölçülmüş bedava);
+    deneme işi `_ara_` (AS01…). (3) `gAraBitir`: R0 (ölçüm) + deneme sonuçları; toleransı aşan pastalı seçenek elenir; L'yi geçen
+    pastal için verimden 1,5·(aşım/tolerans) puan düşülür (en çok 4); mesajda en uzun pastal, elenen sayısı, bir adedin boyu.
+  - Kopya (deneme pastalı üretime) için kumaş harfi gBuild'dekiyle aynı (`araFab`); AS00 de MODEL-ASnn temizliğine giriyor (köprü değişmedi).
+  - `show()` sonuç yokken bir şey çizmez (en verimli hesaplamadan başlayabildiği için). Sayfa yeniden açılınca süren iş panelde görünür.
+  - Denendi (Playwright + sahte köprü, açık ve koyu): 2,5 m (ölçüm + 7 deneme, en uzun 2,43), önbellekle ölçümsüz, asorti sayısı 3,
+    1,2 m (tolerans içi 1,27 seçildi), 6,5 yazınca 6 m, takım (2 ölçüm + 12 deneme), durdurma, Kapat / yeniden aç, Hesapla, Excel,
+    kopya satırı (URT1=AS05…), önceki şerit ve fazla tablosu testleri.
+
 ## Sıradaki işler
 0. **Sürüm arşivi = GitHub Releases.** 32 sürüm (ilk-deneme, v1.0.0–v1.1.22, v2.0.0–v2.0.4) bir kerelik GitHub Actions işiyle
    taşındı, `surum-v*`, `arsiv`, `surum-test` dalları silindi (dallar: eleman, main, exe-deneme). Bu oturumlardan etiket ve
