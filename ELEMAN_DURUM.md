@@ -537,6 +537,18 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
 - 2026-11-23 akşam (Asorti sohbeti): **Eleman 3.5.2**, `#L` kutusundaki "ör. 3,5" placeholder'ı kalktı (kullanıcı: "ör. 3 yazıyor, o da
   yazmasın, asorti sayısı gibi boş olsun"; dar kutuda "ör. 3" diye kesik görünüyordu).
 
+- 2026-11-23 akşam (Asorti sohbeti): **Eleman 3.6.0**, müşteriye bölünen renk tıklamayla (kullanıcı: "RENK - MÜŞTERİ" yazmak yerine
+  tıklayayım, kendisi toplasın, kesim raporunda eskisi gibi görünsün; her renk kendi içinde: mavi1 mavi2, yeşil1 yeşil2…).
+  - Veri değişmedi: `ord.rows` düz kalır (RENK - MÜŞTERİ … RENK TOPLAM), Excel / kayıt / parse aynı. Form `grpla(R)` ile parse()'daki
+    kuralla gruplar (TOPLAM satırından önceki, adı RENK ile başlayan satırlar), `grpSira()` satırları form sırasına getirir (dizinler
+    rd() sonrasıyla aynı). `ngSatir()`: normal satır (× · + müşteri), renk başlığı `tr.gh` (ad `.gad`, TOPLAM etiketi, toplamlar `.gt`
+    salt okunur, × grubu siler (onay), + müşteri ekler), müşteri satırı `tr.gc` (↳, ad; numara ise kutu boş, yer tutucu "müşteri n",
+    `data-n`). `mBol` satırı gruba çevirir (adetler 1. müşteriye, 2. boş, imleç 2.'de), `mEkle`, `mSil` (tek müşteri kalırsa renk tek
+    satıra döner), `gSil`. `rd()` grupları düzleştirir (boş ad → ilk boş numara), takımda kısım renk satırında, müşteriler aynı kısımda.
+    `tt()` müşteri adedi yazılırken renk toplamını da günceller. Alttaki uzun açıklama kısaldı.
+  - Denendi (Playwright, açık ve koyu): böl, 3. müşteri, sil → tek satır, grup sil, renk adı değişince müşteri adları, eski düz kayıt
+    (araya başka renk girmiş) gruplu görünüm, takım, Tabloyu hazırla (renk toplamı ve parts), yazdırma, Excel satırları ve TOPLAM formülleri.
+
 ## Sıradaki işler
 0. **Sürüm arşivi = GitHub Releases.** 32 sürüm (ilk-deneme, v1.0.0–v1.1.22, v2.0.0–v2.0.4) bir kerelik GitHub Actions işiyle
    taşındı, `surum-v*`, `arsiv`, `surum-test` dalları silindi (dallar: eleman, main, exe-deneme). Bu oturumlardan etiket ve

@@ -20,7 +20,15 @@ button:hover:not(:disabled){background:var(--hov)}button:disabled{opacity:.5;cur
 button.pri{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}button.pri:hover:not(:disabled){background:var(--accd)}input:focus{outline:2px solid #b9c3cf;outline-offset:1px}
 table{border-collapse:collapse}td,th{border:1px solid var(--tb);padding:5px 8px;text-align:center}td,th,input[type=number]{font-variant-numeric:tabular-nums}th{background:var(--th);font-weight:600}
 .red{color:var(--red);font-weight:700;text-align:left;white-space:nowrap}#res input[type=number]{width:42px;padding:4px 2px;text-align:center}.ib{width:84px}.il{width:104px}button.sm{display:block;width:100%;padding:3px 10px;font-size:12px;margin:2px 0}.m{color:var(--mut)}.e{color:var(--red)}#msg{margin:4px 0 20px;font-weight:600}
-#araP:not(:empty){margin-top:12px}#ng input.q{width:62px;text-align:center}#ng .tot{font-weight:600;background:var(--hov)}#ng input.nm{width:230px}
+#araP:not(:empty){margin-top:12px}
+/* sipariş formu: müşterilere bölünen renk (üstte renk ve toplamı, altında müşteri satırları) */
+#ng td.nga{border:0;white-space:nowrap;text-align:left}#ng td.nga button.sm{display:inline-block;width:auto;vertical-align:middle}
+button.mb{display:inline-block;width:auto;margin:0 6px 0 2px;padding:4px 11px;font-size:12px;font-weight:500;border-radius:999px;border:1px dashed var(--tb);background:transparent;box-shadow:none;color:var(--acc);vertical-align:middle}
+button.mb:hover:not(:disabled){background:var(--hov);border-style:solid;transform:none}
+#ng tr.gh td{background:var(--th)}#ng tr.gh td.nga{background:none}#ng .gt{font-weight:650}
+#ng tr.rw td:first-child,#ng tr.gh td:first-child{text-align:left;white-space:nowrap}#ng .gad{width:230px;font-weight:650}
+#ng .gtp{margin-left:8px;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--mut)}
+#ng tr.gc td:first-child{text-align:left;white-space:nowrap;padding-left:12px}#ng tr.gc input.nm{width:206px}#ng .gci{color:var(--mut);margin-right:6px}#ng input.q{width:62px;text-align:center}#ng .tot{font-weight:600;background:var(--hov)}#ng input.nm{width:230px}
 .tgl{position:relative;width:54px;height:28px;border-radius:14px;border:1px solid var(--line);background:var(--inbg);padding:0;margin:0}
 .tgl .k{position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;background:var(--acc);color:#fff;font-style:normal;font-size:13px;line-height:22px;text-align:center;transition:left .2s}
 .tgl .k::before{content:'☀'}html[data-theme=dark] .tgl .k{left:28px;color:#1b2026}html[data-theme=dark] .tgl .k::before{content:'☾'}
@@ -1324,7 +1332,35 @@ async function exportX(dl){try{$('msg').textContent='Hazırlanıyor…';const{n,
 const PRE={'Standart (XS–5XL)':['XS','S','M','L','XL','XXL','3XL','4XL','5XL'],'Rakamlı (34–50)':['34','36','38','40','42','44','46','48','50'],'Çocuk/UK (8–20)':['8','10','12','14','16','18','20']};
 let ord={art:'',sizes:[],rows:[{name:'',v:[]}],stage:0,ser:null,takim:false,cizgili:false,panolu:false},extras=[],skipEx=false;
 function rd(){const a=$('nart');if(a)ord.art=a.value.trim().toLocaleUpperCase('tr');const ga=$('ngA'),gu=$('ngU');if(ga)ord.gA=ga.value.trim().toLocaleUpperCase('tr');if(gu)ord.gU=gu.value.trim().toLocaleUpperCase('tr');
- if($('ng'))ord.rows=[...document.querySelectorAll('#ng tr.rw')].map(tr=>({name:tr.querySelector('.nm').value.trim().toLocaleUpperCase('tr'),g:(tr.querySelector('.gs')||{}).value||'',v:[...tr.querySelectorAll('.q')].map(i=>Math.max(0,Math.round(+i.value||0)))}))}
+ if($('ng')){const up=x=>String(x||'').trim().toLocaleUpperCase('tr'),q=tr=>[...tr.querySelectorAll('.q')].map(i=>Math.max(0,Math.round(+i.value||0))),out=[];let G=null;
+  const bitir=()=>{if(!G)return;const used=G.kids.map(c=>c.ek).filter(Boolean);let n=0;
+   G.kids.forEach(c=>{let ek=c.ek;if(!ek){do{n++}while(used.includes(String(n)));ek=String(n)}out.push({name:G.ad+' - '+ek,g:G.g,v:c.v})});out.push({name:G.ad+' TOPLAM',g:G.g,v:[]});G=null};
+  document.querySelectorAll('#ng tr.rw,#ng tr.gh,#ng tr.gc').forEach(tr=>{if(tr.classList.contains('gc')){const i=tr.querySelector('.nm');if(G)G.kids.push({ek:up(i.value)||i.dataset.n||'',v:q(tr)});return}bitir();
+   if(tr.classList.contains('gh')){const i=tr.querySelector('.gad');G={ad:up(i.value)||i.dataset.ad||'',g:(tr.querySelector('.gs')||{}).value||'',kids:[]};return}
+   out.push({name:up(tr.querySelector('.nm').value),g:(tr.querySelector('.gs')||{}).value||'',v:q(tr)})});
+  bitir();ord.rows=out}}
+/* bir renk birden fazla müşteriye bölünür: satırlar düz tutulur (RENK - MÜŞTERİ … RENK TOPLAM; Excel, kayıt ve okuma eskisi gibi),
+   sipariş formunda grup olarak görünür. Gruplama parse()'daki kuralla aynı: TOPLAM satırından önceki, adı RENK ile başlayan satırlar */
+const grpAd=x=>String(x||'').replace(/[-–]?\s*TOPLAM\s*/i,'').trim();
+function grpla(R){const out=[];let buf=[];
+ R.forEach((r,i)=>{const nm=String(r.name||'');if(!/TOPLAM/i.test(nm)||!grpAd(nm)){buf.push({r,i});return}
+  const X=grpAd(nm),U=X.toUpperCase(),kids=buf.filter(b=>String(b.r.name||'').toUpperCase().startsWith(U));
+  buf.filter(b=>!kids.includes(b)).forEach(b=>out.push({t:'r',r:b.r,i:b.i}));buf=[];
+  if(!kids.length){out.push({t:'r',r,i});return}
+  out.push({t:'g',ad:X,g:r.g||'',i,kids:kids.map(b=>({r:b.r,i:b.i,ek:String(b.r.name).slice(X.length).replace(/^\s*[-–]\s*/,'').trim()}))})});
+ buf.forEach(b=>out.push({t:'r',r:b.r,i:b.i}));return out}
+/* satırları formdaki sıraya getir (dizinler rd() sonrasıyla aynı kalsın) */
+const grpSira=()=>{const o=[];grpla(ord.rows).forEach(it=>{if(it.t=='r')o.push(it.r);else{it.kids.forEach(k=>o.push(k.r));o.push(ord.rows[it.i])}});ord.rows=o};
+function mBol(j){rd();const r=ord.rows[j];if(!r)return;if(!r.name){alert('Önce rengin adını yaz.');return}
+ ord.rows.splice(j,1,{name:r.name+' - 1',g:r.g||'',v:r.v||[]},{name:r.name+' - 2',g:r.g||'',v:[]},{name:r.name+' TOPLAM',g:r.g||'',v:[]});nwDraw();mOdak(r.name,1)}
+function mEkle(i){rd();const t=ord.rows[i],it=grpla(ord.rows).find(x=>x.t=='g'&&x.i===i);if(!t||!it)return;const used=it.kids.map(k=>k.ek);let n=it.kids.length;do{n++}while(used.includes(String(n)));
+ ord.rows.splice(i,0,{name:it.ad+' - '+n,g:t.g||'',v:[]});nwDraw();mOdak(it.ad,it.kids.length)}
+/* müşteri satırı silinince tek müşteri kalırsa renk eski haline (tek satır) döner */
+function mSil(j){rd();ord.rows.splice(j,1);const o=[];grpla(ord.rows).forEach(it=>{if(it.t=='r'){const nm=String(it.r.name||'');o.push(/TOPLAM/i.test(nm)&&grpAd(nm)&&!(it.r.v||[]).some(x=>+x>0)?{name:grpAd(nm),g:it.r.g||'',v:[]}:it.r);return}
+  if(it.kids.length===1){o.push({name:it.ad,g:it.g,v:it.kids[0].r.v||[]});return}it.kids.forEach(k=>o.push(k.r));o.push(ord.rows[it.i])});ord.rows=o;nwDraw()}
+function gSil(i){rd();const it=grpla(ord.rows).find(x=>x.t=='g'&&x.i===i);if(!it||!confirm(it.ad+' ve müşteri satırları silinsin mi?'))return;
+ const sil=new Set([i,...it.kids.map(k=>k.i)]);ord.rows=ord.rows.filter((_,k)=>!sil.has(k));if(!ord.rows.length)ord.rows.push({name:'',v:[]});nwDraw()}
+function mOdak(X,k){const h=[...document.querySelectorAll('#ng tr.gh')].find(t=>t.querySelector('.gad').dataset.ad===X);if(!h)return;let t=h.nextElementSibling,n=0;while(t&&t.classList.contains('gc')){if(n===k){const i=t.querySelector('.nm');i&&i.focus();return}n++;t=t.nextElementSibling}}
 /* iş türü: tek seçim. Alt-üst takımda iki satır (üstte ÜST, altta ALT) ve iki artikel alanı hemen açılır */
 const TUR=[['normal','Normal','Asorti ve pastal','Asorti hesaplanır, pastallar Gerber\'e gönderilir','<path d="M12 3.5 3.5 8 12 12.5 20.5 8z"/><path d="m3.5 12 8.5 4.5 8.5-4.5"/><path d="m3.5 16 8.5 4.5 8.5-4.5"/>'],
  ['takim','Alt-üst takım','ALT ve ÜST ayrı kumaş, adetler aynı','Alt ve üst farklı kumaşlardan kesilir ama takım olarak satılır; fazla kesimler dahil adetler aynı olur','<path d="M9.2 3.5 5 5.6l1.4 3 1.6-.7v3.6h8V7.9l1.6.7 1.4-3-4.2-2.1c-.5.9-1.6 1.5-2.8 1.5s-2.3-.6-2.8-1.5z"/><path d="M8 14h8l-.6 6.5h-2.6L12 16.3l-.8 4.2H8.6z"/>'],
@@ -1353,7 +1389,10 @@ function expSz(t){const out=[];String(t).split(',').forEach(p=>{p=p.trim().toLoc
 const nv=v=>{v=String(v||'').trim().toLocaleUpperCase('tr');if(!v)return'';const m=v.match(/^([\d.,]+)(\s*CM)*$/);return m?m[1]+' CM':v};
 function radd(){rd();const l=ord.rows[ord.rows.length-1];ord.rows.push({name:'',v:[],g:ord.takim?((l&&l.g)||'ALT'):''});nwDraw()}
 function rdel(j){rd();ord.rows.splice(j,1);if(!ord.rows.length)ord.rows.push({name:'',v:[]});nwDraw()}
-function tt(el){const tr=el.closest('tr');tr.querySelector('.tot').textContent=[...tr.querySelectorAll('.q')].reduce((a,i)=>a+(+i.value||0),0)||''}
+function tt(el){const tr=el.closest('tr');tr.querySelector('.tot').textContent=[...tr.querySelectorAll('.q')].reduce((a,i)=>a+(+i.value||0),0)||'';
+ if(!tr.classList.contains('gc'))return;let h=tr.previousElementSibling;while(h&&!h.classList.contains('gh'))h=h.previousElementSibling;if(!h)return;
+ const K=[];let x=h.nextElementSibling;while(x&&x.classList.contains('gc')){K.push(x);x=x.nextElementSibling}let T=0;
+ h.querySelectorAll('.gt').forEach((c,i)=>{const v=K.reduce((a,k)=>a+(+(k.querySelectorAll('.q')[i]||{}).value||0),0);c.textContent=v||'';T+=v});h.querySelector('.tot').textContent=T||''}
 function nwDraw(){const sz=ord.sizes,st=ord.stage,L=ord.ser?PRE[ord.ser]:null;
  const sb=Object.keys(PRE).map(k=>'<button type="button"'+(st>0&&ord.ser===k?' class="pri"':'')+' onclick="pre(\''+k+'\')">'+k+'</button>').join('')+'<button type="button"'+(st>0&&!ord.ser?' class="pri"':'')+' onclick="pre(\'\')">Kendim yazacağım</button>';
  let h='<h2>Yeni sipariş</h2>'+(ord.made?'':'<div class="row"><div><span class="t">Model adı (ART)</span><input id="nart" style="width:240px" value="'+esc(ord.art||'')+'" onchange="this.value=this.value.toLocaleUpperCase(\'tr\')"></div></div>');
@@ -1365,11 +1404,19 @@ function nwDraw(){const sz=ord.sizes,st=ord.stage,L=ord.ser?PRE[ord.ser]:null;
   else h+='<div style="margin-top:10px"><span class="t">Bedenleri yaz (virgülle ayır · aralık: S-3XL)</span><div class="row" style="align-items:center;gap:8px;margin-top:4px"><input id="nsz" style="width:320px" value="'+esc(sz.join(','))+'" onkeydown="if(event.key===\'Enter\'){event.preventDefault();okSz()}"><button type="button" class="pri" onclick="okSz()">Bedenleri ekle</button></div></div>'}
  if(st==2){
   h+=turUI()+(ord.takim&&!ord.made?'<div class="tkm"><div><span class="t">ÜST artikeli</span><input id="ngU" style="width:200px" value="'+esc(ord.gU||'')+'" placeholder="örn. STELLA" onchange="this.value=this.value.toLocaleUpperCase(\'tr\')"></div><div><span class="t">ALT artikeli</span><input id="ngA" style="width:200px" value="'+esc(ord.gA||'')+'" placeholder="örn. BRIONY" onchange="this.value=this.value.toLocaleUpperCase(\'tr\')"></div><div class="m" style="padding-bottom:9px">Gerber\'deki model adları · boş bırakırsan ART kullanılır</div></div>':'')+'<div style="overflow-x:auto;margin-top:8px"><table id="ng"><tr><th>Renk / satır adı</th>'+(ord.takim?'<th>Kısım</th>':'')+sz.map(s=>'<th>'+esc(s)+'</th>').join('')+'<th>Toplam</th><th style="border:0;background:none"></th></tr>'+
-  ord.rows.map((r,j)=>'<tr class="rw"><td><input class="nm" value="'+esc(r.name)+'" onchange="this.value=this.value.toLocaleUpperCase(\'tr\')"></td>'+(ord.takim?'<td><select class="sel gs" style="min-width:84px;padding:6px 28px 6px 10px"><option'+(r.g!='ÜST'?' selected':'')+'>ALT</option><option'+(r.g=='ÜST'?' selected':'')+'>ÜST</option></select></td>':'')+sz.map((_,i)=>'<td><input type="number" min="0" class="q" step="1" value="'+(r.v[i]||'')+'" oninput="tt(this)"></td>').join('')+
-  '<td class="tot">'+(r.v.reduce((a,b)=>a+(b||0),0)||'')+'</td><td style="border:0"><button type="button" class="sm" onclick="rdel('+j+')">×</button></td></tr>').join('')+'</table></div>'+
+  ngSatir()+'</table></div>'+
   '<div style="margin-top:8px"><button type="button" onclick="radd()">+ Satır ekle</button><button type="button" class="pri" onclick="mkBase()">Tabloyu hazırla</button></div>'+
-  '<div class="m" style="margin-top:6px">Bir renk birden fazla müşteriye bölünüyorsa: müşteri satırlarını "RENK - MÜŞTERİ" biçiminde yaz, toplam satırının adını "RENK TOPLAM" yap ve adetlerini boş bırak. Toplamı araç hesaplar.</div>'}
+  '<div class="m" style="margin-top:6px">Bir renk birden fazla müşteriye bölünüyorsa o renkte <b>+ müşteri</b>\'ye bas: her müşterinin adedini ayrı satıra yaz, rengin toplamını araç hesaplar. Excel\'de müşteri satırları ve RENK TOPLAM satırı eskisi gibi yazılır.</div>'}
  $('nw').innerHTML=h}
+function ngSatir(){grpSira();const sz=ord.sizes,tk=ord.takim,up='onchange="this.value=this.value.toLocaleUpperCase(\'tr\')"',
+  kis=g=>tk?'<td><select class="sel gs" style="min-width:84px;padding:6px 28px 6px 10px"><option'+(g!='ÜST'?' selected':'')+'>ALT</option><option'+(g=='ÜST'?' selected':'')+'>ÜST</option></select></td>':'',
+  qs=v=>sz.map((_,i)=>'<td><input type="number" min="0" class="q" step="1" value="'+((v||[])[i]||'')+'" oninput="tt(this)"></td>').join(''),top=v=>(v||[]).reduce((a,b)=>a+(b||0),0)||'',
+  mb=(f,t)=>'<button type="button" class="mb" onclick="'+f+'" title="'+t+'">+ müşteri</button>';
+ return grpla(ord.rows).map(it=>{if(it.t=='r'){const r=it.r,j=it.i;
+   return '<tr class="rw"><td><input class="nm" value="'+esc(r.name)+'" '+up+'></td>'+kis(r.g)+qs(r.v)+'<td class="tot">'+top(r.v)+'</td><td class="nga"><button type="button" class="sm" onclick="rdel('+j+')">×</button>'+mb('mBol('+j+')','Bu renk birden fazla müşteriye bölünüyorsa bas: her müşterinin adedini ayrı satıra yazarsın, rengin toplamını araç hesaplar')+'</td></tr>'}
+  const S=sz.map((_,i)=>it.kids.reduce((a,k)=>a+((k.r.v||[])[i]||0),0));
+  return '<tr class="gh"><td><input class="gad" data-ad="'+esc(it.ad)+'" value="'+esc(it.ad)+'" title="Rengin adı" '+up+'><span class="gtp">toplam</span></td>'+kis(it.g)+S.map(v=>'<td class="gt">'+(v||'')+'</td>').join('')+'<td class="tot">'+top(S)+'</td><td class="nga"><button type="button" class="sm" title="Rengi ve müşteri satırlarını sil" onclick="gSil('+it.i+')">×</button>'+mb('mEkle('+it.i+')','Bu renge bir müşteri satırı daha ekle')+'</td></tr>'+
+   it.kids.map(k=>{const no=/^\d+$/.test(k.ek);return '<tr class="gc"><td><span class="gci">↳</span><input class="nm" value="'+(no?'':esc(k.ek))+'"'+(no?' data-n="'+k.ek+'" placeholder="müşteri '+k.ek+'"':' placeholder="müşteri adı"')+' title="Müşteri adı (yazmazsan Excel\'de '+esc(it.ad)+' - 1, 2… diye numaralanır)" '+up+'></td>'+(tk?'<td></td>':'')+qs(k.r.v)+'<td class="tot">'+top(k.r.v)+'</td><td class="nga"><button type="button" class="sm" title="Bu müşteri satırını sil" onclick="mSil('+k.i+')">×</button></td></tr>'}).join('')}).join('')}
 async function mkBase(fromLoad){rd();if(gJob&&['bitti','hata','iptal'].includes((gJob.st||{}).asama)){gJob=null;gMsg=''}const o=ord,sz=o.sizes,R=o.rows.filter(r=>r.name);
  const prev=!fromLoad&&info&&!info.asz&&!o.cizgili&&!o.panolu&&sols[cur]&&sols[cur].pastals.length&&info.sizes.join('|')===sz.join('|')?{colors:info.colors.slice(),sol:sols[cur],xt:(xSync(),xt),meas}:null;
  const prevCz=!fromLoad&&info&&info.cizgili&&o.cizgili&&info.sizes.join('|')===sz.join('|')?{bgr,bgk,bkOn}:null;
