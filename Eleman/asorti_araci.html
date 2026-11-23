@@ -201,6 +201,16 @@ main .fzk th+th,main .fzk td+td{width:46px;padding:2px 3px}
 .fzp.fzr{background:rgba(255,59,48,.14);color:#c4291c}
 html[data-theme=dark] .fzp{background:rgba(10,132,255,.24);color:#a8d2ff}
 html[data-theme=dark] .fzp.fzr{background:rgba(255,69,58,.22);color:#ffb4ab}
+/* Gerber: pastala girecek kumaş tipleri (K ana kumaş, S işaret kalıbı…); ek asorti tablosundan gidenler kesik çizgili */
+.fbr{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:10px}.fbr>.m:first-child{margin-right:4px}
+.fb{display:inline-flex;align-items:center;gap:6px;padding:4px 12px 4px 9px;border-radius:999px;border:1px solid var(--line);background:var(--inbg);font-size:13px;line-height:20px;color:var(--ink);cursor:pointer;transition:background .15s,border-color .15s}
+.fb:hover{background:var(--hov)}
+.fb input{margin:0;width:15px;height:15px;accent-color:var(--acc);cursor:pointer}
+.fb b{font-weight:700}.fb span{color:var(--mut)}
+.fb i{font-style:normal;font-size:12px;color:var(--mut)}
+.fb:has(input:checked){border-color:rgba(0,113,227,.42);background:rgba(0,113,227,.09)}.fb:has(input:checked) b{color:#0062c4}
+.fb.fbx{cursor:default;border-style:dashed;background:transparent}.fb.fbx:hover{background:transparent}.fb.fbx b{color:var(--mut)}
+html[data-theme=dark] .fb:has(input:checked){border-color:rgba(10,132,255,.55);background:rgba(10,132,255,.16)}html[data-theme=dark] .fb:has(input:checked) b{color:#a8d2ff}
 </style></head><body>
 <header><div><h1>Asorti Aracı</h1><span>Siparişi yaz, asortiyi hesapla, Excel'e kaydet</span></div><div class="rt"><button id="th" class="tgl" type="button" title="Gece / gündüz modu" aria-label="Gece / gündüz modu"><i class="k"></i></button><div class="cr">Created by <b>Şamil Yeşil</b></div></div></header>
 <main>
@@ -798,14 +808,15 @@ async function gOrder(){const g=gBuild();if(!g)return;const fn=(trn(info.art)||'
 /* modeldeki kumaş tipleri (köprü model dosyalarından okur); S = işaret kalıbı, pastala girmez */
 const FABN={K:'ana kumaş',H:'hızar',A:'astar',T:'tela',R:'ribana',C:'kontrast',S:'işaret kalıbı'};
 const FABX={H:'hizar',A:'astar',T:'tela',R:'ribana',C:'cep'};
+const fbAd=L=>FABN[L]?'<span>'+FABN[L]+'</span>':'';
 function gFabs(){if(!gAlan||!info.gAr)return null;const a=gAlan.find(x=>x.ad===info.gAr);if(!a||!a.mk)return null;const M=gArMods(),set=new Set();let any=false;
  a.mk.filter(m=>M.includes(m.ad)&&m.k).forEach(m=>{any=true;m.k.forEach(f=>set.add(f))});if(!any)return null;
  const main=set.has('K')?'K':set.has('_')?'':'K';const ex=[...set].filter(f=>f!=='K'&&f!=='_').sort();return{main,ex}}
 function gXfor(L){const k=FABX[L];return k?xt.find(x=>x.kind===k&&x.res&&x.res.length):null}
 function gFabUI(){const F=gFabs();info.gFab=info.gFab||{};if(!F)return'';const on=f=>info.gFab[f]!==undefined?info.gFab[f]:f==='K';
- let h='<div class="m" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:10px;align-items:center"><span>Kumaş:</span>';
- h+='<label><input type="checkbox"'+(on('K')?' checked':'')+' onchange="info.gFab.K=this.checked"> <b>'+(F.main||'K')+'</b></label>';
- F.ex.forEach(L=>{if(FABX[L]){h+='<span class="m" title="Ek asorti tablosundaki Gerber düğmesiyle gönderilir"><b>'+esc(L)+'</b> → ek asorti tablosundan</span>';return}const x=gXfor(L),c=on(L);h+='<label><input type="checkbox"'+(c?' checked':'')+' onchange="info.gFab[\''+L+'\']=this.checked;show()"> <b>'+esc(L)+'</b></label>';
+ let h='<div class="fbr"><span class="m">Kumaş</span>';
+ h+='<label class="fb" title="Ana kumaş parçaları bu siparişle pastala girer"><input type="checkbox"'+(on('K')?' checked':'')+' onchange="info.gFab.K=this.checked"><b>'+(F.main||'K')+'</b>'+fbAd('K')+'</label>';
+ F.ex.forEach(L=>{if(FABX[L]){h+='<span class="fb fbx" title="Ek asorti tablosundaki Gerber düğmesiyle gönderilir"><b>'+esc(L)+'</b>'+fbAd(L)+'<i>→ ek asorti tablosundan</i></span>';return}const x=gXfor(L),c=on(L);h+='<label class="fb"><input type="checkbox"'+(c?' checked':'')+' onchange="info.gFab[\''+L+'\']=this.checked;show()"><b>'+esc(L)+'</b>'+fbAd(L)+'</label>';
   if(c&&x&&FABX[L]){const w=(info.gWx||{})[L];h+=w?'<span class="m">'+esc(L)+' eni '+esc(w)+' cm · tek pastal, OTOPASTAL\'a gitmez</span>':'<span class="e">'+esc(L)+' enini ek asorti tablosuna yaz</span>'}
   else if(c)h+=(x||!FABX[L])?'<label class="m">'+esc(L)+' eni <input style="width:60px" value="'+esc((info.gWx||{})[L]||'')+'" oninput="(info.gWx=info.gWx||{})[\''+L+'\']=this.value.trim()"> cm</label>':'<span class="e">'+esc(L)+': önce ek asortiyi hesapla</span>'});
  return h+'</div>'}

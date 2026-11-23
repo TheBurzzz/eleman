@@ -493,6 +493,13 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
   - Denendi (Playwright, açık ve koyu): normal, T düşürülünce kırmızı, elle azaltınca eksik (−), takım (ÜST üstte), hızar ek
     tablosu; konsol hatası yok.
 
+- 2026-11-23 öğle (Asorti sohbeti): **Eleman 3.4.6**, Gerber bölümündeki "Kumaş: ☑ K  H → ek asorti tablosundan  ☐ S" satırı
+  sade etiketlere döndü (kullanıcı: "burayı da düzelt, abartılı olmasın, diğer istediklerim geçerli").
+  - `gFabUI`: `.fbr` satırı, "Kumaş" etiketi; her kumaş tipi bir `.fb` hap: onay kutusu + harf + adı (`fbAd`, FABN'den: K ana kumaş,
+    H hızar, S işaret kalıbı…; adı bilinmeyen harf yalnız harf). Seçili hap mavi tonlu (`:has(input:checked)`), ek asorti
+    tablosundan gidenler (FABX) kesik çizgili, tıklanmaz: "H hızar → ek asorti tablosundan". Seçim mantığı, en kutusu aynı.
+  - Denendi (Playwright, açık ve koyu): K kaldır/işaretle (info.gFab), S işaretleyince en kutusu, bilinmeyen harf.
+
 ## Sıradaki işler
 0. **Sürüm arşivi = GitHub Releases.** 32 sürüm (ilk-deneme, v1.0.0–v1.1.22, v2.0.0–v2.0.4) bir kerelik GitHub Actions işiyle
    taşındı, `surum-v*`, `arsiv`, `surum-test` dalları silindi (dallar: eleman, main, exe-deneme). Bu oturumlardan etiket ve

@@ -1,7 +1,7 @@
 {
- "surum": "3.4.5",
+ "surum": "3.4.6",
  "tarih": "2026-11-23",
  "notlar": [
-  "Asorti · Bedenlerdeki fazla kesim artık küçük bir tabloda: bedenler sütun, renkler satır; 0'lar soluk, artılar mavi etiketli, Max + sınırını aşan ya da eksik kalan kırmızı. Ek asorti tablolarında da aynı görünüm"
+  "Asorti · Gerber bölümündeki kumaş seçimi sade etiketlerde: harfin yanında adı da yazıyor (K ana kumaş, H hızar, S işaret kalıbı); seçili olan mavi, ek asorti tablosundan gidenler kesik çizgili"
  ]
 }
