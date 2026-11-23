@@ -460,6 +460,20 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
     sayfalar ona bağlı. Yazdırmada FAZLA KESİM son ana tablodan (artık ALT) sonra; etiketler "ÜST = ALT", "ÜST ve ALT aynı asorti".
   - Denendi: takım işinde ekran, yazdırma, Excel sırası ÜST → ALT; normal iş Excel'i eskisiyle bayt bayt aynı.
 
+- 2026-11-23 sabah (Asorti sohbeti): **Eleman 3.4.3**, sonuçtaki fazla kesim yüzdesi göze çarpan küçük özet şeridinde
+  (kullanıcı: aceleyle çalışırken "siparişin %…" yazısını göremiyor, geçenlerde %5'i geçen asortiyi üretime vermiş; önce %5'te
+  kırmızı istedi, sonra "%5'te değil, benim yazdığım sınırı geçince uyarsın" dedi).
+  - `fkOz(s)`: show0 kutusunun başında Seçenek · Pastal · Fazla kesim (+N adet) · Siparişe oranı (büyük yüzde, sınır çizgisi
+    olan küçük çubuk, "✓ %Y sınırı içinde" / "! %Y sınırını aşıyor" etiketi). Sınır = Ayarlar'daki Y ("Toplam fazla kesim en
+    fazla %"); aşınca kutu kırmızı (3 kez yumuşak nabız, reduced-motion'da yok). Takım / süre doldu notları şeridin sağında.
+  - Hesap Y'yi zaten aşmaz; aşım elle asorti değişikliğinde ya da hesaptan sonra Y düşürülünce olur. Y değişince `fkTazele()`
+    şeridi, kontrol kutusunu ve uyarıyı hemen yeniler.
+  - `actBtn()`: aşımda Yazdır / Excel düğmelerinin üstünde kırmızı bildirim (`#fkuy`, `bildir` görünümü). chk satırı
+    "%X — %Y sınırını aşıyor" (eski "’ünü" eki her sayıya uymuyordu). Aşım 1 haneye yuvarlanınca sınıra eşit görünürse 2 hane.
+  - Ek asorti tabloları, Excel ve yazdırma değişmedi.
+  - Denendi (Playwright, açık ve koyu, geniş ve dar): sınır içinde, Y düşürülünce aşım, elle değişiklikle aşım, Y geri alınınca
+    yeşile dönme, takım + süre doldu notları, ek tablo hesabı, yuvarlama.
+
 ## Sıradaki işler
 0. **Sürüm arşivi = GitHub Releases.** 32 sürüm (ilk-deneme, v1.0.0–v1.1.22, v2.0.0–v2.0.4) bir kerelik GitHub Actions işiyle
    taşındı, `surum-v*`, `arsiv`, `surum-test` dalları silindi (dallar: eleman, main, exe-deneme). Bu oturumlardan etiket ve

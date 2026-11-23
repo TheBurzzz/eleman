@@ -1,7 +1,7 @@
 {
- "surum": "3.4.2",
- "tarih": "2026-11-20",
+ "surum": "3.4.3",
+ "tarih": "2026-11-23",
  "notlar": [
-  "Asorti · Alt-üst takımda ÜST'ün asorti tablosu üstte, ALT'ınki altta: Excel'de, yazdırmada ve ekrandaki sonuç tablosunda"
+  "Asorti · Sonuçta pastal sayısı, fazla kesim ve siparişe oranı küçük kutucuklarda; oran Ayarlar'da yazdığın sınırı (Toplam fazla kesim en fazla %) geçerse kutu kırmızı olur, Yazdır / Excel düğmelerinin üstünde de uyarı çıkar"
  ]
 }
