@@ -70,6 +70,9 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
 - Açık/koyu görünüm yalnız **⚙ Ayarlar → Görünüm** içinde (Açık / Koyu / Otomatik + Gece ışığı). Üst çubukta ayrı tema düğmesi yok.
 - Ana sayfa Apple tasarımından örnek alır; üç uygulama aynı tasarım dilinde (Inter, cam kartlar, yumuşak gölgeler).
 - "Created by Şamil Yeşil" imzası her yerde kalır.
+- **Arayüzde açıklama yazısı yok** (24 Kasım 2026, kullanıcı: "uygulamanın karman çorman açıklamalarla dolu olmasını
+  istemiyorum"). Yeni özelliğe açıklama paragrafı, "şuna bas" cümlesi ya da "örn. …" yer tutucusu eklenmez; gerekiyorsa kısa
+  `title` ipucu. Uyarı / hata mesajları ve durum satırları kalır.
 - Eleman'ın ilk sürümünde **el yazısı okuma modeli** bulunacak (unutulmayacak).
 
 ## Ölçü Tablosu kaynağı
@@ -578,6 +581,16 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
     yazdırma, kaydedip açma, 3.6.0 ve 3.6.1 kayıtları, kullanıcının elle yaptığı rapor, normal sipariş çıktısı 3.6.1 ile aynı.
 
 - 2026-11-24 öğlen (Asorti sohbeti): **Eleman 3.6.3**, sipariş tablosunun altındaki müşteri toplama açıklaması (`div.m`) silindi (kullanıcı: "bu açıklamayı sil, boş kalsın").
+
+- 2026-11-24 öğleden sonra (Asorti sohbeti): **Eleman 3.6.4**, açıklama yazıları kaldırıldı (kullanıcı dört açıklamayı gösterip
+  "uygulamanın karman çorman açıklamalarla dolu olmasını istemiyorum" dedi). Asorti: Gerber'e gönder açıklaması (OTOPASTAL var/yok;
+  bağlantı kapalıysa yalnız "bu bilgisayarda Gerber bağlantısı kapalı"), ek asorti tabloları `#xdesc` (xDraw'daki metin de), ek satırlar
+  notu, kaydet kartındaki `.ipucu`, çizgili ve panolu kart paragrafları, alt-üst takım "boş bırakırsan ART kullanılır" (iki yerde),
+  çizgili/ek tablo Gerber satırlarındaki açıklamalar, en verimli sonucundaki "Gerber'e gönder'e bas…" cümlesi, Dosya olarak kaydet
+  sonrası CSV Getir talimatı, ek tablo "oluşturuldu" sonrası talimat, elle yapılmış Excel açılınca "kontrol edip…" kısmı. Uyarı/hata
+  mesajları ve `title` ipuçları kaldı. Ölçü: "4 Ölçüler" başlığındaki "satırları ⋮⋮ ile sürükle…" kaldırıldı.
+  - Denendi: sayfanın bütün hâlleri (boş, form, tablo, sonuç, ek tablo, en verimli paneli, çizgili, panolu, takım) ekran görüntüsüyle;
+    t30/t31 (müşteri toplama), elle yapılmış rapor, kayıtlı dosya açma, normal sipariş çıktısı 3.6.1 ile aynı; Ölçü sayfası hatasız açılıyor.
 
 ## Sıradaki işler
 0. **Sürüm arşivi = GitHub Releases.** 32 sürüm (ilk-deneme, v1.0.0–v1.1.22, v2.0.0–v2.0.4) bir kerelik GitHub Actions işiyle

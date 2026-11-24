@@ -1,7 +1,8 @@
 {
- "surum": "3.6.3",
+ "surum": "3.6.4",
  "tarih": "2026-11-24",
  "notlar": [
-  "Asorti · Sipariş tablosunun altındaki müşteri toplama açıklaması kaldırıldı"
+  "Asorti · Sayfadaki açıklama yazıları kaldırıldı (Gerber'e gönder, ek asorti tabloları, ek satırlar, kaydet, çizgili ürün, panolu iş, alt-üst takım); uyarı ve hata mesajları duruyor",
+  "Ölçü tablosu · Ölçüler başlığının yanındaki açıklama kaldırıldı"
  ]
 }
