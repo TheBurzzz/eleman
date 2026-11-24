@@ -1,9 +1,9 @@
 {
- "surum": "3.6.0",
- "tarih": "2026-11-23",
+ "surum": "3.6.1",
+ "tarih": "2026-11-24",
  "notlar": [
-  "Asorti · Bir renk birden fazla müşteriye bölünüyorsa artık yazmak yerine tıklıyorsun: satırdaki + müşteri'ye basınca renk, altında müşteri satırlarıyla gruba döner; rengin toplamı kendiliğinden hesaplanır",
-  "Asorti · Her renk kendi içinde toplanır (örn. MAVİ, YEŞİL, TURUNCU ayrı ayrı); müşteri adı yazılmazsa 1, 2… diye numaralanır",
-  "Asorti · Excel'de (kesim raporu) ve yazdırmada müşteri satırları ve RENK TOPLAM satırı eskisi gibi; eski kayıtlar da gruplu açılır"
+  "Asorti · Müşteriye bölünen renk artık kesim raporundaki gibi yazılıyor: ana sipariş yalnız renk adıyla (BEIGE), diğer müşteri rengin yanında kırmızıyla (BEIGE ABC), altında kırmızı TOPLAM satırı; renk grupları arasında boş satır",
+  "Asorti · Formda + müşteri'ye basınca ilk satır ana sipariş olur (adı boş kalır), alttaki satıra müşterinin adını yazarsın",
+  "Asorti · Bu düzende elle hazırlanmış kesim raporları da açılınca gruplu gelir; renk sayfasında renk adı ve toplam adetler yazar"
  ]
 }

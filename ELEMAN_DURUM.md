@@ -549,6 +549,18 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
   - Denendi (Playwright, açık ve koyu): böl, 3. müşteri, sil → tek satır, grup sil, renk adı değişince müşteri adları, eski düz kayıt
     (araya başka renk girmiş) gruplu görünüm, takım, Tabloyu hazırla (renk toplamı ve parts), yazdırma, Excel satırları ve TOPLAM formülleri.
 
+- 2026-11-24 (Asorti sohbeti): **Eleman 3.6.1**, bölünen renk kullanıcının gerçek kesim raporu düzeninde (kullanıcı: "bazen böyle de
+  gelebiliyor ama senin yaptığın tablo buna uygun olmuyor"; elle hazırladığı raporda: RENK, RENK MÜŞTERİ (müşteri kırmızı), TOPLAM).
+  - İç biçim aynı (`ord.rows`: X = ana sipariş, "X - EK" = diğer müşteri, "X TOPLAM"); Excel'e yazarken `raporDuzen(R)`: grup önü/arkası
+    boş satır (24.75), üye satırı `setR` ile zengin metin (X + kırmızı EK, şablon yazı tipinden `rPr`), toplam satırı yalnız "TOPLAM"
+    (kırmızı, ortalı, altı çizili `redC`). 9 satıra sığıyor ama son satır TOPLAM ise H=19 (ASORTİ ile arada boşluk kalsın).
+  - Gruplama tek yerde: `grupBul(N,gevsek)` (boş satır grubu keser; "TOPLAM" tek başına ise üstündeki ortak önekli satırlar üye).
+    parse(), loadForeign() (elle yapılmış rapor) ve form `grpla()` bunu kullanır; openSaved eski/yeni düzeni ayırt edip adetleri karşılaştırır.
+  - Renk sayfasında A8 artık TOPLAM satırına bağlı formül değil rengin adı (gerçek dosyadaki gibi), adetler toplam satırından.
+  - Form: + müşteri → 1. satır "ana sipariş" (boş ad), 2. satır müşteri adı; boş ad = ana sipariş, sonraki boşlar numara alır.
+  - Denendi: form + Excel (LibreOffice çizimi), kullanıcının elle yaptığı rapor gruplu açılıyor (toplamlar doğru), kaydedilen dosya
+    yanlış uyarısız açılıyor, adet değişince uyarıyor, normal sipariş çıktısı 3.6.0 ile parça parça aynı, t19/t20 eski senaryolar.
+
 ## Sıradaki işler
 0. **Sürüm arşivi = GitHub Releases.** 32 sürüm (ilk-deneme, v1.0.0–v1.1.22, v2.0.0–v2.0.4) bir kerelik GitHub Actions işiyle
    taşındı, `surum-v*`, `arsiv`, `surum-test` dalları silindi (dallar: eleman, main, exe-deneme). Bu oturumlardan etiket ve
