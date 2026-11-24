@@ -1,9 +1,7 @@
 {
- "surum": "3.6.2",
+ "surum": "3.6.3",
  "tarih": "2026-11-24",
  "notlar": [
-  "Asorti · Aynı rengin müşterileri artık işaretlenip toplanıyor: satırları tam adlarıyla yaz (örn. BEIGE ve BEIGE ABC), soldaki yuvarlaklardan işaretle, Seçilenleri topla'ya bas; altlarına kırmızı TOPLAM satırı gelir",
-  "Asorti · Toplamı kaldırmak için TOPLAM satırındaki ayır; gruptaki satır silinip tek satır kalınca toplam kendiliğinden kalkar",
-  "Asorti · Kesim raporunda satırlar yazdığın gibi çıkar (müşteri kısmı kırmızı), eski kayıtlar da bu düzende açılır"
+  "Asorti · Sipariş tablosunun altındaki müşteri toplama açıklaması kaldırıldı"
  ]
 }

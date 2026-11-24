@@ -577,6 +577,8 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
     silme, ayır, ortak adsız grup, aynı renk uyarısı, adsız satır uyarısı, takım (kısım gruba yayılır), Excel + LibreOffice çizimi,
     yazdırma, kaydedip açma, 3.6.0 ve 3.6.1 kayıtları, kullanıcının elle yaptığı rapor, normal sipariş çıktısı 3.6.1 ile aynı.
 
+- 2026-11-24 öğlen (Asorti sohbeti): **Eleman 3.6.3**, sipariş tablosunun altındaki müşteri toplama açıklaması (`div.m`) silindi (kullanıcı: "bu açıklamayı sil, boş kalsın").
+
 ## Sıradaki işler
 0. **Sürüm arşivi = GitHub Releases.** 32 sürüm (ilk-deneme, v1.0.0–v1.1.22, v2.0.0–v2.0.4) bir kerelik GitHub Actions işiyle
    taşındı, `surum-v*`, `arsiv`, `surum-test` dalları silindi (dallar: eleman, main, exe-deneme). Bu oturumlardan etiket ve
