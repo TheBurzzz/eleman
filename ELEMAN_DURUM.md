@@ -561,6 +561,22 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
   - Denendi: form + Excel (LibreOffice çizimi), kullanıcının elle yaptığı rapor gruplu açılıyor (toplamlar doğru), kaydedilen dosya
     yanlış uyarısız açılıyor, adet değişince uyarıyor, normal sipariş çıktısı 3.6.0 ile parça parça aynı, t19/t20 eski senaryolar.
 
+- 2026-11-24 öğlen (Asorti sohbeti): **Eleman 3.6.2**, müşteri grubu işaretleyip toplamayla (kullanıcı: 3.6.1'deki "+ müşteri" düzeni
+  karışık, ana sipariş kutusuna rengi yazınca "BEIGE BEIGE" çıktı; "2 satırı yazayım, işaretleyip toplayayım").
+  - Form: her satırın solunda yuvarlak işaret (`input.sc`), altta `#gTop` "Seçilenleri topla" (2+ satır; seçili satır bir gruptaysa
+    grubun hepsi katılır, aradaki satırlar grubun altına geçer). Grup: üyeler `tr.rw.gm[data-grup]` (ad hücresinde mavi çizgi), altında
+    `tr.gtop` (kırmızı TOPLAM, `td.gq` toplamlar, "ayır" = `gAyir`), gruplar arası `tr.gbos`. Üye silinip tek kalınca grup çözülür.
+  - Veri: üyeler tam adıyla {name,v,g,grup:n}, arkalarında {name:'RENK TOPLAM',v:[],grup:n,top:1}. Renk adı `renkAdi()` = ortak kelime
+    başı (yoksa ilk üye). `grpla()` açık biçimi (`top` varsa) ya da eski adlı biçimi ("X - EK") okur; `grpSira()` çizimden önce
+    düzenler, eskiyi tam adlara çevirir. `uyeParca()` adı siyah baş + kırmızı müşteri kısmı diye böler, ad aynen kalır.
+  - parse() grupları adlardan tahmin etmez: mkBase yazdığı düzeni `pDZ` ile verir (`dzGrup`), ortak adı olmayan grup da doğru okunur.
+    loadForeign (elle yapılmış rapor) hâlâ `grupBul(…,true)`. applyState grup/top alanlarını korur. Kayıtlı dosya karşılaştırması
+    paylaşılan metinleri de okur, adları "-"siz karşılaştırır (3.6.0 düzeni de yanlış uyarı vermez). mkBase: aynı renk adı iki kez
+    çıkarsa uyarır. Ok tuşları yuvarlaklara gitmez.
+  - Denendi (Playwright açık/koyu): işaretle-topla, araya giren satır, var olan gruba katma, aynı grup seçiliyken düğme kapalı, üye
+    silme, ayır, ortak adsız grup, aynı renk uyarısı, adsız satır uyarısı, takım (kısım gruba yayılır), Excel + LibreOffice çizimi,
+    yazdırma, kaydedip açma, 3.6.0 ve 3.6.1 kayıtları, kullanıcının elle yaptığı rapor, normal sipariş çıktısı 3.6.1 ile aynı.
+
 ## Sıradaki işler
 0. **Sürüm arşivi = GitHub Releases.** 32 sürüm (ilk-deneme, v1.0.0–v1.1.22, v2.0.0–v2.0.4) bir kerelik GitHub Actions işiyle
    taşındı, `surum-v*`, `arsiv`, `surum-test` dalları silindi (dallar: eleman, main, exe-deneme). Bu oturumlardan etiket ve
