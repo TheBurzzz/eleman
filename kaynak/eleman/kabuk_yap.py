@@ -470,6 +470,16 @@ r("</style></head>", CSS + "</style></head>")
 # yerel yedek: Eleman'ın kayıtları da (eleman-...) diske yedeklensin
 r("for(const k in d)if(k.startsWith('asorti-')&&", "for(const k in d)if((k.startsWith('asorti-')||k.startsWith('eleman-'))&&")
 r("if(k&&k.startsWith('asorti-'))d[k]=localStorage.getItem(k)", "if(k&&(k.startsWith('asorti-')||k.startsWith('eleman-')))d[k]=localStorage.getItem(k)")
+# yerel yedek zamanlı: disk yedeği pencerenin yerel kaydından yeniyse açılışta ondan geri gelir (bilgisayar program açıkken kapanırsa)
+r("/* çalışma sayfaları ve ayarlar pencerenin yerel kaydında (localStorage) durur; ayrıca diskte de yedeklenir (yerel_kayit.json).\n   Yeni pencere (ör. uygulama ilk kez kendi penceresinde açılınca) boş başlıyorsa her şey o yedekten geri gelir. */\n(()=>{try{if(localStorage.getItem('asorti-sayfalar')!==null||!/^https?:$/.test(location.protocol))return;\n const x=new XMLHttpRequest();x.open('GET','/yerel-kayit',false);x.send();if(x.status!==200)return;\n const d=JSON.parse(x.responseText||'{}');for(const k in d)if((k.startsWith('asorti-')||k.startsWith('eleman-'))&&typeof d[k]==='string'&&localStorage.getItem(k)===null)localStorage.setItem(k,d[k])}catch(e){}})();\nvar yedekT=0,yedekSon='';\nfunction yedekVeri(){const d={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&(k.startsWith('asorti-')||k.startsWith('eleman-')))d[k]=localStorage.getItem(k)}return JSON.stringify(d)}\nfunction yerelYedek(hemen){clearTimeout(yedekT);\n const yap=()=>{try{const v=yedekVeri();if(v==='{}'||v===yedekSon)return;yedekSon=v;fetch('/yerel-kayit',{method:'POST',body:v,keepalive:v.length<60000}).catch(()=>{yedekSon=''})}catch(e){}};\n if(hemen)yap();else yedekT=setTimeout(yap,1500)}\n/* pencere kapanmadan hemen önce (uygulama penceresi çağırır): yedek beklemeden yazılsın */\nwindow.yedekAl=()=>{try{const v=yedekVeri();if(v==='{}')return false;const x=new XMLHttpRequest();x.open('POST','/yerel-kayit',false);x.send(v);yedekSon=v;return x.status===200}catch(e){return false}};",
+  '/* çalışma sayfaları ve ayarlar pencerenin yerel kaydında (localStorage) durur; ayrıca diskte de yedeklenir (yerel_kayit.json).\n   Yerel kayıt boşsa ya da disk yedeği ondan yeniyse açılışta her şey disk yedeğinden geri gelir. Disk yedeği hemen yazılır; pencerenin\n   yerel kaydı diske birkaç saniye (çok yazılınca daha da) geç iner: program kapanırken bilgisayar kapanırsa ya da elektrik giderse eski\n   kalabilir. Hangisinin yeni olduğu yedek zamanından anlaşılır ("eleman-yedek-t": yedek yazılırken ikisine de yazılır). */\n(()=>{try{if(!/^https?:$/.test(location.protocol))return;\n const x=new XMLHttpRequest();x.open(\'GET\',\'/yerel-kayit\',false);x.send();if(x.status!==200)return;\n const d=JSON.parse(x.responseText||\'{}\'),bos=localStorage.getItem(\'asorti-sayfalar\')===null,yeni=(+d[\'eleman-yedek-t\']||0)>(+localStorage.getItem(\'eleman-yedek-t\')||0);\n if(!bos&&!yeni)return;\n for(const k in d)if((k.startsWith(\'asorti-\')||k.startsWith(\'eleman-\'))&&typeof d[k]===\'string\'&&(yeni||localStorage.getItem(k)===null))localStorage.setItem(k,d[k])}catch(e){}})();\nvar yedekT=0,yedekSon=\'\';\nfunction yedekVeri(){const d={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k!==\'eleman-yedek-t\'&&(k.startsWith(\'asorti-\')||k.startsWith(\'eleman-\')))d[k]=localStorage.getItem(k)}return JSON.stringify(d)}\nfunction zamanli(v){const t=String(Date.now());try{localStorage.setItem(\'eleman-yedek-t\',t)}catch(e){}return v.slice(0,-1)+\',"eleman-yedek-t":"\'+t+\'"}\'}\nfunction yerelYedek(hemen){clearTimeout(yedekT);\n const yap=()=>{try{const v=yedekVeri();if(v===\'{}\'||v===yedekSon)return;yedekSon=v;fetch(\'/yerel-kayit\',{method:\'POST\',body:zamanli(v),keepalive:v.length<60000}).catch(()=>{yedekSon=\'\'})}catch(e){}};\n if(hemen)yap();else yedekT=setTimeout(yap,1500)}\n/* pencere kapanmadan hemen önce (uygulama penceresi çağırır): yedek beklemeden yazılsın */\nwindow.yedekAl=()=>{try{const v=yedekVeri();if(v===\'{}\')return false;const x=new XMLHttpRequest();x.open(\'POST\',\'/yerel-kayit\',false);x.send(zamanli(v));yedekSon=v;return x.status===200}catch(e){return false}};')
+# ⚙: önceki sürüme dönüş düğmesi (yalnız yedekte daha eski bir sürüm varsa görünür)
+r('<button id="denetle" type="button">Güncellemeleri denetle</button></div>',
+  '<button id="denetle" type="button">Güncellemeleri denetle</button></div><button id="geriDon" type="button" hidden>Önceki sürüme dön</button>')
+r("</style></head>", "#geriDon{display:block;margin:0 2px 0 auto;border:0;background:transparent;color:var(--mut);font-size:12px;cursor:pointer;padding:2px}#geriDon:hover{color:var(--acc)}#geriDon[hidden]{display:none}\n</style></head>")
+# güncellemeden sonraki "vX sürümüne güncellendi" yazısı önceki sürüme dönüşte "dönüldü" olsun
+r("function guncellendiYaz(g){yaziKilit=Date.now()+6000;durumYaz('ok','v'+g+' sürümüne güncellendi');setTimeout(nabiz,6100)}",
+  "function guncellendiYaz(g){let geri=false;try{geri=localStorage.getItem('eleman-geri-donus')===g;localStorage.removeItem('eleman-geri-donus')}catch(e){}yaziKilit=Date.now()+6000;durumYaz('ok','v'+g+' sürümüne '+(geri?'dönüldü':'güncellendi'));setTimeout(nabiz,6100)}")
 # görünüm ve "kaydet" haberi Ölçü sayfalarına da gitsin
 r("document.querySelectorAll('#sayfalar iframe').forEach(f=>{try{f.contentDocument.documentElement.dataset.theme=t}catch(e){}temaYolla(f,t)})",
   "document.querySelectorAll('#sayfalar iframe,#sayfalarO iframe').forEach(f=>{try{f.contentDocument.documentElement.dataset.theme=t}catch(e){}temaYolla(f,t)})")
@@ -510,6 +520,28 @@ r("(()=>{const f=document.querySelector('#sayfalar iframe[data-id=\"'+S.on+'\"]'
 r(" const gonder=()=>{if(gitti)return;gitti=true;fetch('/hazir',{method:'POST',body:'{}'}).catch(()=>{})},",
   " const gonder=()=>{if(gitti)return;gitti=true;fetch('/hazir',{method:'POST',body:'{}'}).catch(()=>{});acilisBekle()},")
 r(" if(!f)return bildir();", " if(!f)return Promise.race([document.fonts.ready,new Promise(r=>setTimeout(r,800))]).then(()=>setTimeout(bildir,40),bildir);")
+JS += r'''
+/* ---------- önceki sürüme dönüş (⚙): son güncellemeden önceki sürüm kurulumdaki yedekte durur ---------- */
+async function oncekiYaz(){const b=$('geriDon');if(!b)return;
+ try{const j=await (await fetch('/onceki-surum',{cache:'no-store'})).json();if(j&&j.var){b.dataset.surum=j.surum;b.title='Eleman v'+j.surum+(j.tarih?' · '+j.tarih:'');b.hidden=false}else b.hidden=true}catch(e){b.hidden=true}}
+$('geriDon').onclick=async()=>{const b=$('geriDon'),hedef=b.dataset.surum;if(!hedef||guncelleniyor)return;
+ if(Object.values(info).some(d=>d.busy)){alert('Gerber\'e gönderilen pastallar var. Onlar bitince dön.');return}
+ if(Object.values(infoO).some(d=>d.busy)){alert('Ölçü Tablosu bir kağıt okuyor ya da kaydediyor. Bitince dön.');return}
+ if(!confirm('Eleman v'+hedef+' sürümüne dönülsün mü?\n\nÇalışma sayfaların ve ayarların korunur. Pencere birkaç saniye içinde kendiliğinden yenilenir.'))return;
+ const eskiId=sunucuId,
+  isaret=v=>{try{if(v){localStorage.setItem('asorti_guncelleme',v);localStorage.setItem('eleman-geri-donus',v)}else{localStorage.removeItem('asorti_guncelleme');localStorage.removeItem('eleman-geri-donus')}}catch(e){}},
+  birak=m=>{isaret(null);guncelleniyor=false;b.disabled=false;nabiz();if(m)alert(m)};
+ b.disabled=true;guncelleniyor=true;menu(false);durumYaz('bekle','Önceki sürüme dönülüyor…');sayfalarKaydetsin();
+ isaret(hedef);   // pencere yeniden açılırsa yeni pencere de dönülen sürümü yazsın (güncellemedeki gibi)
+ let hata=null;try{const j=await (await fetch('/geri-don',{method:'POST',body:'{}',cache:'no-store'})).json();if(!j.ok)hata=j.hata||'bilinmeyen hata'}catch(e){}
+ if(hata){birak(hata);return}
+ await bekle(800);const t0=Date.now();let acildi=false;
+ while(Date.now()-t0<90000){try{const r=await fetch('/nabiz',{cache:'no-store'});if(r.ok){const j=await r.json();if(j.id&&j.id!==eskiId){acildi=true;break}}}catch(e){}await bekle(400)}
+ if(!acildi){birak('Önceki sürüme dönülemedi. Birazdan tekrar dene.');return}
+ try{sessionStorage.setItem('asorti-guncellendi',hedef)}catch(e){}
+ yenileniyor=true;sayfalarKaydetsin();setTimeout(()=>location.reload(),200)};
+oncekiYaz();
+'''
 r("/* açılışta önce görünen sayfa yüklenir, diğerleri hemen ardından", JS + "/* açılışta önce görünen sayfa yüklenir, diğerleri hemen ardından")
 # açık cam dosyası en sonda: kabuğun kendi stilinden sonra gelsin
 r("</style></head>", '</style><link rel="stylesheet" href="sistem/eleman_cam.css"></head>')

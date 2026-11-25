@@ -70,7 +70,93 @@ namespace AsortiAraci
             object notlar = Json.Al(u, "notlar");
             if (notlar == null) notlar = new object[0];
             else if (!(notlar is IList)) notlar = new object[] { notlar };
-            return Json.H("var", Surum.No(Json.Str(u, "surum")) > Surum.No(Json.Str(y, "surum")), "yerel", Json.Str(y, "surum"), "yeni", Json.Str(u, "surum"), "tarih", Json.Str(u, "tarih"), "notlar", notlar);
+            bool var = Surum.No(Json.Str(u, "surum")) > Surum.No(Json.Str(y, "surum"));
+            // önceki sürüme dönülürken bırakılan sürüm kendiliğinden yeniden önerilmez (⚙ → Güncellemeleri denetle yine gösterir)
+            if (var && !taze && Json.Str(u, "surum") == Kullanici.Al("atla_surum")) var = false;
+            return Json.H("var", var, "yerel", Json.Str(y, "surum"), "yeni", Json.Str(u, "surum"), "tarih", Json.Str(u, "tarih"), "notlar", notlar);
+        }
+
+        // ---------- önceki sürüme dönüş: son güncellemeden önce alınan yedek (<kök>\yedek, bkz. Yedekle) yerine konur ----------
+        // Yedekte sayfalar, surum.json, sistem\ (uygulamanın kaynakları ve derlenmiş exe dahil) ve köprü betikleri var. Ayarlara,
+        // çalışma sayfalarına, Gerber ayarlarına dokunulmaz. Dönülen sürümden sonra yedek şimdiki sürümle aynı olur (düğme kalkar);
+        // bir sonraki güncelleme yedeği yeniden alır.
+        static readonly string[] YedekGerekli = { "uygulama.html", "asorti_araci.html", "surum.json", "sistem/uygulama/Program.cs" };
+
+        static IDictionary YedekSurum()
+        {
+            try
+            {
+                string yd = Yer.Yol("yedek");
+                foreach (string g in YedekGerekli) if (!File.Exists(Path.Combine(yd, g.Replace('/', Path.DirectorySeparatorChar)))) return null;
+                return Json.Oku(File.ReadAllText(Path.Combine(yd, "surum.json"), Encoding.UTF8)) as IDictionary;
+            }
+            catch { return null; }
+        }
+
+        OrderedDictionary OncekiSurum()
+        {
+            IDictionary y = YedekSurum();
+            string simdi = Json.Str(Surum.Yerel(), "surum"), s = y == null ? "" : Json.Str(y, "surum");
+            bool var = s.Length > 0 && simdi.Length > 0 && Surum.No(s) < Surum.No(simdi);
+            return Json.H("var", var, "surum", s, "tarih", y == null ? "" : Json.Str(y, "tarih"), "simdi", simdi);
+        }
+
+        void GeriDonIstek(HttpListenerContext ctx)
+        {
+            if (SurenIs()) { JsonYanit(ctx, Json.H("hata", "Gerber'de süren bir iş var. Pastallar bitince dön.")); return; }
+            if (guncelleniyor) { JsonYanit(ctx, Json.H("hata", "Güncelleme sürüyor, bitince dön.")); return; }
+            guncelleniyor = true;
+            string hedef;
+            bool yeniden;
+            try { hedef = GeriDon(out yeniden); }
+            catch (Exception ex)
+            {
+                guncelleniyor = false;
+                Kayit.Yaz("onceki surume donulemedi: " + ex.Message);
+                JsonYanit(ctx, Json.H("hata", "Önceki sürüme dönülemedi: " + ex.Message));
+                return;
+            }
+            JsonYanit(ctx, Json.H("ok", true, "surum", hedef));
+            guncelleniyor = false;
+            Thread.Sleep(200);
+            // güncellemedeki gibi: uygulamanın kendisi değiştiyse pencere yeniden açılır, yoksa sayfa yeni program kimliğini görünce tazelenir
+            if (yeniden && Pencere != null) Pencere.Guncellendi(true);
+            else
+            {
+                Id = YeniId();
+                if (Pencere != null) Pencere.Guncellendi(false);
+            }
+        }
+
+        string GeriDon(out bool yenidenBaslat)
+        {
+            yenidenBaslat = false;
+            IDictionary y = YedekSurum();
+            if (y == null) throw new Exception("önceki sürümün yedeği bulunamadı");
+            string hedef = Json.Str(y, "surum"), simdi = Json.Str(Surum.Yerel(), "surum");
+            if (!(Surum.No(hedef) < Surum.No(simdi))) throw new Exception("yedekteki sürüm (" + hedef + ") şimdikinden eski değil");
+            string yd = Yer.Yol("yedek");
+            bool exeYedekte = File.Exists(Path.Combine(Path.Combine(yd, "sistem"), Derleyici.ExeAd));
+            // şimdiki sürümün getirdiği, yedekte olmayan kaynak dosyaları kenara: eski sürüm yalnız kendi dosyalarıyla derlensin
+            string uk = Path.Combine(Yer.Sistem, "uygulama"), yuk = Path.Combine(Path.Combine(yd, "sistem"), "uygulama");
+            foreach (string f in Directory.GetFiles(uk, "*.cs"))
+            {
+                if (File.Exists(Path.Combine(yuk, Path.GetFileName(f)))) continue;
+                try { string e = f + ".eski"; if (File.Exists(e)) File.Delete(e); File.Move(f, e); } catch { }
+            }
+            // aynı olan dosyaya dokunulmaz; açık olan (ör. çalışan exe) ".yeni" adıyla bırakılır, yeniden açılışta yerine konur
+            int ertelenen = Kopyala(yd, Yer.Kok);
+            try { Kullanici.Yaz("atla_surum", simdi); } catch { }
+            Kayit.Yaz("onceki surume donuldu: " + simdi + " -> " + hedef + (ertelenen > 0 ? " (" + ertelenen + " dosya yeniden acilista yerine konacak)" : ""));
+            // yedekte derlenmiş exe yoksa (alınamamışsa) eski sürüm burada yeniden derlenir
+            if (!exeYedekte || Derleyici.KaynakDegisti())
+            {
+                string hata;
+                if (Derleyici.Derle(out hata)) yenidenBaslat = true;
+                else Kayit.Yaz("onceki surum derlenemedi, simdiki pencere calismaya devam ediyor: " + hata);
+            }
+            if (ertelenen > 0) yenidenBaslat = true;
+            return hedef;
         }
 
         void GuncelleIstek(HttpListenerContext ctx)
@@ -218,6 +304,13 @@ namespace AsortiAraci
             if (Directory.Exists(uk)) KlasorKopyala(uk, Path.Combine(Path.Combine(yd, "sistem"), "uygulama"));
             string kk = Yer.Yol("kopru");
             if (Directory.Exists(kk)) foreach (string f in Directory.GetFiles(kk, "*.ps1")) { try { File.Copy(f, Path.Combine(Path.Combine(yd, "kopru"), Path.GetFileName(f)), true); } catch { } }
+            // Ölçü Tablosu'nun tarama betiği (önceki sürüme dönüşte o da geri gelsin; kitaplıklar değişmediği için alınmaz)
+            string ok = Path.Combine(Yer.Sistem, "olcu");
+            if (Directory.Exists(ok))
+            {
+                Directory.CreateDirectory(Path.Combine(Path.Combine(yd, "sistem"), "olcu"));
+                foreach (string f in Directory.GetFiles(ok, "*.ps1")) { try { File.Copy(f, Path.Combine(Path.Combine(Path.Combine(yd, "sistem"), "olcu"), Path.GetFileName(f)), true); } catch { } }
+            }
         }
 
         // aynı olan dosyaya dokunmaz; kullanımda olan (açık) dosyayı ".yeni" adıyla bırakır, yeniden açılışta yerine konur

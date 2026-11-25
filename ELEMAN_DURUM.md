@@ -616,6 +616,28 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
   - Önerildi (yapılmadı): Windows kapanırken kaydetme; ⚙'de "önceki sürüme dön" (`yedek` klasöründen); boştaki Tesseract
     işçisini kapatma (sekme başına bellek).
 
+- 2026-11-25 (Eleman sohbeti): **Eleman 3.7.0** (kullanıcı: "1 ve 2'yi yap"). Ayrıca: "Dell" Fatoş ablanın bilgisayarı, Eleman
+  oraya kurulmayacak; URT tabloları elle yapılır (ÖT kağıttan yine yalnız numune bedenini okur).
+  - **⚙ → Önceki sürüme dön** (yalnız `yedek\`te şimdikinden eski bir sürüm varsa görünür; ipucu "Eleman vX · tarih").
+    Sunucu: `GET /onceki-surum`, `POST /geri-don` (Guncelleme.cs: OncekiSurum / GeriDonIstek / GeriDon). Yedek, güncelleyicinin
+    her güncellemeden önce aldığı kopya (sayfalar, surum.json, `sistem\` = kaynaklar + derlenmiş exe + damga, köprü betikleri;
+    3.7.0'dan beri `sistem\olcu\*.ps1` de). Dönüş: şimdiki sürümün getirip yedekte olmayan `.cs` dosyaları `.eski` olur,
+    yedek `Kopyala` ile yerine konur (açık exe `.yeni` → pencere yeniden açılır), yedekte exe yoksa yeniden derlenir.
+    Ayarlar, çalışma sayfaları, Gerber ayarları değişmez. `kullanici.json` → `atla_surum` = bırakılan sürüm: kendiliğinden
+    yeniden önerilmez, ⚙ → Güncellemeleri denetle gösterir. Dönüşten sonra yedek = şimdiki sürüm, düğme kalkar.
+    Gerber'de süren iş ya da AA / ÖT'de süren iş varken dönmez. Yazı: "vX sürümüne dönüldü" (`eleman-geri-donus` işareti;
+    pencere yeniden açılınca da). 3.7.0'dan ilk dönüş 3.6.4'e olur: 3.6.4 `atla_surum`'u bilmez (3.7.0'ı yine önerir) ve
+    "güncellendi" yazar.
+  - **Windows kapanırken / görev yöneticisinden kapatılırken** pencere önce sayfalara `kapanmadan()` (sayfalar son halini
+    kaydeder) ve `yedekAl()` (disk yedeği, eşzamanlı) yaptırır (Pencere.cs: KapanmadanKaydet; ≤ ~2 sn; Windows beklerse
+    kapanış ekranında "Eleman açık sayfaları kaydediyor"). Windows kapanmaktan vazgeçerse pencere çalışmaya devam eder.
+    Güncelleme sonrası yeniden açılışta da aynısı yapılır.
+  - **Disk yedeği zamanlı:** yedek yazılırken `eleman-yedek-t` hem diske hem pencerenin yerel kaydına yazılır; açılışta disk
+    yedeği yeniyse (pencerenin yerel kaydı diske geç iner, kapanışta kaybolabilir) her şey diskten gelir. Yerel boşsa eskisi gibi.
+  - Denemeler (`/home/claude/is/tarama`): t_geri 5/5 (3.7.0 → 3.6.4 gerçek dosyalarla), t_geri2 4/4 (ileriki dönüşler, yeniden
+    açılış yazısı, yedek yoksa hata), t_zaman 8/8, atla_surum 5/5 (`/home/claude/is/atla`), eski denemeler (yarış 3/3,
+    hafıza 8/8, sekmeler 5/5, genel, asorti) temiz; mono derleme, PowerShell, kontrol.py temiz.
+
 ## Sıradaki işler
 0. **Sürüm arşivi = GitHub Releases.** 32 sürüm (ilk-deneme, v1.0.0–v1.1.22, v2.0.0–v2.0.4) bir kerelik GitHub Actions işiyle
    taşındı, `surum-v*`, `arsiv`, `surum-test` dalları silindi (dallar: eleman, main, exe-deneme). Bu oturumlardan etiket ve

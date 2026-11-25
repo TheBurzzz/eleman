@@ -289,6 +289,7 @@ html[data-theme=dark] .kart{border-color:rgba(255,255,255,.12);background:linear
 .anaAlt{margin-top:auto;padding-top:40px;text-align:center;font-size:12px;color:var(--mut);letter-spacing:.2px}
 .anaAlt b{font-weight:600;color:var(--ink)}
 .anaAlt span:not(:empty)::before{content:' · '}
+#geriDon{display:block;margin:0 2px 0 auto;border:0;background:transparent;color:var(--mut);font-size:12px;cursor:pointer;padding:2px}#geriDon:hover{color:var(--acc)}#geriDon[hidden]{display:none}
 </style><link rel="stylesheet" href="sistem/eleman_cam.css"></head><body>
 <svg id="ikonlar" width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
  <linearGradient id="lgA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5AACFF"/><stop offset="1" stop-color="#0068DA"/></linearGradient>
@@ -335,7 +336,7 @@ html[data-theme=dark] .kart{border-color:rgba(255,255,255,.12);background:linear
   <div class="mOlcu"><h4>Ölçü Tablosu</h4>
   <div class="blok"><div class="not">Müşteriler ve şablonlar, kayıt klasörleri, tarayıcı, ortak hafıza.</div>
    <div class="satir dug"><button type="button" id="olAyar">Ölçü Tablosu ayarları…</button></div></div></div>
-  <div class="alt"><span id="surum"></span><button id="denetle" type="button">Güncellemeleri denetle</button></div>
+  <div class="alt"><span id="surum"></span><button id="denetle" type="button">Güncellemeleri denetle</button></div><button id="geriDon" type="button" hidden>Önceki sürüme dön</button>
  </div>
 </div>
 <main id="ana" aria-label="Ana sayfa"><div class="anaIc">
@@ -355,17 +356,22 @@ html[data-theme=dark] .kart{border-color:rgba(255,255,255,.12);background:linear
 <div id="gece"></div>
 <script>
 /* çalışma sayfaları ve ayarlar pencerenin yerel kaydında (localStorage) durur; ayrıca diskte de yedeklenir (yerel_kayit.json).
-   Yeni pencere (ör. uygulama ilk kez kendi penceresinde açılınca) boş başlıyorsa her şey o yedekten geri gelir. */
-(()=>{try{if(localStorage.getItem('asorti-sayfalar')!==null||!/^https?:$/.test(location.protocol))return;
+   Yerel kayıt boşsa ya da disk yedeği ondan yeniyse açılışta her şey disk yedeğinden geri gelir. Disk yedeği hemen yazılır; pencerenin
+   yerel kaydı diske birkaç saniye (çok yazılınca daha da) geç iner: program kapanırken bilgisayar kapanırsa ya da elektrik giderse eski
+   kalabilir. Hangisinin yeni olduğu yedek zamanından anlaşılır ("eleman-yedek-t": yedek yazılırken ikisine de yazılır). */
+(()=>{try{if(!/^https?:$/.test(location.protocol))return;
  const x=new XMLHttpRequest();x.open('GET','/yerel-kayit',false);x.send();if(x.status!==200)return;
- const d=JSON.parse(x.responseText||'{}');for(const k in d)if((k.startsWith('asorti-')||k.startsWith('eleman-'))&&typeof d[k]==='string'&&localStorage.getItem(k)===null)localStorage.setItem(k,d[k])}catch(e){}})();
+ const d=JSON.parse(x.responseText||'{}'),bos=localStorage.getItem('asorti-sayfalar')===null,yeni=(+d['eleman-yedek-t']||0)>(+localStorage.getItem('eleman-yedek-t')||0);
+ if(!bos&&!yeni)return;
+ for(const k in d)if((k.startsWith('asorti-')||k.startsWith('eleman-'))&&typeof d[k]==='string'&&(yeni||localStorage.getItem(k)===null))localStorage.setItem(k,d[k])}catch(e){}})();
 var yedekT=0,yedekSon='';
-function yedekVeri(){const d={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&(k.startsWith('asorti-')||k.startsWith('eleman-')))d[k]=localStorage.getItem(k)}return JSON.stringify(d)}
+function yedekVeri(){const d={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k!=='eleman-yedek-t'&&(k.startsWith('asorti-')||k.startsWith('eleman-')))d[k]=localStorage.getItem(k)}return JSON.stringify(d)}
+function zamanli(v){const t=String(Date.now());try{localStorage.setItem('eleman-yedek-t',t)}catch(e){}return v.slice(0,-1)+',"eleman-yedek-t":"'+t+'"}'}
 function yerelYedek(hemen){clearTimeout(yedekT);
- const yap=()=>{try{const v=yedekVeri();if(v==='{}'||v===yedekSon)return;yedekSon=v;fetch('/yerel-kayit',{method:'POST',body:v,keepalive:v.length<60000}).catch(()=>{yedekSon=''})}catch(e){}};
+ const yap=()=>{try{const v=yedekVeri();if(v==='{}'||v===yedekSon)return;yedekSon=v;fetch('/yerel-kayit',{method:'POST',body:zamanli(v),keepalive:v.length<60000}).catch(()=>{yedekSon=''})}catch(e){}};
  if(hemen)yap();else yedekT=setTimeout(yap,1500)}
 /* pencere kapanmadan hemen önce (uygulama penceresi çağırır): yedek beklemeden yazılsın */
-window.yedekAl=()=>{try{const v=yedekVeri();if(v==='{}')return false;const x=new XMLHttpRequest();x.open('POST','/yerel-kayit',false);x.send(v);yedekSon=v;return x.status===200}catch(e){return false}};
+window.yedekAl=()=>{try{const v=yedekVeri();if(v==='{}')return false;const x=new XMLHttpRequest();x.open('POST','/yerel-kayit',false);x.send(zamanli(v));yedekSon=v;return x.status===200}catch(e){return false}};
 window.addEventListener('storage',()=>yerelYedek());
 document.addEventListener('visibilitychange',()=>{if(document.hidden)yerelYedek(true)});
 window.addEventListener('pagehide',()=>yerelYedek(true));
@@ -646,7 +652,7 @@ async function nabiz(){if(yenileniyor)return;
   clearTimeout(hizliT);hizliT=setTimeout(nabiz,1000)}}
 /* güncellemeden sonra sayfa açılınca kısa bir "güncellendi" yazısı. Uygulama yeni haliyle yeniden açıldıysa
    sayfanın oturumu da yenidir: hedef sürüm diskte (localStorage) tutulur, açılan sürüm o ise yazılır */
-function guncellendiYaz(g){yaziKilit=Date.now()+6000;durumYaz('ok','v'+g+' sürümüne güncellendi');setTimeout(nabiz,6100)}
+function guncellendiYaz(g){let geri=false;try{geri=localStorage.getItem('eleman-geri-donus')===g;localStorage.removeItem('eleman-geri-donus')}catch(e){}yaziKilit=Date.now()+6000;durumYaz('ok','v'+g+' sürümüne '+(geri?'dönüldü':'güncellendi'));setTimeout(nabiz,6100)}
 try{const g=sessionStorage.getItem('asorti-guncellendi');if(g){sessionStorage.removeItem('asorti-guncellendi');try{localStorage.removeItem('asorti_guncelleme')}catch(e){}guncellendiYaz(g)}}catch(e){}
 try{const h=localStorage.getItem('asorti_guncelleme');if(h){localStorage.removeItem('asorti_guncelleme');fetch('/surum',{cache:'no-store'}).then(r=>r.json()).then(j=>{if(j&&j.surum===h)guncellendiYaz(h)}).catch(()=>{})}}catch(e){}
 nabiz();setInterval(nabiz,5000);
@@ -888,6 +894,27 @@ function acilisOyna(){const ov=$('acilis');if(!ov||acilisBasladi)return;acilisBa
   kare1(s,1-yumu(.7,.93,p),yumu(0,.45,p),Math.sin(Math.PI*Math.min(1,p/.4))*.9,1-yumu(.6,.76,p));
   if(p<1)requestAnimationFrame(adim);else bitir()};
  requestAnimationFrame(adim)}
+
+/* ---------- önceki sürüme dönüş (⚙): son güncellemeden önceki sürüm kurulumdaki yedekte durur ---------- */
+async function oncekiYaz(){const b=$('geriDon');if(!b)return;
+ try{const j=await (await fetch('/onceki-surum',{cache:'no-store'})).json();if(j&&j.var){b.dataset.surum=j.surum;b.title='Eleman v'+j.surum+(j.tarih?' · '+j.tarih:'');b.hidden=false}else b.hidden=true}catch(e){b.hidden=true}}
+$('geriDon').onclick=async()=>{const b=$('geriDon'),hedef=b.dataset.surum;if(!hedef||guncelleniyor)return;
+ if(Object.values(info).some(d=>d.busy)){alert('Gerber\'e gönderilen pastallar var. Onlar bitince dön.');return}
+ if(Object.values(infoO).some(d=>d.busy)){alert('Ölçü Tablosu bir kağıt okuyor ya da kaydediyor. Bitince dön.');return}
+ if(!confirm('Eleman v'+hedef+' sürümüne dönülsün mü?\n\nÇalışma sayfaların ve ayarların korunur. Pencere birkaç saniye içinde kendiliğinden yenilenir.'))return;
+ const eskiId=sunucuId,
+  isaret=v=>{try{if(v){localStorage.setItem('asorti_guncelleme',v);localStorage.setItem('eleman-geri-donus',v)}else{localStorage.removeItem('asorti_guncelleme');localStorage.removeItem('eleman-geri-donus')}}catch(e){}},
+  birak=m=>{isaret(null);guncelleniyor=false;b.disabled=false;nabiz();if(m)alert(m)};
+ b.disabled=true;guncelleniyor=true;menu(false);durumYaz('bekle','Önceki sürüme dönülüyor…');sayfalarKaydetsin();
+ isaret(hedef);   // pencere yeniden açılırsa yeni pencere de dönülen sürümü yazsın (güncellemedeki gibi)
+ let hata=null;try{const j=await (await fetch('/geri-don',{method:'POST',body:'{}',cache:'no-store'})).json();if(!j.ok)hata=j.hata||'bilinmeyen hata'}catch(e){}
+ if(hata){birak(hata);return}
+ await bekle(800);const t0=Date.now();let acildi=false;
+ while(Date.now()-t0<90000){try{const r=await fetch('/nabiz',{cache:'no-store'});if(r.ok){const j=await r.json();if(j.id&&j.id!==eskiId){acildi=true;break}}}catch(e){}await bekle(400)}
+ if(!acildi){birak('Önceki sürüme dönülemedi. Birazdan tekrar dene.');return}
+ try{sessionStorage.setItem('asorti-guncellendi',hedef)}catch(e){}
+ yenileniyor=true;sayfalarKaydetsin();setTimeout(()=>location.reload(),200)};
+oncekiYaz();
 /* açılışta önce görünen sayfa yüklenir, diğerleri hemen ardından (arkadaki Gerber işleri de kaldığı yerden sürer) */
 if(!S.list.length){S.on='';ciz()}else{if(!S.list.includes(S.on))S.on=S.list[0];ac(S.on);
  const digerleri=()=>S.list.forEach(id=>{if(id!==S.on&&mesgulA(id))frame(id)}),f0=document.querySelector('#sayfalar iframe[data-id="'+S.on+'"]');

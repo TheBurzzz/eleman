@@ -1,8 +1,8 @@
 {
- "surum": "3.6.4",
- "tarih": "2026-11-24",
+ "surum": "3.7.0",
+ "tarih": "2026-11-25",
  "notlar": [
-  "Asorti · Sayfadaki açıklama yazıları kaldırıldı (Gerber'e gönder, ek asorti tabloları, ek satırlar, kaydet, çizgili ürün, panolu iş, alt-üst takım); uyarı ve hata mesajları duruyor",
-  "Ölçü tablosu · Ölçüler başlığının yanındaki açıklama kaldırıldı"
+  "Eleman · ⚙ menüsünde «Önceki sürüme dön»: bir güncelleme sorun çıkarırsa tek tıkla bir önceki sürüme dönülür; çalışma sayfaların ve ayarların korunur",
+  "Eleman · Program açıkken bilgisayar kapanırsa açık sayfalar önce kaydedilir"
  ]
 }

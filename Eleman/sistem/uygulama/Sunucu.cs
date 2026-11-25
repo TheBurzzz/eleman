@@ -260,6 +260,11 @@ namespace AsortiAraci
                         if (m != "POST") break;
                         GuncelleIstek(ctx);
                         return;
+                    case "onceki-surum": JsonYanit(ctx, OncekiSurum()); return;
+                    case "geri-don":
+                        if (m != "POST") break;
+                        GeriDonIstek(ctx);
+                        return;
                     case "yerel-kayit": YerelKayit(ctx, m); return;
                 }
                 if (yol.StartsWith("olcu/") && OlcuIstek(ctx, yol, m)) return;   // Ölçü Tablosu Aracı (SunucuOlcu.cs)

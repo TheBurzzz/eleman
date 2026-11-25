@@ -28,6 +28,8 @@ namespace AsortiAraci
         [DllImport("user32.dll")] static extern bool SetWindowPos(IntPtr h, IntPtr sonra, int x, int y, int g, int y2, uint b);
         [DllImport("user32.dll")] static extern bool FlashWindowEx(ref FLASHWINFO f);
         [DllImport("user32.dll")] static extern bool AllowSetForegroundWindow(int pid);
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)] static extern bool ShutdownBlockReasonCreate(IntPtr h, string neden);
+        [DllImport("user32.dll")] static extern bool ShutdownBlockReasonDestroy(IntPtr h);
         [StructLayout(LayoutKind.Sequential)] struct RECT { public int Sol, Ust, Sag, Alt; }
         [StructLayout(LayoutKind.Sequential)] struct FLASHWINFO { public uint cbSize; public IntPtr hwnd; public uint dwFlags; public uint uCount; public uint dwTimeout; }
 
@@ -613,6 +615,22 @@ namespace AsortiAraci
                 KapatmayiSor();
                 return;
             }
+            if (!kapatOnay && (e.CloseReason == CloseReason.WindowsShutDown || e.CloseReason == CloseReason.TaskManagerClosing))
+            {
+                // sormadan kapanış (Windows kapanıyor / oturum kapanıyor, görev yöneticisi): önce açık sayfalar kaydedilir.
+                // Windows beklerse kapanış ekranında nedeni görünür.
+                bool engel = false;
+                if (e.CloseReason == CloseReason.WindowsShutDown) { try { engel = ShutdownBlockReasonCreate(Handle, "Eleman açık sayfaları kaydediyor"); } catch { } }
+                KapanmadanKaydet(e.CloseReason == CloseReason.WindowsShutDown ? "windows kapaniyor" : "gorev yoneticisinden kapatiliyor");
+                if (engel) { try { ShutdownBlockReasonDestroy(Handle); } catch { } }
+                if (e.CloseReason == CloseReason.WindowsShutDown)
+                {
+                    // asıl kapanış Windows "kapanıyorum" deyince (WM_ENDSESSION); Windows kapanmaktan vazgeçerse pencere çalışmaya devam eder
+                    YerKaydet();
+                    base.OnFormClosing(e);
+                    return;
+                }
+            }
             acik = false;
             denetci.Stop();
             YerKaydet();
@@ -742,11 +760,37 @@ namespace AsortiAraci
             return sonuc;
         }
 
+        // Pencere sormadan kapanırken (Windows kapanıyor, güncellemeden / önceki sürüme dönüşten sonra yeniden açılış): açık sayfalar son
+        // hallerini kaydetsin, disk yedeği (yerel_kayit.json) yazılsın. Sayfa yedek zamanını yerel kayda da yazar: pencerenin yerel kaydı
+        // diske inemeden program kapanırsa açılışta disk yedeği daha yeni olur ve oradan geri gelir. En fazla ~2 sn; bu sırada pencerenin
+        // ileti döngüsü döner (sayfanın cevabı ancak böyle gelir).
+        void KapanmadanKaydet(string neden)
+        {
+            try
+            {
+                if (wv == null || wv.CoreWebView2 == null) return;
+                Stopwatch s = Stopwatch.StartNew();
+                Bekle(wv.CoreWebView2.ExecuteScriptAsync("(function(){try{if(window.kapanmadan)window.kapanmadan()}catch(e){}return 1})()"), 700);
+                Bekle(null, 250);   // sayfalar "kaydet" iletisini işlesin
+                string r = Bekle(wv.CoreWebView2.ExecuteScriptAsync("(function(){try{return window.yedekAl?window.yedekAl():false}catch(e){return false}})()"), 1200);
+                Kayit.Yaz(neden + ": sayfalar kaydedildi" + (r == "true" ? "" : " (disk yedegi yazilamadi)") + ", " + s.ElapsedMilliseconds + " ms");
+            }
+            catch (Exception ex) { Kayit.Yaz(neden + ": sayfalar kaydedilemedi: " + ex.Message); }
+        }
+
+        static string Bekle(System.Threading.Tasks.Task<string> t, int ms)
+        {
+            Stopwatch s = Stopwatch.StartNew();
+            while ((t == null || !t.IsCompleted) && s.ElapsedMilliseconds < ms) { Application.DoEvents(); Thread.Sleep(10); }
+            return t != null && t.Status == System.Threading.Tasks.TaskStatus.RanToCompletion ? t.Result : null;
+        }
+
         public void Guncellendi(bool yenidenBaslat)
         {
             if (!yenidenBaslat) return;
             UI(delegate
             {
+                KapanmadanKaydet("yeniden aciliyor");
                 Kayit.Yaz("uygulama yeni surumle yeniden aciliyor");
                 // kullanıcı şu an bu penceredeyken izin verilir: yeni sürümün penceresi arkada kalmaz, ilk tıklama boşa gitmez
                 try { AllowSetForegroundWindow(-1); } catch { }
