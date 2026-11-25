@@ -90,8 +90,13 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
   `python3 kaynak/eleman/kabuk_yap.py kaynak/eleman/asorti_kabugu.html Eleman/uygulama.html` (`uygulama.html` elle düzeltilmez).
 - **Ölçü Tablosu düzeltmesi** (Ölçü sohbeti): `kaynak/olcu/src.html` eleman dalında düzeltilir, `python3 kaynak/olcu/derle.py`
   çalıştırılır (Eleman/olcu_tablosu_araci.html yenilenir). Masaüstündeki tek başına hali gerekirse depo dışına derlenir.
+- **Üretilen iki dosya ELLE DEĞİŞTİRİLMEZ** (hangi sohbet olursa olsun): `Eleman/uygulama.html` (kaynağı `kaynak/eleman/kabuk_yap.py`
+  + `asorti_kabugu.html`) ve `Eleman/olcu_tablosu_araci.html` (kaynağı `kaynak/olcu/src.html`). Elle yapılan değişiklik bir sonraki
+  üretimde sessizce kaybolur; 25 Kasım 2026'da iki tane bulundu (aşağıda "Son durum").
 - **Yayın** (iş bilgisayarına gitsin): `Eleman/surum.json` (sürüm, tarih, kullanıcının göreceği Türkçe notlar) ve
-  `Program.cs` AssemblyVersion artar, `eleman`'a itilir, sonra `git push origin eleman:main`. Releases'a `surum.yml` ekler.
+  `Program.cs` AssemblyVersion artar, **`python3 kaynak/kontrol.py` "Denetim tamam" demeli** (üretilen dosyalar kaynaklarıyla
+  aynı mı, iki sürüm numarası uyumlu mu, sayfalarda JavaScript sözdizimi hatası var mı; hiçbir dosyayı değiştirmez), `eleman`'a
+  itilir, sonra `git push origin eleman:main`. Releases'a `surum.yml` ekler.
 - **Bakım**: dal silme ve sürüm başlığı `.github/workflows/bakim.yml` ile (workflow_dispatch; API:
   `POST repos/TheBurzzz/eleman/actions/workflows/bakim.yml/dispatches`). Git vekili dal silmeye ve depo ayarına izin vermiyor;
   varsayılan dalı yalnız kullanıcı değiştirebilir (şimdilik `eleman`).
@@ -591,6 +596,25 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
   mesajları ve `title` ipuçları kaldı. Ölçü: "4 Ölçüler" başlığındaki "satırları ⋮⋮ ile sürükle…" kaldırıldı.
   - Denendi: sayfanın bütün hâlleri (boş, form, tablo, sonuç, ek tablo, en verimli paneli, çizgili, panolu, takım) ekran görüntüsüyle;
     t30/t31 (müşteri toplama), elle yapılmış rapor, kayıtlı dosya açma, normal sipariş çıktısı 3.6.1 ile aynı; Ölçü sayfası hatasız açılıyor.
+
+- 2026-11-25 (Eleman sohbeti): **genel gözden geçirme** (kullanıcı: "derinlemesine baktığında yaşanacak sorun görebiliyor musun").
+  Program dosyası değişmedi, sürüm aynı (3.6.4), iş bilgisayarına güncelleme gitmez.
+  - İş bilgisayarı kayıtları (12–25 Kasım): program hatası yok; 22 güncelleme, hepsi derlendi; 19 Excel (AA), 8 Ölçü tablosu
+    (19–20 Kasım, yalnız Lykka KOL). 19 Kasım akşamı program açıkken bilgisayar kapanmış ("uygulama kapandi" yok): pencere Windows
+    kapanırken (`CloseReason.WindowsShutDown`) sayfalara `kapanmadan` / `yedekAl` yaptırmıyor (öneri, yapılmadı).
+  - **Üretilen dosyalarda kaynağında olmayan değişiklik (düzeltildi):** (1) 3.3.3 sekme ışığı (`bitti` → `ik ok`) ve 3.3.6
+    `olcuEsitle` yalnız `Eleman/uygulama.html`'deydi; kabuk yeniden üretilseydi ikisi de kaybolurdu → `kabuk_yap.py`'ye taşındı.
+    (2) 3.6.4'te Ölçü başlığındaki açıklama yalnız `olcu_tablosu_araci.html`'den silinmişti, `src.html`'de duruyordu → kaynaktan da
+    silindi. İkisi de şimdi kaynaktan birebir üretiliyor. Yeni: `kaynak/kontrol.py` (yukarıda "Yayın").
+  - Denemeler 3.6.4 üzerinde yeniden (`/home/claude/is/tarama`): ortak hafıza yarışı 3/3, hafıza durumları 8/8, Ölçü sekmeleri 5/5,
+    geçmiş tablolar / silme / geri alma / kaynak (test beklentileri eski hafızaya göre; davranış doğru), kağıt oku → kaydet → öğren,
+    AA sipariş → hesap → Excel; mono derleme, PowerShell, ESLint temiz.
+  - Ortak hafıza (eleman-hafiza): 76 KB; 12 kayıt, 1379 geçmiş tablo, 368 ölçü aralığı; el yazısı defteri 33 örnek (hedef ~300).
+  - Ortak klasör (12–25 Kasım): 29 tablonun 21'i "Dell" adlı bilgisayarda Excel'de elle (13 SORGENFRI-KOL, yalnız M = ÖT'nin işi;
+    7 LYKKA-URT-14, bütün bedenler); 7'si Eleman ile (LYKKA-KOL); 1 LETOILE (WING - ÜST, S–XXL, şablon düzeninde) elle.
+    Kullanıcıya soruldu: Dell kimin, Eleman oraya kurulsun mu; ÖT bütün bedenleri de okusun mu (URT tabloları), Letoile şablonu.
+  - Önerildi (yapılmadı): Windows kapanırken kaydetme; ⚙'de "önceki sürüme dön" (`yedek` klasöründen); boştaki Tesseract
+    işçisini kapatma (sekme başına bellek).
 
 ## Sıradaki işler
 0. **Sürüm arşivi = GitHub Releases.** 32 sürüm (ilk-deneme, v1.0.0–v1.1.22, v2.0.0–v2.0.4) bir kerelik GitHub Actions işiyle

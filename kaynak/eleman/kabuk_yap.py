@@ -143,10 +143,11 @@ function cizO(){let onceki=null;
  SO.list.forEach((id,i)=>{const b=sekmeO(id),d=infoO[id]||{},yeniMi=!b.isConnected;
   let h=onceki?onceki.nextElementSibling:TO.firstElementChild;while(h&&h.dataset.kapaniyor)h=h.nextElementSibling;
   if(h!==b)TO.insertBefore(b,h);onceki=b;
-  const ad=d.ad||'Sayfa '+(i+1),ik='ik'+(d.busy?' is':''),a=b.querySelector('.ad'),k=b.querySelector('.ik');
+  /* ışık: okurken / kaydederken yanıp söner; Excel'e kaydedilip sonra değişmeyen tablo sabit yeşil */
+  const ad=d.ad||'Sayfa '+(i+1),ik='ik'+(d.busy?' is':d.bitti?' ok':''),a=b.querySelector('.ad'),k=b.querySelector('.ik');
   b.classList.toggle('on',id===SO.on);b.setAttribute('aria-selected',String(id===SO.on));
   if(a.textContent!==ad){a.textContent=ad;a.dataset.t=ad}if(k.className!==ik)k.className=ik;
-  b.title=ad+(d.degisti?' · kaydedilmedi':'');
+  b.title=ad+(d.degisti?' · kaydedilmedi':d.bitti?' · Excel\'e kaydedildi':'');
   if(yeniMi&&girisO===id){girisO=null;if(!AZ.matches)sekmeOyna(b,true,()=>{if(b.classList.contains('on'))b.scrollIntoView({block:'nearest',inline:'nearest'})})}});
  [...TO.children].forEach(b=>{if(!b.dataset.kapaniyor&&!SO.list.includes(b.dataset.id))sekmeCik(b)});
  if(UYG==='olcu'){if(SO.on)sayfaGosterO(SO.on);else bosGoster('O')}
@@ -179,11 +180,17 @@ function kapatO(id){const i=SO.list.indexOf(id);if(i<0)return;const d=infoO[id]|
  SO.list.splice(i,1);delete infoO[id];delete SO.ad[id];olcuTaslakSil(id);
  if(f)f.dataset.sil='1';
  if(!SO.list.length)SO.on='';else if(SO.on===id)SO.on=SO.list[Math.max(0,i-1)];
- saveO();cizO();if(f&&f!==gosterilenO&&!f.classList.contains('on'))f.remove()}
+ saveO();cizO();if(f&&f!==gosterilenO&&!f.classList.contains('on'))f.remove();
+ setTimeout(olcuEsitle,400)}
+/* kapanan sekme ortak hafızaya göndermeyi bitirmeden gitmiş olabilir: açık bir Ölçü sekmesi bitirsin (gösterge de güncellenir).
+   Açık Ölçü sekmesi kalmadıysa "Gönderiliyor…" takılı kalmasın; sırada kalan, Ölçü bir sonraki açılışta kendiliğinden gönderir */
+function olcuEsitle(){const f=[...document.querySelectorAll('#sayfalarO iframe')].find(x=>!x.dataset.sil&&!x.dataset.uyuyor&&x.dataset.hazir);
+ if(f){try{f.contentWindow.postMessage({t:'esitle'},'*')}catch(e){}return}
+ const h=$('hafiza');if(h&&h.className==='gonder'){h.className='';h.querySelector('span').textContent='Ortak hafıza';h.title='Ortak hafıza'}}
 TO.addEventListener('wheel',e=>{if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){TO.scrollLeft+=e.deltaY;e.preventDefault()}},{passive:false});
 /* Ölçü sayfalarından gelen haberler: sekme başlığı, bildirim, ortak hafıza durumu */
 window.addEventListener('message',e=>{const d=e.data||{};if(d.uygulama!=='olcu'&&d.tur!=='olcu')return;
- if(d.t==='sayfa'&&SO.list.includes(d.id)){const o=infoO[d.id]||{};if(o.ad!==d.ad||o.busy!==d.busy||o.degisti!==d.degisti){infoO[d.id]={ad:d.ad,busy:!!d.busy,degisti:!!d.degisti};
+ if(d.t==='sayfa'&&SO.list.includes(d.id)){const o=infoO[d.id]||{};if(o.ad!==d.ad||o.busy!==!!d.busy||o.degisti!==!!d.degisti||o.bitti!==!!d.bitti){infoO[d.id]={ad:d.ad,busy:!!d.busy,degisti:!!d.degisti,bitti:!!d.bitti};
    if((SO.ad[d.id]||'')!==(d.ad||'')){SO.ad[d.id]=d.ad||'';saveO()}cizO()}}
  if(d.t==='bildirim'&&SO.list.includes(d.id))bildirim({tur:'excel',baslik:d.baslik||'Excel\'e kaydedildi',metin:d.metin||d.ad||'',
   ipucu:UYG!=='olcu'||d.id!==SO.on?'Tabloya gitmek için tıkla':'',tik:()=>{uygGit('olcu');acO(d.id)}});
