@@ -240,7 +240,7 @@ html[data-theme=dark] .fb.fbk{border-color:rgba(10,132,255,.55);background:rgba(
 <div id="res"></div>
 <div class="card" id="stb" style="display:none"><h2><span class="step">2</span><span id="stbt">Beden birimleri</span> <span class="m">(çizgili ürün)</span></h2><div class="chips" style="margin:10px 0 4px"><label title="Beden birimi ile kol birimi farklıysa: ikisini ayrı ayrı gir. Excel'e BEDEN BİRİMLERİ ve KOL BİRİMLERİ diye iki ayrı sarı tablo yazılır."><input type="checkbox" id="bkt" onchange="bkTog(this.checked)">Kol birimi ayrı</label></div><div id="bg"></div></div>
 <div class="card" id="stp" style="display:none"><h2><span class="step">2</span>Pano birimleri <span class="m">(panolu iş)</span></h2><div id="pn"></div></div>
-<div class="card" id="stx" style="display:none"><h2><span class="step">3</span>Ek asorti tabloları <span class="m">(Hızar, Tela, Kontrast cep…)</span></h2><div id="xgz"></div><div id="xt"></div><div style="margin-top:8px"><button type="button" onclick="xAdd('hizar')">+ Hızar asortisi</button><button type="button" onclick="xAdd('tela')">+ Tela asortisi</button><button type="button" onclick="xAdd('ribana')">+ Ribana asortisi</button><button type="button" onclick="xAdd('astar')">+ Astar asortisi</button><button type="button" onclick="xAdd('cep')">+ Kontrast cep</button><button type="button" onclick="xAdd('diger')">+ Başka tablo</button></div></div>
+<div class="card" id="stx" style="display:none"><h2><span class="step">3</span>Ek asorti tabloları <span class="m">(Hızar, Tela, Kontrast…)</span></h2><div id="xgz"></div><div id="xt"></div><div style="margin-top:8px"><button type="button" onclick="xAdd('hizar')">+ Hızar asortisi</button><button type="button" onclick="xAdd('tela')">+ Tela asortisi</button><button type="button" onclick="xAdd('ribana')">+ Ribana asortisi</button><button type="button" onclick="xAdd('astar')">+ Astar asortisi</button><button type="button" onclick="xAdd('cep')">+ Kontrast</button><button type="button" onclick="xAdd('diger')">+ Başka tablo</button></div></div>
 <div class="card" id="st3" style="display:none"><h2><span class="step">4</span>Ek satırlar <span class="m">(Biye, Hızar…)</span></h2><div id="ex"></div><div style="margin-top:8px"><button type="button" onclick="exAdd('BİYE')">+ BİYE</button><button type="button" onclick="exAdd('HIZAR')">+ HIZAR</button><button type="button" onclick="exAdd('')">+ Başka satır</button></div></div>
 <div id="act"></div><div id="msg"></div>
 </main>
@@ -328,7 +328,7 @@ function workerBody(){
   const out=list.map(it=>{const pastals=it.sel.map((c,j)=>({a:comps[c].a,k:it.ks.map(kg=>kg[j])}));
    pastals.sort((x,y)=>y.k.reduce((a,b)=>a+b,0)-x.k.reduce((a,b)=>a+b,0));return{pastals,over:it.over}});
   return{m:foundM,list:out,timeout:anyTO}}
-  // Ek tablolar (hızar / tela / kontrast cep) için çözücü
+  // Ek tablolar (hızar / tela / kontrast) için çözücü
 // n: beden sayısı, O: [renk][beden] ihtiyaç (ana asortinin çıkan adetleri), P: pastaldaki en fazla parça,
 // TOL: bir bedende en fazla +, cap: toplam en fazla fazla-kesim (adet), strict: tüm renkler tüm pastalları kullansın
 function solveOne(n,O,P,strict,kmin){const KM=kmin>0?kmin+1:0;
@@ -522,8 +522,8 @@ function pnSec(k){const L=pnL(k),sz=info.sizes,cnt=sz.map((_,i)=>L.filter(g=>g.s
   '<div style="margin-top:8px"><button type="button" onclick="pnAdd('+k+')">+ '+ad+' grubu ekle</button></div>'}
 function pnDraw(){const c=$('pn');if(!c||!info)return;c.innerHTML='<div class="xc">'+pnSec(0)+'</div><div class="xc">'+pnSec(1)+'</div>'}
 
-/* ---- ek asorti tabloları (hızar / tela / kontrast cep) ---- */
-const XK={hizar:{base:'HIZAR',mode:'col'},tela:{base:'TELA',mode:'tot'},ribana:{base:'RİBANA',mode:'col'},astar:{base:'ASTAR',mode:'tot'},cep:{base:'KONTRAST CEP',mode:'tot'},diger:{base:'',mode:'col'}};
+/* ---- ek asorti tabloları (hızar / tela / kontrast) ---- */
+const XK={hizar:{base:'HIZAR',mode:'col'},tela:{base:'TELA',mode:'tot'},ribana:{base:'RİBANA',mode:'col'},astar:{base:'ASTAR',mode:'tot'},cep:{base:'KONTRAST',mode:'tot'},diger:{base:'',mode:'col'}};
 const XL={hizar:'H',astar:'A',tela:'T',ribana:'R',cep:'C'};
 function xAdd(k){xSync();const d=XK[k];xt.push({id:++xid,kind:k,base:d.base,mode:d.mode,fab:k=='tela'?'TELA':'',side:'ÜST',P:'',T:'',Y:'',one:false,kat:false,N:'2',oto:XOTO.includes(k)&&!!xOtoHat()[k],res:null,cur:0,sig:'',err:'',busy:false});xDraw();const e=$('xP'+xid);if(e)e.focus()}
 function xDel(id){xSync();xt=xt.filter(x=>x.id!=id);xDraw()}
@@ -584,7 +584,7 @@ function xDraw(){gCizCiz();const c=$('xt');if(!c)return;if(!info||!sols[cur]){c.
   return h+'</div>'}).join('')}
 /* ---- ek asorti tablosunu ayrı gönder: Gerber'de tek pastal (MODEL-URT-H) oluşur, OTOPASTAL'a gitmez ---- */
 const xTim={},xBitti=a=>['bitti','hata','iptal'].includes(a);
-/* astar ve kontrast cep: pastalı OTOPASTAL yerleştirsin (boy ve verim tabloya kendiliğinden yazılır) ya da kullanıcı Gerber'de kendisi yerleştirsin */
+/* astar ve kontrast: pastalı OTOPASTAL yerleştirsin (boy ve verim tabloya kendiliğinden yazılır) ya da kullanıcı Gerber'de kendisi yerleştirsin */
 const XOTO=['astar','cep'],xOtoVar=x=>XOTO.includes(x.kind)&&OTO!=='yok'&&OTO!=='kapali',xOto=x=>xOtoVar(x)&&!!x.oto;
 const xOtoHat=()=>{try{return JSON.parse(localStorage.getItem('asorti-xoto')||'{}')||{}}catch(e){return{}}};
 function xOtoSec(id,v){const x=xt.find(q=>q.id==id);if(!x)return;x.oto=!!v;try{const h=xOtoHat();h[x.kind]=!!v;localStorage.setItem('asorti-xoto',JSON.stringify(h))}catch(e){}xDraw()}
@@ -1511,7 +1511,7 @@ const TUR=[['normal','Normal','Asorti ve pastal','Asorti hesaplanır, pastallar 
  ['takim','Alt-üst takım','ALT ve ÜST ayrı kumaş, adetler aynı','Alt ve üst farklı kumaşlardan kesilir ama takım olarak satılır; fazla kesimler dahil adetler aynı olur','<path d="M9.2 3.5 5 5.6l1.4 3 1.6-.7v3.6h8V7.9l1.6.7 1.4-3-4.2-2.1c-.5.9-1.6 1.5-2.8 1.5s-2.3-.6-2.8-1.5z"/><path d="M8 14h8l-.6 6.5h-2.6L12 16.3l-.8 4.2H8.6z"/>'],
  ['yonlu','Yönlü + yönsüz','Desenli kumaş · ayrı asorti','Yönlü ve yönsüz renkler ayrı asortiyle kesilir; Gerber\'de yönlü pastallar URT-1, URT-2…, yönsüzler URT1, URT2…','<path d="M8 19V5"/><path d="m4.5 8.5 3.5-3.5 3.5 3.5"/><path d="M16 5v14"/><path d="m12.5 8.5 3.5-3.5 3.5 3.5"/><path d="m12.5 15.5 3.5 3.5 3.5-3.5"/>'],
  ['cizgili','Çizgili ürün','Asortisiz · beden birimleri','Çizgili ürün: beden beden pastal çizdirilir, asorti yapılmaz. Beden birimleri ve (varsa) hızar, tela gibi ek asortiler hazırlanır','<rect x="4" y="4" width="16" height="16" rx="3.5"/><path d="M4 9.3h16M4 14.7h16"/>'],
- ['panolu','Panolu iş','Asortisiz · pano birimleri','Pano baskılı kumaş: asorti yapılmaz. 1 panodan kaç iş çıktığı (beden, kol) yazılır; hızar, kontrast cep gibi diğer parçalar için ek asorti tabloları hazırlanır','<rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="m6.5 16 3.6-4.2 2.6 2.6 2.4-2.9 2.4 4.5"/><circle cx="9" cy="8.8" r="1.3"/>']];
+ ['panolu','Panolu iş','Asortisiz · pano birimleri','Pano baskılı kumaş: asorti yapılmaz. 1 panodan kaç iş çıktığı (beden, kol) yazılır; hızar, kontrast gibi diğer parçalar için ek asorti tabloları hazırlanır','<rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="m6.5 16 3.6-4.2 2.6 2.6 2.4-2.9 2.4 4.5"/><circle cx="9" cy="8.8" r="1.3"/>']];
 const turAl=()=>ord.takim?'takim':ord.yonlu?'yonlu':ord.cizgili?'cizgili':ord.panolu?'panolu':'normal';
 function turUI(){const t=turAl();return '<div style="margin-top:14px"><span class="t">İş türü</span><div class="turlar" role="radiogroup" aria-label="İş türü">'+TUR.map(([k,ad,alt,ip,ik])=>'<button type="button" role="radio" aria-checked="'+(t==k)+'" class="trb'+(t==k?' on':'')+'" title="'+esc(ip)+'" onclick="turSec(\''+k+'\')"><span class="tri"><svg viewBox="0 0 24 24" aria-hidden="true">'+ik+'</svg></span><span class="trm"><b>'+ad+'</b><span>'+alt+'</span></span></button>').join('')+'</div></div>'}
 function turSec(k){rd();ord.takim=k=='takim';ord.yonlu=k=='yonlu';ord.cizgili=k=='cizgili';ord.panolu=k=='panolu';

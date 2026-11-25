@@ -1,10 +1,7 @@
 {
- "surum": "3.8.0",
+ "surum": "3.8.1",
  "tarih": "2026-11-25",
  "notlar": [
-  "Asorti · Yeni iş türü «Yönlü + yönsüz»: desenli kumaşta her rengin yanında Yönsüz / Yönlü seçilir; iki grup ayrı asortiyle hesaplanır (Max + ve fazla kesim sınırı her grupta ayrı)",
-  "Asorti · Excel'de kesim raporunun altında sarı başlıklı YÖNSÜZ ve YÖNLÜ asorti tabloları; renk sayfalarında her rengin kendi grubunun pastalları",
-  "Asorti · Gerber'de yönsüz pastallar MODEL-URT1, URT2…, yönlüler MODEL-URT-1, URT-2…; her grubun kendi kumaş eni ve serim yönü (yönsüz / yönlü serim)",
-  "Asorti · En verimli asortiyi bul iki grubu kendi yönüyle ayrı dener (yönsüz denemeler AS01…, yönlüler AS51…), yönü hiç karıştırmaz"
+  "Asorti · Ek asorti tablolarında «Kontrast cep» artık yalnız «Kontrast» (yaka gibi başka kontrast parçalar için de); tablo adı KONTRAST ASORTİSİ"
  ]
 }

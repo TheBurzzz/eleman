@@ -663,6 +663,10 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
     hesapla, en verimli (ölçüm + deneme + üretime kopya), rapor/kuyruk okuma, tahmini kumaş; normal ve takım işleri eskisi gibi
     (normal sipariş Excel'i 3.6.1 ile parça parça aynı), müşteri toplama denemeleri temiz.
 
+- 2026-11-25 akşam (Asorti sohbeti): **Eleman 3.8.1**, ek asorti tablosu "Kontrast cep" → "Kontrast" (kullanıcı: kontrast yaka da
+  oluyor). Düğme "+ Kontrast", başlık "(Hızar, Tela, Kontrast…)", yeni tablonun adı KONTRAST (`XK.cep.base`). İç tür adı `cep` aynı
+  kaldı (kayıtlı işler bozulmasın), Gerber adı yine MODEL-URT-C.
+
 ## Sıradaki işler
 0. **Sürüm arşivi = GitHub Releases.** 32 sürüm (ilk-deneme, v1.0.0–v1.1.22, v2.0.0–v2.0.4) bir kerelik GitHub Actions işiyle
    taşındı, `surum-v*`, `arsiv`, `surum-test` dalları silindi (dallar: eleman, main, exe-deneme). Bu oturumlardan etiket ve
