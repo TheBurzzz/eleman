@@ -611,7 +611,7 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
     AA sipariş → hesap → Excel; mono derleme, PowerShell, ESLint temiz.
   - Ortak hafıza (eleman-hafiza): 76 KB; 12 kayıt, 1379 geçmiş tablo, 368 ölçü aralığı; el yazısı defteri 33 örnek (hedef ~300).
   - Ortak klasör (12–25 Kasım): 29 tablonun 21'i "Dell" adlı bilgisayarda Excel'de elle (13 SORGENFRI-KOL, yalnız M = ÖT'nin işi;
-    7 LYKKA-URT-14, bütün bedenler); 7'si Eleman ile (LYKKA-KOL); 1 LETOILE (WING - ÜST, S–XXL, şablon düzeninde) elle.
+    8 LYKKA-URT-14, bütün bedenler); 7'si Eleman ile (LYKKA-KOL); 1 LETOILE (WING - ÜST, S–XXL, şablon düzeninde) elle.
     Kullanıcıya soruldu: Dell kimin, Eleman oraya kurulsun mu; ÖT bütün bedenleri de okusun mu (URT tabloları), Letoile şablonu.
   - Önerildi (yapılmadı): Windows kapanırken kaydetme; ⚙'de "önceki sürüme dön" (`yedek` klasöründen); boştaki Tesseract
     işçisini kapatma (sekme başına bellek).
