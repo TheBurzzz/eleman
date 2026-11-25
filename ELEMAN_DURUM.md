@@ -638,6 +638,31 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
     açılış yazısı, yedek yoksa hata), t_zaman 8/8, atla_surum 5/5 (`/home/claude/is/atla`), eski denemeler (yarış 3/3,
     hafıza 8/8, sekmeler 5/5, genel, asorti) temiz; mono derleme, PowerShell, kontrol.py temiz.
 
+- 2026-11-25 akşam (Asorti sohbeti): **Eleman 3.8.0**, yönlü + yönsüz desenli iş (kullanıcı: 3 renk desenli kumaş, 2'si yönsüz 1'i
+  yönlü; asortiler ayrı olabilir, Gerber'de adlar çakışmasın, "en verimli asortiyi bul" yön kuralını hiç unutmasın). Kullanıcının
+  kendi raporlarında (Haziran 2026) aynı düzen var: tek kesim raporu, altında sarı başlıklı YÖNSÜZ ve YÖNLÜ asorti tabloları; Gerber'de
+  aynı modelin URT1… ve URT-1… pastalları.
+  - Form: iş türü kartı `yonlu` (TUR), tabloda "Desen" sütunu (`select.gy`, satırda `y:1`); toplanan müşteri grubunda desen ortak
+    (`gsEs`, rd/grpla/grpSira/grupla `y`'yi taşır). Kartlar 5'e sığsın diye `.turlar` minmax 196px / 1080px.
+  - Veri: `ord.yonlu`, satır `y`, pastal `y:1` (yönlü grup; k bütün renkler için, öbür grubun renkleri 0). mkBase: `info.yonlu`, `info.yn`;
+    setTk: `info.yon={N,Y}` (renk dizinleri; ikisi de dolu olmalı). mainBlocks: `{id:'n',title:'YÖNSÜZ'}`, `{id:'y',title:'YÖNLÜ'}`,
+    `pf` pastal süzgeci; ölçü anahtarları `n|…` / `y|…`. Kayıt (getState/applyState) `yonlu`, `y` korunur; tablo yeniden hazırlanınca
+    renklerin grubu değiştiyse asortiler korunmaz (`yonAyni`).
+  - Hesap: iki grup aynı anda (`gAraRun` ×2), fazla kesim % sınırı her grubun kendi adedine göre; `yonBirles` seçenek çiftlerini
+    (az pastal, az fazla kesim) 15'e kadar birleştirir. Katları yeniden hesapla grup grup (kilit = grubun asortileri).
+  - Ekran: grup başına ayrı tablo (`yonTablo`, pastallar grupta 1'den). Excel/yazdırma `outBlocks` (pf), renk sayfası rengin kendi
+    grubunun pastalları. Kontroller/uyarılar grup başlığıyla.
+  - Gerber: `gMods` aynı modeli iki kez verir (blok n/y), `gYon` sabit (n/y), seçici yok, iki kumaş eni (`gW`, `gW2`), `gYonHatirla`
+    yönlü işte modelin yönünü değiştirmez. Adlar `gAd(m,no,Lt,ay)`: yönsüz MODEL-URT1…, yönlü MODEL-URT-1…. Kuyruk / rapor okuma
+    URT-n'yi yönlüye, URTn'yi yönsüze bağlar (qApply'de `pre.length>1` düzeltmesi).
+  - En verimli: grup başına ölçüm (AS00 / AS50), deneme (AS01… / AS51…), `ARA_BUT_Y=6` (iki grup ~14 dk), `araDenemeY`,
+    `gAraBitirY` (her grubun en verimlisi; belirgin daha verimliyse 1 pastal fazlası seçenek, düğmeyle). Ölçüm önbelleği
+    `gdb.models[m].olcs[en#serim#kumaş#bedenler]` (aynı modelin iki yönü ayrı saklanır; `olc` eski biçim de okunur).
+  - Denendi (Playwright, açık/koyu; köprü taklidi serime göre boy veriyor): form, hesap, iki tablo, Gerber'e gönder (adlar, en, serim),
+    Excel (LibreOffice çizimi) ve renk sayfaları, yazdırma, kaydedip açma, sayfa geri yükleme, müşteri grubu + desen, katları yeniden
+    hesapla, en verimli (ölçüm + deneme + üretime kopya), rapor/kuyruk okuma, tahmini kumaş; normal ve takım işleri eskisi gibi
+    (normal sipariş Excel'i 3.6.1 ile parça parça aynı), müşteri toplama denemeleri temiz.
+
 ## Sıradaki işler
 0. **Sürüm arşivi = GitHub Releases.** 32 sürüm (ilk-deneme, v1.0.0–v1.1.22, v2.0.0–v2.0.4) bir kerelik GitHub Actions işiyle
    taşındı, `surum-v*`, `arsiv`, `surum-test` dalları silindi (dallar: eleman, main, exe-deneme). Bu oturumlardan etiket ve
