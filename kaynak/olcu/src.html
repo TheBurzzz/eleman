@@ -1375,9 +1375,12 @@ const qKey=q=>String(q||"").toUpperCase().replace(/[^A-Z0-9%ÄÖÜİ]/g,"");
 function normQual(q){
   if(MEM.qual[qKey(q)])return MEM.qual[qKey(q)];
   q=String(q||"").replace(/\s+/g," ").replace(/(^|[\s%])0(?=[A-Za-z])/g,"$1O").replace(/(\d)\s*[%°]\s*/g,"$1% ").trim();if(!q)return "";
-  const parts=[];const re=/(\d+(?:[.,]\d+)?)\s*%\s*([A-Za-zÄÖÜäöüßÇĞİÖŞÜçğıöşü\- ]+?)(?=,|\s*\d+\s*%|$)/g;let m;
-  while((m=re.exec(q)))parts.push(m[1]+"% "+m[2].trim());
-  let s=parts.length?parts.join(", "):q;
+  // kumaş adında parantez, eğik çizgi, nokta olabilir: "76% BAUMWOLLE (BIO)", "RECYCLED/GRS". Her % için bir parça çıkmazsa
+  // (tanınmayan bir yazım) yazılan hiçbir şey atılmaz, olduğu gibi kalır (önceden "(BIO)" yüzünden ilk kumaş siliniyordu)
+  const parts=[];const re=/(\d+(?:[.,]\d+)?)\s*%\s*([A-Za-zÄÖÜäöüßÇĞİÖŞÜçğıöşü\-() .\/&'®]+?)(?=,|;|\s*\d+(?:[.,]\d+)?\s*%|$)/g;let m;
+  while((m=re.exec(q)))parts.push(m[1]+"% "+m[2].replace(/\s*\(\s*/g," (").replace(/\s*\)\s*/g,") ").replace(/\s+/g," ").trim());
+  const yuzde=(q.match(/%/g)||[]).length;
+  let s=parts.length&&parts.length>=yuzde?parts.join(", "):q;
   s=s.toUpperCase().replace(/[A-ZÄÖÜİ]{3,}/g,fixFiber).replace(/ELASTHAN\b/g,"ELASTANE").replace(/ELASTAN\b/g,"ELASTANE").replace(/VOSKOSE/g,"VISKOSE");
   return s;
 }
@@ -1784,7 +1787,8 @@ async function buildXlsx(buf,{art,qual,date,rows,sizes,sample}){
     cells.push({c:colN(ref.replace(/\d+$/,"")),x:xml});cells.sort((a,b)=>a.c-b.c);sx=sx.replace(rowRe,`<row r="${rn}"${m[1].replace(/ spans="[^"]*"/,"")}>${cells.map(x=>x.x).join("")}</row>`)};
   const hdrS=cellS(colL(tplLast)+hdr);
   for(let c=6;c<=Math.max(tplLast,lastCol);c++){const ref=colL(c)+hdr;
-    if(c<=lastCol){const v=sizes[c-6];const s0=c<=tplLast?cellS(ref):hdrS;upsert(ref,`<c r="${ref}" s="${s0}" t="inlineStr"><is><t>${xmlEsc(v)}</t></is></c>`)}
+    // yalnız ölçüsü yazılan beden (numune, ör. M) başlıkta yazar; dizideki öteki bedenlerin sütunu ve çizgisi kalır, başlığı boş
+    if(c<=lastCol){const v=sizes[c-6];const s0=c<=tplLast?cellS(ref):hdrS;upsert(ref,c===mCol?`<c r="${ref}" s="${s0}" t="inlineStr"><is><t>${xmlEsc(v)}</t></is></c>`:`<c r="${ref}" s="${s0}"/>`)}
     else upsert(ref,`<c r="${ref}"/>`)}
   // stiller
   const cnt=(tag)=>{const m=st.match(new RegExp(`<${tag} count="(\\d+)"`));return m?+m[1]:0};

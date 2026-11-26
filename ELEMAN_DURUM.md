@@ -667,6 +667,18 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
   oluyor). Düğme "+ Kontrast", başlık "(Hızar, Tela, Kontrast…)", yeni tablonun adı KONTRAST (`XK.cep.base`). İç tür adı `cep` aynı
   kaldı (kayıtlı işler bozulmasın), Gerber adı yine MODEL-URT-C.
 
+- 2026-11-26 (Ölçü sohbeti): **Eleman 3.8.2**, kullanıcının iki isteği (Deerberg DORIKA).
+  - **Kumaş kısalıyordu:** "76% BAUMWOLLE (BIO), 22% POLYESTER, 2% ELASTANE" yazınca "22% POLYESTER, 2% ELASTANE" kalıyordu.
+    `normQual`'daki kumaş adı deseni parantezi kabul etmediği için "(BIO)" olan parça hiç eşleşmiyor, atılıyordu (3.8.1'de aynısı
+    üretildi). Şimdi kumaş adında `( ) / . & ' ®` olabilir, parantez boşlukları düzelir ("( BIO )" → "(BIO)"); **% sayısı kadar parça
+    çıkmazsa yazılan olduğu gibi kalır** (hiçbir parça atılmaz). "60% Baumwolle/Cotton", "52% Polyamid (recycled)" da artık tam.
+  - **Excel'de yalnız numune bedeninin başlığı** (kullanıcı: "sadece ölçüsünü yazdığım beden yazsın, öteki seriler yazmasın"):
+    `buildXlsx` beden başlık satırında yalnız `mCol`'a (numune, ör. M) yazar; dizideki öteki bedenlerin hücreleri şablon biçimiyle
+    (çizgi, gri) boş kalır, sütunlar yerinde. Ortak klasördeki elle yapılmış Deerberg-TUNILLIA ile aynı düzen (H13'te yalnız "M").
+    "Beden dizisi" yine M'nin hangi sütunda olacağını belirler.
+  - Denemeler (`/home/claude/is_olcu`): 11 kumaş yazımı 3.8.1 / 3.8.2; Deerberg şablonuyla Excel (başlık, çizgi/dolgu, grup,
+    yazdırma alanı) ve önizleme; `kaynak/kontrol.py` "Denetim tamam".
+
 ## Sıradaki işler
 0. **Sürüm arşivi = GitHub Releases.** 32 sürüm (ilk-deneme, v1.0.0–v1.1.22, v2.0.0–v2.0.4) bir kerelik GitHub Actions işiyle
    taşındı, `surum-v*`, `arsiv`, `surum-test` dalları silindi (dallar: eleman, main, exe-deneme). Bu oturumlardan etiket ve
