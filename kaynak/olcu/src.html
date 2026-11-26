@@ -1372,8 +1372,11 @@ function fixFiber(w){const u=w.toUpperCase();if(FIBERS.includes(u))return u;if(/
   let best=u,bd=9;for(const f of FIBERS){const d=lev(u,f);if(d<bd){bd=d;best=f}}
   return bd<=(u.length>=7?2:1)?best:u}
 const qKey=q=>String(q||"").toUpperCase().replace(/[^A-Z0-9%ÄÖÜİ]/g,"");
-function normQual(q){
-  if(MEM.qual[qKey(q)])return MEM.qual[qKey(q)];
+/* elle: kumaşı kullanıcı yazdı -> yalnız biçim (büyük harf, "95% X, 5% Y"); öğrenilen düzeltme yalnız kağıttan okunan yazıya
+   uygulanır. Öğrenilen yazıda kumaş sayısı (%) eksikse kullanılmaz: 3.8.1'e kadar "(BIO)"lu kumaş kısaltılıp öyle öğrenilmişti */
+function normQual(q,elle){
+  const L=elle?null:MEM.qual[qKey(q)];
+  if(L&&(String(L).match(/%/g)||[]).length>=(String(q).match(/%/g)||[]).length)return L;
   q=String(q||"").replace(/\s+/g," ").replace(/(^|[\s%])0(?=[A-Za-z])/g,"$1O").replace(/(\d)\s*[%°]\s*/g,"$1% ").trim();if(!q)return "";
   // kumaş adında parantez, eğik çizgi, nokta olabilir: "76% BAUMWOLLE (BIO)", "RECYCLED/GRS". Her % için bir parça çıkmazsa
   // (tanınmayan bir yazım) yazılan hiçbir şey atılmaz, olduğu gibi kalır (önceden "(BIO)" yüzünden ilk kumaş siliniyordu)
@@ -1585,7 +1588,7 @@ function updName(){autoName()}
 $("#fArt").addEventListener("input",e=>{const p=e.target.selectionStart;e.target.value=artUp(e.target.value);e.target.setSelectionRange(p,p);autoName();degisti()});
 $("#fnameIn").addEventListener("input",()=>{nameEdited=!!$("#fnameIn").value.trim();degisti()});
 $("#fQual").addEventListener("input",degisti);$("#fDate").addEventListener("input",degisti);
-$("#fQual").addEventListener("change",e=>{e.target.value=normQual(e.target.value)});
+$("#fQual").addEventListener("change",e=>{e.target.value=normQual(e.target.value,true)});
 function tabloKapat(){ROWS=[];PAGES=[];if(typeof KP!=="undefined"&&KP.acik)kpCiz();nameEdited=false;LAST_SCANNED=false;LAST_SIZE=null;LAST_QUAL_RAW="";DELETED_UNREAD=[];
   $("#fnameIn").value="";$("#fArt").value="";$("#fQual").value="";$("#saveInfo").innerHTML="";$("#editArea").classList.add("hidden");$("#prog").classList.add("hidden");$("#ocrMsg").textContent="";
   DEGISTI=false;KAYDEDILDI=false;taslakSil();durumBildir()}
@@ -1610,7 +1613,9 @@ function learn(){
     if(typeof r.m==="number"&&isFinite(r.m)&&r.m>0){const t=TYP.get(k);if(!t||(r.m>=t[0]*.5&&r.m<=t[1]*2))D.typ[k]=[r.m,r.m]}
   });
   const qf=$("#fQual").value.trim();
-  if(qf){if(LAST_QUAL_RAW)D.qual[qKey(LAST_QUAL_RAW)]=qf;
+  // kumaş düzeltmesi yalnız gerçekten düzeltildiyse öğrenilir (programın kendi biçimlediği yazı öğrenilmez); öğrenilen yanlışsa
+  // (ör. kısaltılmış) senin kaydettiğin doğrusuyla değişir
+  if(qf){if(LAST_QUAL_RAW){const k=qKey(LAST_QUAL_RAW),oto=normQual(LAST_QUAL_RAW,true);if(qf!==oto||(MEM.qual[k]&&MEM.qual[k]!==qf))D.qual[k]=qf}
     for(const w of qf.toUpperCase().match(/[A-ZÄÖÜİ]{4,}/g)||[])if(!FIBERS.includes(w))D.fibers.push(w)}
   deltaUygula(MEM,[D]);memSave();memApply();
   // el yazısı defteri: aynı satır ikinci kayıtta tekrar gönderilmez

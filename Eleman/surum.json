@@ -1,8 +1,7 @@
 {
- "surum": "3.8.2",
+ "surum": "3.8.3",
  "tarih": "2026-11-26",
  "notlar": [
-  "Ölçü Tablosu · kumaş yazısı kısalmıyor: \"76% BAUMWOLLE (BIO), 22% POLYESTER, 2% ELASTANE\" gibi parantezli kumaş adında ilk kumaş siliniyordu, artık yazdığın gibi kalıyor",
-  "Ölçü Tablosu · Excel'de beden başlıklarında yalnız ölçüsünü yazdığın beden (ör. M) yazıyor; öteki bedenlerin (XS, S, L…) başlığı boş kalıyor, tablonun çizgileri yerinde"
+  "Ölçü Tablosu · kumaşı elle yazınca başka yere tıklayınca kısalmıyor: program 3.8.1'deki hatalı kısaltmayı \"doğrusu bu\" diye öğrenmişti, yazdığına onu koyuyordu. Artık senin yazdığına öğrenilen düzeltme uygulanmıyor, eksik kumaşlı öğrenilmiş yazı hiç kullanılmıyor; tabloyu kaydedince yanlış öğrenilen de doğrusuyla değişiyor"
  ]
 }

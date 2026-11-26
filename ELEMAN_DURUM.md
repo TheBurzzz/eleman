@@ -679,6 +679,17 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
   - Denemeler (`/home/claude/is_olcu`): 11 kumaş yazımı 3.8.1 / 3.8.2; Deerberg şablonuyla Excel (başlık, çizgi/dolgu, grup,
     yazdırma alanı) ve önizleme; `kaynak/kontrol.py` "Denetim tamam".
 
+- 2026-11-26 öğleden sonra (Ölçü sohbeti): **Eleman 3.8.3**, kumaş elle yazılınca yine kısalıyordu (kullanıcı: "güncelleyip kumaşı
+  tekrar yazdım ama başka yere tıkladığım anda kısalıyor"). Neden: DORIKA kaydında `learn()` alandaki (3.8.1'in kısalttığı) yazıyı
+  kağıttan okunan yazıya düzeltme diye öğrenmişti; ortak hafızada `qual`: `76%BAUMWOLLEBIO22%POLYESTER2%ELASTANE` →
+  "22% POLYESTER, 2% ELASTANE". Elle yazılan aynı anahtara düştüğü için `normQual` öğrenileni koyuyordu (3.8.2'de üretildi).
+  - `normQual(q, elle)`: kullanıcının yazdığına (`#fQual` change) öğrenilen uygulanmaz, yalnız biçim; kağıttan okunana öğrenilen,
+    **ama öğrenilen yazıda % sayısı eksikse kullanılmaz** (yanlış öğrenilmiş kısaltma her bilgisayarda hemen etkisiz).
+  - `learn()`: kumaş düzeltmesi yalnız alan programın kendi biçimlediğinden farklıysa ya da öğrenilen alandan farklıysa yazılır
+    (DORIKA yeniden kaydedilince yanlış kayıt doğrusuyla değişir, delta herkese gider). Ortak hafızaya elle dokunulmadı.
+  - Deneme: 3.8.2 elle yazılanı kısaltıyor (aynı hata), 3.8.3 bırakıyor; kağıttan okunan da tam; doğru öğrenilenler (BAUMWOLIE →
+    BAUMWOLLE) yine uygulanıyor; kaydedince yanlış öğrenilen düzeliyor, düzeltilmeyen kumaş öğrenilmiyor. `kontrol.py` tamam.
+
 ## Sıradaki işler
 0. **Sürüm arşivi = GitHub Releases.** 32 sürüm (ilk-deneme, v1.0.0–v1.1.22, v2.0.0–v2.0.4) bir kerelik GitHub Actions işiyle
    taşındı, `surum-v*`, `arsiv`, `surum-test` dalları silindi (dallar: eleman, main, exe-deneme). Bu oturumlardan etiket ve
