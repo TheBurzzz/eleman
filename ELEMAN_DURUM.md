@@ -728,6 +728,20 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
     %9,9, taranmışta %10,7 → %9,9; tam doğru tablo 346 → 380 / 377 → 384. 8 fotoğraf + 2 PDF taraması: okuma aynı, 2 kağıtta sıra
     değişti (PAZU kol ölçülerinin yanına, pantolonda BOY üste). `kontrol.py` tamam.
 
+- 2026-11-27 öğlen (Ölçü sohbeti): **Eleman 3.8.6**, kullanıcının kuralı: "ön boy ve arka boy her zaman altlı üstlü olmalı, ön boy
+  yukarıda, arka boy onun bir satır altında" (Deerberg LIVVKA etek: BACK LENGHT = ARKA BOY cep grubunun altına düşüyordu; sözlükte
+  "__END__", Türkçesi şablonda yok). Geçmiş tablolarda da hep böyle (ARKA BOY'un üstünde 131 kez ÖN BOY, 30 kez OMUZDAN ÖN BOY…).
+  - `boyTuru(tr)`: Türkçede yalnız OMUZDAN/OMUZ/NOKTASINDAN/ORTADAN/ORTA/MERKEZDEN/ÖN/ARKA/BOY(U) varsa ve BOY geçiyorsa "on" / "arka"
+    (ARKA PENS BOYU, ARKA ROBA BOYU, ARKA AĞ sayılmaz). `arkaBoyMu`: Türkçesiyle; Türkçesi yoksa İngilizcesiyle (`ARKA_BOY_EN`:
+    BACK/BECK LENG…, CENTRE/CENTER BACK LENG/HEIGHT, CB LENG; BACK DART/RISE/YOKE değil). `onBoyMu`: Türkçesi ön boy ya da
+    İngilizcesinin / Türkçesinin şablondaki yeri FROM LENGTH FR HPS (`onBoyYeri`).
+  - `siraAnahtarlari(rows)` (sıralama, `elleYerle`, `learn` hepsi bunu kullanır): yeri bilinmeyen ön boy (ör. OMUZ NOKTASINDAN ÖN
+    BOY) şablonun ön boy yerine; arka boy en sondaki ön boyun anahtarı + 0,001. `orderRows0` sonra arka boyu ön boyun tam altına
+    koyar (araya hiçbir satır girmez). Elle taşınan (`r.elle`) arka boy yerinde kalır; ön boy yoksa arka boy kendi yerinde.
+  - Denemeler: LIVVKA (elle yazılmış ve taranmış, kağıt karışık sırada da) ÖN BOY · ARKA BOY · BEL…; elbise, pantolon, ön boysuz,
+    yalnız İngilizce, arka boyun altına sürükleme, arka boyu elle taşıma. 1375 tablo: taşınması gereken %9,9 → %9,2, tam doğru
+    380 → 411 (elle yazılmış) / 384 → 415 (taranmış); 3.8.5'ten kötüleşen tablo yok. 10 tarama: okuma ve sıra 3.8.5 ile aynı.
+
 ## Sıradaki işler
 0. **Sürüm arşivi = GitHub Releases.** 32 sürüm (ilk-deneme, v1.0.0–v1.1.22, v2.0.0–v2.0.4) bir kerelik GitHub Actions işiyle
    taşındı, `surum-v*`, `arsiv`, `surum-test` dalları silindi (dallar: eleman, main, exe-deneme). Bu oturumlardan etiket ve

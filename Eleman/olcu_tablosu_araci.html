@@ -1529,13 +1529,37 @@ function siraAnahtar(r){
   const a=yerAnahtar(r.after||(d&&d.after)||"");if(a!=null&&a<1e7)return a;
   const ts=trSlot(r.tr);if(ts)return ts.t.i*100+(ts.tam?50:52);
   return 1e7}
+/* ön boy / arka boy: kullanıcının kuralı "ön boy yukarıda, arka boy her zaman onun bir satır altında".
+   Türkçesiyle (ARKA BOY, OMUZDAN ARKA BOY, ARKA ORTADAN BOY / ÖN BOY, OMUZDAN ÖN BOY…), Türkçesi yoksa İngilizcesiyle
+   (BACK LENGTH…, CENTRE BACK LENGTH, CENTER BACK HEIGHT). Ön boy: şablonun ön boy yerine düşen ölçü (FRONT LENGTH, BOY…) */
+const BOY_SOZ=new Set(["OMUZDAN","OMUZ","NOKTASINDAN","NOKTADAN","ORTADAN","ORTA","MERKEZDEN","BOY","BOYU","ON","ARKA"]);
+function boyTuru(tr){const w=trKat(tr).split(" ").filter(Boolean);
+  if(!w.length||!w.every(x=>BOY_SOZ.has(x))||!w.some(x=>x==="BOY"||x==="BOYU"))return "";
+  const a=w.includes("ARKA"),o=w.includes("ON");return a&&!o?"arka":o&&!a?"on":""}
+const ARKA_BOY_EN=/^(BACK|BECK) LENG|^(CENTRE|CENTER) BACK (LENG|HEIGHT)|^CB (LENG|HEIGHT)/;
+function arkaBoyMu(r){const t=boyTuru(r.tr);if(t)return t==="arka";const tk=trKat(r.tr);
+  return ARKA_BOY_EN.test(normEn(r.en))&&(!tk||(/\bARKA\b/.test(tk)&&/\bBOYU?\b/.test(tk)))}
+function onBoyMu(r,FR){if(arkaBoyMu(r))return false;if(boyTuru(r.tr)==="on")return true;if(!FR)return false;
+  const so=slotOf(r.en);if(so)return so.t===FR;const ts=trSlot(r.tr);return !!ts&&ts.t===FR}
+const onBoyYeri=()=>TPLKEY.get("FROM LENGTH FR HPS")||TPL.find(t=>t.trk==="OMUZDAN ON BOY")||null;
+/* satırların bu tablodaki sıra anahtarları: ön boy (yeri bilinmiyorsa) şablonun ön boy yerine, arka boy ön boyun hemen altına
+   (elle başka yere taşıdığın arka boy orada kalır) */
+function siraAnahtarlari(rows){
+  const K=new Map(rows.map(r=>[r,siraAnahtar(r)]));
+  const FR=onBoyYeri(),on=rows.filter(r=>onBoyMu(r,FR));
+  if(on.length){if(FR)for(const r of on)if(!r.elle&&K.get(r)>=1e7)K.set(r,FR.i*100+50);
+    const kf=Math.max(...on.map(r=>K.get(r)));for(const r of rows)if(!r.elle&&arkaBoyMu(r))K.set(r,kf+0.001)}
+  return K}
 /* aynı yere düşenler şu anki sıralarıyla (kağıttaki sıra ya da senin dizdiğin): sıralama kararlı */
 function orderRows0(rows){
-  const K=new Map(rows.map(r=>[r,siraAnahtar(r)]));
-  return rows.slice().sort((a,b)=>K.get(a)-K.get(b));
+  const K=siraAnahtarlari(rows);const s=rows.slice().sort((a,b)=>K.get(a)-K.get(b));
+  // arka boy ön boyun tam altında: araya başka satır girmez
+  const FR=onBoyYeri();let F=null;for(const r of s)if(onBoyMu(r,FR))F=r;
+  const B=F?s.filter(r=>!r.elle&&arkaBoyMu(r)):[];if(!B.length)return s;
+  const kalan=s.filter(r=>!B.includes(r));kalan.splice(kalan.indexOf(F)+1,0,...B);return kalan;
 }
 /* elle taşınan / araya eklenen satır: hemen üstündeki satırın yerine bağlanır (en üste taşındıysa en üst) */
-function elleYerle(r){const i=ROWS.indexOf(r);if(i<0)return;r.elle=true;r.elleYer=i>0?siraAnahtar(ROWS[i-1]):Math.min(-10,...ROWS.slice(1).map(siraAnahtar))}
+function elleYerle(r){const i=ROWS.indexOf(r);if(i<0)return;const K=siraAnahtarlari(ROWS);r.elle=true;r.elleYer=i>0?K.get(ROWS[i-1]):Math.min(-10,...ROWS.slice(1).map(x=>K.get(x)))}
 /* sıradaki yer → öğrenilecek konum: şablondaki hangi ölçünün altında ("" = adından bulunur) */
 function anahtarKonum(k){return k<0?"__START__":k>=1e7?"__END__":((TPL[Math.floor(k/100)]||{}).key||"")}
 $("#blankBtn").onclick=async()=>{if(needCust())return;
@@ -1654,7 +1678,7 @@ function konumOgren(r,idx,KEYS){
 /* her kayıtta öğren: kağıtta okunan ad -> düzeltilmiş ad, Türkçe tercihleri, yeni ölçüler ve yerleri, kumaş, ölçü aralıkları */
 function learn(){
   const D={names:{},tr:{},qual:{},extra:{},typ:{},fibers:[],ignore:DELETED_UNREAD.map(normEn).filter(k=>k.replace(/[^A-Z]/g,"").length>=8),saves:1,id:deltaId(),pc:PC,t:Date.now()};DELETED_UNREAD=[];
-  const KEYS=ROWS.map(siraAnahtar);
+  const KK=siraAnahtarlari(ROWS),KEYS=ROWS.map(r=>KK.get(r));
   ROWS.forEach((r,idx)=>{
     if(!r.en)return;const k=normEn(r.en);
     const pos=TPLKEY.has(k)?"":konumOgren(r,idx,KEYS);
