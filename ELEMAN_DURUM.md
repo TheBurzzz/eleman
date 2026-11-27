@@ -742,6 +742,28 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
     yalnız İngilizce, arka boyun altına sürükleme, arka boyu elle taşıma. 1375 tablo: taşınması gereken %9,9 → %9,2, tam doğru
     380 → 411 (elle yazılmış) / 384 → 415 (taranmış); 3.8.5'ten kötüleşen tablo yok. 10 tarama: okuma ve sıra 3.8.5 ile aynı.
 
+- 2026-11-27 öğleden sonra (Ölçü sohbeti): **Eleman 3.8.7**, ÖT'ye "Kayıtlı Excel'i aç" (kullanıcı: "ÖT'ye AA gibi Excel'den aç
+  seçeneği gelsin"). 2. adımda "Kağıtsız, boş tabloyla başla"nın yanında yeşil düğme (`#excelBtn`, AA'daki `#ldb` gibi
+  `showOpenFilePicker` id "olcu-tablolari", yoksa / hata verirse `#excelFile`); kağıt alanına bırakılan .xlsx/.xlsm da açılır
+  (`handleFile` → `excelAc`). AA gibi gizli durum saklanmıyor: sayfanın kendisi okunur (Excel'de elle yapılan değişiklikler de gelir).
+  - `excelOku(buf)`: D'de MEASUREMENTS başlığı; ARTICLE/SUPPLIER/QUALITY/DATE (tarih Excel sayısı ya da "27,11.2026" yazısı);
+    satırlar D/E, grup B:C birleşiminden, F…AD ölçüler (sayı 4 basamağa yuvarlanır); hücre dolgusundan gri (numune) sütun.
+  - `musteriBul`: dosya adının başı (şablon öneki: SORGENFRI-, Deerberg-, LYKKA-…), yoksa SUPPLIER; seçili müşteriden başkaysa o
+    seçilir; bulunamazsa seçili müşteri, o da yoksa "önce müşteriyi seç".
+  - `excelDizi`: yazılı beden başlıkları aynı yerde duran ilk dizi (şablondaki, son kullanılan, hazır diziler; 3.8.2'den beri yalnız
+    numunenin başlığı yazıldığı için boş başlıkların adı diziden): ör. G'de 36 → 34 36 38…; uyan yoksa dosyadaki başlıklar.
+  - **Seri atılmış tablo** (birden çok sütunda ölçü, ör. LYKKA-URT-14/KAHTIA, DEERBERG-URT-5/PITTARA): bütün bedenler `r.olc`'de
+    (beden → ölçü), numune gri sütun (yoksa M ya da ortadaki), not "Öteki bedenlerin ölçüleri de korunur". Numune çipine basınca
+    `olcGecis` o bedenin ölçülerini getirir (yazılan saklanır); `buildXlsx` öteki bedenleri yerine ve ölçüsü olan bedenin başlığını
+    yazar. Beden dizisi değişince dizide olmayan dolu bedenler için uyarı (dizi geri gelince ölçüler yine orada).
+  - Açılan tablo: `KAYDEDILDI=true`, `DEGISTI=false` (sekme ışığı "bitti"), dosya adı dosyanınki (otomatik addan farklıysa elle
+    yazılmış sayılır), `paperIdx` Excel'deki sıra. Kaydetmek her zamanki gibi müşterinin klasörüne; "zaten var" sorusunda artık
+    klasörün adı da yazıyor (başka klasörden açılan dosyanın adaşının üstüne bilmeden yazmasın).
+  - Denemeler: ortak klasörden (yalnız okundu) 17 tablo açılıp yeniden kaydedildi: ÖT'nin kaydettiklerinde içerik aynı (yalnız boşluk
+    temizliği, eski tablolarda boş beden başlıkları 3.8.2 kuralıyla gitti); KAHTIA 7 beden, PITTARA-URT5 8 beden (numune 38, gri)
+    birebir korundu; S'ye geçip değiştirince Excel'de S, M yerinde. Düğme (seçici taklidi), sürükle-bırak, kaydedilmemiş tablo
+    sorusu, bozuk / ölçü tablosu olmayan dosya, taslak, öğrenme; normal kayıt 3.8.6 ile bayt bayt aynı; sıralama ve taramalar aynı.
+
 ## Sıradaki işler
 0. **Sürüm arşivi = GitHub Releases.** 32 sürüm (ilk-deneme, v1.0.0–v1.1.22, v2.0.0–v2.0.4) bir kerelik GitHub Actions işiyle
    taşındı, `surum-v*`, `arsiv`, `surum-test` dalları silindi (dallar: eleman, main, exe-deneme). Bu oturumlardan etiket ve

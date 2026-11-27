@@ -344,6 +344,8 @@ html.yanyana .card{padding-left:20px;padding-right:20px}
     </div>
     <div class="row" style="margin-top:12px">
       <button class="btn sm" id="blankBtn" type="button">Kağıtsız, boş tabloyla başla</button>
+      <button class="btn sm yesil" id="excelBtn" type="button" title="Kaydettiğin bir ölçü tablosunu açar; düzeltip yeniden kaydedersin">Kayıtlı Excel'i aç</button>
+      <input type="file" id="excelFile" accept=".xlsx,.xlsm" class="hidden">
       <span class="muted small" id="ocrMsg"></span>
     </div>
     <div class="prog hidden" id="prog"><div></div></div>
@@ -1011,7 +1013,7 @@ function pickSize(lbl,sifirla){if(!CUR)return;
 $("#szChips").onclick=e=>{const t=e.target.closest("span");if(!t)return;const v=t.textContent;
   // dizideki bir bedene basılınca kağıttan eklenen beden geri alınır (ör. M yerine 38 seçildi: 40 geri gelir)
   if(SZ.base&&SZ.base.length&&SZ.base.includes(v)&&!dzEsit(SZ.list,SZ.base))SZ.list=SZ.base.slice();
-  SZ.sample=v;sizeNote("");renderSizes();taslakZamanla()};
+  const eski=SZ.sample;SZ.sample=v;sizeNote(ROWS.some(r=>r.olc)?"Öteki bedenlerin ölçüleri de korunur":"");renderSizes();olcGecis(eski,SZ.sample);taslakZamanla()};
 function szMenuCiz(){const tpl=tplSizes();const gor=[];
   const satir=(ad,d)=>{gor.push(d);return `<button type="button" data-d="${esc(JSON.stringify(d))}" class="${dzEsit(d,SZ.base)?"on":""}"><span class="ad">${esc(ad)}</span><span class="dz">${esc(d.join("  "))}</span></button>`};
   let h=tpl.length?satir("Şablondaki",tpl):"";
@@ -1024,10 +1026,13 @@ function szMenu(ac){const m=$("#szMenu");if(ac==null)ac=m.classList.contains("hi
 function diziSec(d){d=(d||[]).map(x=>String(x).trim().toUpperCase()).filter((x,i,a)=>x&&a.indexOf(x)===i).slice(0,15);if(!d.length)return;
   SZ.base=d.slice();SZ.elle=!dzEsit(d,tplSizes());
   if(SZ.elle&&!DIZILER.some(x=>dzEsit(x,d))){const son=LS.get("ota_beden_son",[]).filter(x=>!dzEsit(x,d));son.unshift(d);LS.set("ota_beden_son",son.slice(0,4))}
-  const s=LAST_SIZE?nSz(LAST_SIZE):null,list=d.slice();
+  const s=LAST_SIZE?nSz(LAST_SIZE):null,list=d.slice(),eski=SZ.sample;
   let i=s?list.findIndex(x=>nSz(x)===s):-1;if(i<0&&SZ.sample)i=list.findIndex(x=>nSz(x)===nSz(SZ.sample));
-  SZ.list=list;SZ.sample=i>=0?list[i]:"";renderSizes();
+  SZ.list=list;SZ.sample=i>=0?list[i]:"";renderSizes();olcGecis(eski,SZ.sample);
   const yok=!!s&&!list.some(x=>nSz(x)===s);sizeNote(yok?`Kağıtta ${s} yazıyor, bu dizide yok: numune bedenine tıkla`:"",yok);
+  // seri atılmış tabloda bu dizide olmayan bedenlerin ölçüleri kaydedilmez (dizi geri değişirse yine gelir)
+  const dk=new Set(list.map(nSz)),kayip=[...new Set(ROWS.flatMap(r=>r.olc?Object.keys(r.olc).filter(k=>r.olc[k]!==""&&r.olc[k]!=null&&!dk.has(k)):[]))];
+  if(kayip.length)toast(kayip.join(", ")+" bu dizide yok: o bedenlerin ölçüleri kaydedilmez",7000);
   szMenu(false);degisti()}
 $("#szDizi").onclick=e=>{e.stopPropagation();szMenu()};
 $("#szMenu").onclick=e=>{e.stopPropagation();const b=e.target.closest("button[data-d]");if(b){try{diziSec(JSON.parse(b.dataset.d))}catch(x){}return}
@@ -1413,7 +1418,8 @@ function needCust(){if(CUR)return false;toast("Önce 1. adımda müşteriyi seç
 /* okuma: seçilen her sayfa ayrı okunur, satırlar kağıttaki sırayla art arda eklenir */
 let OKUYOR=false;
 const EKLENEN=1e6; // elle eklenen satırın "kağıttaki yeri" (kağıttaki sırada en sona)
-async function handleFile(files,o={}){if(needCust())return;
+async function handleFile(files,o={}){if(!Array.isArray(files))files=[files];const xl=files.find(excelMi);if(xl)return excelAc(xl);
+  if(needCust())return;
   if(OKUYOR){toast("Bir kağıt okunuyor, bitmesini bekle.");return}
   if(!Array.isArray(files))files=[files];
   if(!o.sorma&&DEGISTI&&ROWS.length&&!(await ask("Kaydedilmemiş bir tablo açık. Yeni kağıt okunursa bu tablo kapanır. Devam edilsin mi?","Yeni kağıdı oku")))return;
@@ -1568,6 +1574,97 @@ $("#blankBtn").onclick=async()=>{if(needCust())return;
   ROWS=TPL.map((t,i)=>newRow({en:t.en,tr:trFor(t.en,t.tr),grp:t.grp||"",status:"ok",paperIdx:i}));PAGES=[];
   $("#fArt").value="";$("#fQual").value="";$("#fDate").value=today();$("#saveInfo").innerHTML="";$("#ocrMsg").textContent="";$("#prog").classList.add("hidden");
   openEdit();DEGISTI=false;KAYDEDILDI=false;taslakSil();durumBildir()};
+
+/* ---------------- kayıtlı Excel'i aç (Asorti Aracı'ndaki gibi) ----------------
+   Kaydettiğin ölçü tablosu yeniden açılır, düzeltip kaydedersin. Sayfanın kendisi okunur (Excel'de elle değiştirdiklerin de gelir):
+   model, kumaş, tarih, satırlar (grup, İngilizce, Türkçe, ölçüler) ve bedenler. Müşteri dosya adından (SORGENFRI-…, Deerberg-…)
+   ya da SUPPLIER'dan bulunur. Birden çok bedenin ölçüsü varsa (seri atılmış tablo) hepsi saklanır (r.olc), kaydederken yerinde
+   kalır; numune bedenine tıklayınca o bedenin ölçüleri düzenlenir. Dosyaya hiçbir şey yazılmaz, kaydetmek her zamanki gibi. */
+const excelMi=f=>/\.(xlsx|xlsm)$/i.test(f&&f.name||"");
+function excelSayi(x,sayisal){if(x==null||x==="")return "";if(sayisal&&/^-?\d+(\.\d+)?(E-?\d+)?$/i.test(x))return Math.round(Number(x)*1e4)/1e4;return parseVal(x)}
+function excelTarih(x,sayisal){const s=String(x||"").trim();if(!s)return "";
+  if(sayisal&&/^\d+(\.\d+)?$/.test(s)){const d=new Date(Date.UTC(1899,11,30)+Math.floor(+s)*864e5);return isNaN(d)?"":d.toISOString().slice(0,10)}
+  let m=s.match(/^(\d{4})[-.\/](\d{1,2})[-.\/](\d{1,2})/);if(m)return `${m[1]}-${m[2].padStart(2,"0")}-${m[3].padStart(2,"0")}`;
+  m=s.match(/^(\d{1,2})\s*[.,\/-]\s*(\d{1,2})\s*[.,\/-]\s*(\d{4})/);if(m&&+m[2]>=1&&+m[2]<=12&&+m[1]>=1&&+m[1]<=31)return `${m[3]}-${m[2].padStart(2,"0")}-${m[1].padStart(2,"0")}`;
+  return ""}
+async function excelOku(buf){
+  const zip=await JSZip.loadAsync(buf);const wf=zip.file("xl/workbook.xml"),rf=zip.file("xl/_rels/workbook.xml.rels");if(!wf||!rf)throw new Error("Excel dosyası okunamadı");
+  const wbx=await wf.async("string"),rels=await rf.async("string");const sm=wbx.match(/<sheet [^>]*r:id="([^"]+)"/);if(!sm)throw new Error("Excel'de sayfa yok");
+  const tm=rels.match(new RegExp(`Id="${sm[1]}"[^>]*Target="([^"]+)"|Target="([^"]+)"[^>]*Id="${sm[1]}"`));if(!tm)throw new Error("Excel'de sayfa yok");
+  const sf=zip.file("xl/"+(tm[1]||tm[2]).replace(/^\/?xl\//,""));if(!sf)throw new Error("Excel'de sayfa yok");const sx=await sf.async("string");
+  const ssf=zip.file("xl/sharedStrings.xml");const ss=ssf?[...(await ssf.async("string")).matchAll(/<si>([\s\S]*?)<\/si>/g)].map(m=>[...m[1].matchAll(/<t[^>]*>([\s\S]*?)<\/t>/g)].map(x=>x[1]).join("")):[];
+  // renkli (gri) hücre: tablolarda numune bedeninin sütunu gri
+  let dolgulu=()=>false;const stf=zip.file("xl/styles.xml");
+  if(stf){const st=await stf.async("string");
+    const fills=[...((st.match(/<fills[^>]*>([\s\S]*?)<\/fills>/)||[])[1]||"").matchAll(/<fill>([\s\S]*?)<\/fill>|<fill\/>/g)].map(m=>{const x=m[1]||"";return /patternType="solid"/.test(x)&&!/<fgColor rgb="(?:FF|00)?FFFFFF"/i.test(x)});
+    const xfs=[...((st.match(/<cellXfs[^>]*>([\s\S]*?)<\/cellXfs>/)||[])[1]||"").matchAll(/<xf\b([^>]*?)(?:\/>|>[\s\S]*?<\/xf>)/g)].map(m=>+((m[1].match(/fillId="(\d+)"/)||[])[1]||0));
+    dolgulu=s=>!!fills[xfs[s]]}
+  const C=new Map();   // hücre → {v: yazı, n: sayı mı, g: renkli mi}
+  for(const m of sx.matchAll(/<c r="([A-Z]+\d+)"([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g)){if(m[3]==null)continue;const v=(m[3].match(/<v>([\s\S]*?)<\/v>/)||[])[1];
+    const tip=(m[2].match(/ t="([^"]+)"/)||[])[1]||"";
+    const val=tip==="s"&&v!=null?ss[+v]:tip==="inlineStr"?[...m[3].matchAll(/<t[^>]*>([\s\S]*?)<\/t>/g)].map(x=>x[1]).join(""):v;
+    if(val!=null&&val!=="")C.set(m[1],{v:xmlCoz(String(val)).replace(/\s+/g," ").trim(),n:!tip||tip==="n",g:dolgulu(+((m[2].match(/ s="(\d+)"/)||[])[1]||0))})}
+  const val=ref=>(C.get(ref)||{v:""}).v,hc=ref=>C.get(ref)||{v:"",n:false};
+  let hdr=0;for(let r=1;r<=40;r++)if(/MEASUREMENT/i.test(val("D"+r))){hdr=r;break}
+  if(!hdr)throw new Error("Bu dosyada ölçü tablosu (MEASUREMENTS) bulunamadı");
+  const lab=re=>{for(let r=1;r<hdr;r++)if(re.test(val("D"+r)))return r;return 0};
+  const rA=lab(/^ARTICLE/i),rQ=lab(/^QUALITY/i),rS=lab(/^SUPPLIER/i),rD=lab(/^DATE/i);
+  const merges=[...sx.matchAll(/<mergeCell ref="B(\d+):C(\d+)"\/>/g)].map(m=>[+m[1],+m[2]]);
+  const rows=[],dolu=new Set(),gri={},say={};let bos=0,sonSutun=5;
+  for(let r=hdr+1;r<=hdr+150;r++){const en=val("D"+r),tr=val("E"+r),v={};
+    for(let c=6;c<=30;c++){const h=hc(colL(c)+r);if(h.v===""||h.v==null)continue;const x=excelSayi(h.v,h.n);if(x==="")continue;v[c]=x;dolu.add(c);sonSutun=Math.max(sonSutun,c);
+      say[c]=(say[c]||0)+1;if(h.g)gri[c]=(gri[c]||0)+1}
+    if(!en&&!tr&&!Object.keys(v).length){if(++bos>5)break;continue}bos=0;
+    const mg=merges.find(([a,b])=>r>=a&&r<=b);rows.push({en,tr,grp:mg?val("B"+mg[0]):val("B"+r),v})}
+  const bas={};for(let c=6;c<=30;c++){const l=val(colL(c)+hdr);if(l){bas[c]=l.toUpperCase();sonSutun=Math.max(sonSutun,c)}}
+  // numune sütunu: ölçülerinin çoğu gri olan tek sütun (seri atılmış tabloda hangisinin numune olduğu buradan anlaşılır)
+  const gs=Object.keys(gri).map(Number).filter(c=>gri[c]>=say[c]*.6).sort((a,b)=>gri[b]-gri[a]);const griKol=gs.length&&(gs.length===1||gri[gs[0]]>gri[gs[1]])?gs[0]:0;
+  return {art:rA?val("E"+rA):"",qual:rQ?val("E"+rQ):"",sup:rS?val("E"+rS):"",date:rD?excelTarih(hc("E"+rD).v,hc("E"+rD).n):"",bas,dolu:[...dolu].sort((a,b)=>a-b),griKol,sonSutun,rows}}
+/* dosyanın müşterisi: dosya adının başı (şablondaki ad öneki) ya da SUPPLIER; bulunamazsa seçili müşteri */
+function musteriBul(dosya,sup){const k=x=>String(x||"").toLocaleUpperCase("tr-TR").replace(/[İIı]/g,"I").replace(/[^A-Z0-9]/g,"");const ad=k(dosya);
+  let t=CUSTS.filter(c=>k(c.prefix)&&ad.startsWith(k(c.prefix))).sort((a,b)=>k(b.prefix).length-k(a.prefix).length)[0];
+  const s=k(sup);if(!t&&s)t=CUSTS.find(c=>k(c.name)===s)||CUSTS.find(c=>k(c.name).startsWith(s)||s.startsWith(k(c.name)));
+  return t||null}
+/* dosyadaki beden sütunları → beden dizisi: yazılı başlıklar aynı yerde duran ilk dizi (şablondaki, son kullanılan, hazır diziler;
+   başlığı boş sütunun adı diziden gelir). Uyan yoksa dosyadaki başlıklar (başlıksız ve ölçüsüz sütun atlanır, başlıksız ölçülü "?") */
+function excelDizi(x){const H=[];for(let c=6;c<=x.sonSutun;c++)H.push({c,l:x.bas[c]?nSz(x.bas[c]):"",d:x.dolu.includes(c)});
+  const uyar=d=>Array.isArray(d)&&d.length>=H.length&&H.every((h,i)=>!h.l||nSz(d[i])===h.l);
+  const aday=[tplSizes(),...LS.get("ota_beden_son",[]),...DIZILER];const d=aday.find(uyar);
+  if(d)return {list:d.map(z=>String(z).toUpperCase()),kol:Object.fromEntries(H.map((h,i)=>[h.c,nSz(d[i])]))};
+  const list=[],kol={};for(const h of H){if(!h.l&&!h.d)continue;const l=h.l||("?"+colL(h.c));list.push(l);kol[h.c]=nSz(l)}
+  return {list,kol}}
+async function excelAc(f){
+  if(OKUYOR){toast("Bir kağıt okunuyor, bitmesini bekle.");return}
+  if(DEGISTI&&ROWS.length&&!(await ask("Kaydedilmemiş bir tablo açık. Excel açılırsa bu tablo kapanır. Devam edilsin mi?","Excel'i aç")))return;
+  let x;try{x=await excelOku(await f.arrayBuffer())}catch(e){console.warn(e);toast(f.name+" açılamadı: "+(/[ığüşöçİ]/.test(e.message)?e.message:"dosya bozuk ya da Excel (.xlsx) değil"),7000);return}
+  const t=musteriBul(f.name.replace(/\.[^.]+$/,""),x.sup);
+  if(t&&(!CUR||CUR.name!==t.name))await custSec(t.name);
+  if(!CUR){needCust();return}
+  const {list,kol}=excelDizi(x);
+  const doluL=x.dolu.map(c=>kol[c]).filter(Boolean);
+  // numune bedeni: tek dolu sütun varsa o; yoksa tek başlık; çok bedenliyse gri sütun, o da yoksa M ya da ortadaki
+  let numune=doluL.length===1?doluL[0]:!doluL.length?(Object.keys(x.bas).length===1?nSz(Object.values(x.bas)[0]):""):
+    (x.griKol&&kol[x.griKol]?kol[x.griKol]:doluL.includes("M")?"M":doluL[Math.floor((doluL.length-1)/2)]);
+  const cok=doluL.length>1;
+  SZ={list,sample:list.find(l=>nSz(l)===numune)||"",base:list.slice(),elle:!dzEsit(list,tplSizes())};renderSizes();
+  sizeNote(cok?"Öteki bedenlerin ölçüleri de korunur":"");
+  LAST_SCANNED=false;LAST_SIZE=SZ.sample||null;LAST_QUAL_RAW="";DELETED_UNREAD=[];PAGES=[];if(typeof KP!=="undefined"&&KP.acik)kpCiz();
+  const ns=nSz(SZ.sample);
+  ROWS=x.rows.map((r,i)=>{const olc={};for(const [c,v] of Object.entries(r.v))if(kol[c])olc[kol[c]]=v;const m=olc[ns]!=null?olc[ns]:"";
+    return newRow({en:r.en.toUpperCase(),tr:r.tr?up(r.tr):"",m,grp:r.grp,status:r.tr||!r.en?"ok":"new",paperIdx:i,...(cok?{olc}:{})})});
+  $("#fArt").value=artUp(x.art);$("#fQual").value=x.qual;$("#fDate").value=x.date||today();$("#saveInfo").innerHTML="";$("#prog").classList.add("hidden");
+  // dosya adı: kendi adıyla kaydedilsin (aynı klasördeyse üstüne yazmadan önce sorulur)
+  const ad=f.name.replace(/\.[^.]+$/,"");nameEdited=false;autoName();if($("#fnameIn").value!==ad){$("#fnameIn").value=ad;nameEdited=true}
+  $("#ocrMsg").textContent=f.name+" açıldı";
+  openEdit();DEGISTI=false;KAYDEDILDI=true;if(SEKMELI)taslakYaz(true);else taslakSil();durumBildir();toast(f.name+" açıldı")}
+/* numune bedeni değişince: seri atılmış tabloda düzenlenen ölçüler o bedeninkiler olur (yazdıkların saklanır) */
+function olcGecis(eski,yeni){if(nSz(eski)===nSz(yeni)||!ROWS.some(r=>r.olc))return;const e=nSz(eski),y=nSz(yeni);
+  for(const r of ROWS){r.olc=r.olc||{};if(e)r.olc[e]=r.m;const v=r.olc[y];r.m=v==null?"":v;r.mChk=false}renderTable()}
+$("#excelBtn").onclick=async()=>{
+  if(window.showOpenFilePicker){try{const [h]=await showOpenFilePicker({id:"olcu-tablolari",startIn:"desktop",types:[{description:"Excel",accept:{"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":[".xlsx"],"application/vnd.ms-excel.sheet.macroEnabled.12":[".xlsm"]}}]});
+      if(h){await excelAc(await h.getFile());return}}catch(e){if(e&&e.name==="AbortError")return;console.warn(e)}}
+  $("#excelFile").value="";$("#excelFile").click()};
+$("#excelFile").onchange=e=>{const f=e.target.files[0];e.target.value="";if(f)excelAc(f)};
 
 /* ---------------- tablo düzenleme ---------------- */
 const GROUPS0=["pocket","chest dart","collar","belt","hood"];
@@ -1740,7 +1837,7 @@ $("#saveBtn").onclick=async()=>{
     const blob=await buildXlsx(CUR.buf,sheetData());
     let r=await PLAT.kaydet(CUR.name,name,blob,"");
     if(r.klasoryok){toast("Kayıt klasörü bulunamadı, yeniden seç.");if(!(await PLAT.klasorSec(CUR.name)))return;await showDir();r=await PLAT.kaydet(CUR.name,name,blob,"")}
-    if(r.var){if(!(await ask(`<b>${esc(r.ad||name)}</b> zaten var. Üzerine yazılsın mı?`,"Üzerine yaz")))return;r=await PLAT.kaydet(CUR.name,name,blob,"ustune")}
+    if(r.var){const k=await PLAT.klasor(CUR.name);if(!(await ask(`<b>${esc(r.ad||name)}</b>${k&&k.ad?` <b>${esc(k.ad)}</b> klasöründe`:""} zaten var. Üzerine yazılsın mı?`,"Üzerine yaz")))return;r=await PLAT.kaydet(CUR.name,name,blob,"ustune")}
     if(r.izin){toast("Klasöre yazma izni verilmedi.");return}
     if(r.kilitli){toast("Kaydedilemedi: dosya Excel'de açık olabilir, kapatıp tekrar dene.",7000);return}
     if(!r.ok){toast("Kaydedilemedi: "+(r.hata||"bilinmeyen hata"),7000);return}
@@ -1869,9 +1966,11 @@ async function buildXlsx(buf,{art,qual,date,rows,sizes,sample}){
     const cells=[...(m[3]||"").matchAll(/<c r="([A-Z]+)\d+"[^>]*?(?:\/>|>[\s\S]*?<\/c>)/g)].map(x=>({c:colN(x[1]),x:x[0]})).filter(x=>x.c!==colN(ref.replace(/\d+$/,"")));
     cells.push({c:colN(ref.replace(/\d+$/,"")),x:xml});cells.sort((a,b)=>a.c-b.c);sx=sx.replace(rowRe,`<row r="${rn}"${m[1].replace(/ spans="[^"]*"/,"")}>${cells.map(x=>x.x).join("")}</row>`)};
   const hdrS=cellS(colL(tplLast)+hdr);
+  // açılan seri atılmış tablonun öteki bedenleri (r.olc): ölçüsü olan bedenin başlığı da yazar
+  const doluB=new Set();for(const r of rows)if(r.olc)for(const [k,v] of Object.entries(r.olc))if(v!==""&&v!=null)doluB.add(k);
   for(let c=6;c<=Math.max(tplLast,lastCol);c++){const ref=colL(c)+hdr;
     // yalnız ölçüsü yazılan beden (numune, ör. M) başlıkta yazar; dizideki öteki bedenlerin sütunu ve çizgisi kalır, başlığı boş
-    if(c<=lastCol){const v=sizes[c-6];const s0=c<=tplLast?cellS(ref):hdrS;upsert(ref,c===mCol?`<c r="${ref}" s="${s0}" t="inlineStr"><is><t>${xmlEsc(v)}</t></is></c>`:`<c r="${ref}" s="${s0}"/>`)}
+    if(c<=lastCol){const v=sizes[c-6];const s0=c<=tplLast?cellS(ref):hdrS;upsert(ref,c===mCol||doluB.has(nSz(v))?`<c r="${ref}" s="${s0}" t="inlineStr"><is><t>${xmlEsc(v)}</t></is></c>`:`<c r="${ref}" s="${s0}"/>`)}
     else upsert(ref,`<c r="${ref}"/>`)}
   // stiller
   const cnt=(tag)=>{const m=st.match(new RegExp(`<${tag} count="(\\d+)"`));return m?+m[1]:0};
@@ -1911,7 +2010,8 @@ async function buildXlsx(buf,{art,qual,date,rows,sizes,sample}){
     cells+=`<c r="D${R}" s="${xf({h:"left",g:b?1:0,...tb})}"${r.en?' t="inlineStr"':""}>${r.en?str(r.en):""}</c>`;
     cells+=`<c r="E${R}" s="${xf({h:"left",g:b?1:0,...tb})}"${r.tr?' t="inlineStr"':""}>${r.tr?str(r.tr):""}</c>`;
     for(let c=6;c<=lastCol;c++){const ref=colL(c)+R;const isM=c===mCol;const o={h:"center",g:(b||isM)?1:0,...tb};if(c===lastCol&&b)o.r="medium";
-      let inner="",t="";if(isM&&r.m!==""&&r.m!=null){if(typeof r.m==="number"){inner=`<v>${r.m}</v>`}else{inner=str(r.m);t=' t="inlineStr"'}}
+      const dv=isM?r.m:r.olc?r.olc[nSz(sizes[c-6])]:"";
+      let inner="",t="";if(dv!==""&&dv!=null){if(typeof dv==="number"){inner=`<v>${dv}</v>`}else{inner=str(dv);t=' t="inlineStr"'}}
       cells+=`<c r="${ref}" s="${xf(o)}"${t}>${inner}</c>`}
     xml+=`<row r="${R}" spans="2:${lastCol}" ht="20.25" customHeight="1">${cells}</row>`});
   sx=sx.replace("</sheetData>",xml+"</sheetData>");

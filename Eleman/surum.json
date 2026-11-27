@@ -1,7 +1,8 @@
 {
- "surum": "3.8.6",
+ "surum": "3.8.7",
  "tarih": "2026-11-27",
  "notlar": [
-  "Ölçü Tablosu · arka boy her zaman ön boyun hemen altında: «Şablona göre sırala»da ve kaydederken sıralayınca ARKA BOY (OMUZDAN ARKA BOY, ARKA ORTADAN BOY, BACK LENGTH…) ÖN BOY'un bir satır altına geliyor, araya başka satır girmiyor. Arka boyu elle başka yere taşırsan o tabloda orada kalır"
+  "Ölçü Tablosu · «Kayıtlı Excel'i aç» (Asorti Aracı'ndaki gibi): kaydettiğin ölçü tablosunu açıp düzeltir, yeniden kaydedersin. Model, kumaş, tarih, satırlar, gruplar ve bedenler gelir; müşteri dosya adından kendisi seçilir. Excel'i kağıt alanına sürükleyip bırakmak da olur",
+  "Ölçü Tablosu · bütün bedenleri yazılmış (seri atılmış) tablo açılınca öteki bedenlerin ölçüleri korunur, kaydederken yerinde kalır; numune bedenine tıklayınca o bedenin ölçülerini düzenlersin"
  ]
 }
