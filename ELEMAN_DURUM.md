@@ -690,6 +690,13 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
   - Deneme: 3.8.2 elle yazılanı kısaltıyor (aynı hata), 3.8.3 bırakıyor; kağıttan okunan da tam; doğru öğrenilenler (BAUMWOLIE →
     BAUMWOLLE) yine uygulanıyor; kaydedince yanlış öğrenilen düzeliyor, düzeltilmeyen kumaş öğrenilmiyor. `kontrol.py` tamam.
 
+- 2026-11-27 (Asorti sohbeti): **Eleman 3.8.4**, ek asorti tablolarına "Katları yeniden hesapla" (kullanıcı: bütün ek tablolara ana
+  asortideki gibi). Sonuç tablosunda asorti kutuları düzenlenebilir (`input.xa`, `xEd`: fazla kesim yeniden, o tablonun Gerber boyu
+  silinir), düğme `xKatHesap`: ana çözücü `solve` fix kipinde (kilit = tablodaki boş olmayan asortiler, `gAraRun`). Kendi asortisinde
+  tablonun Max + ve fazla kesim %'si; tek asortide ve ana asortinin katında sınırsız (T = toplam ihtiyaç, en az fazla kesim); en az kat ve
+  "tüm renkler" Ayarlar'dan. Bulunamazsa tablo olduğu gibi kalır, uyarı yazar. Denendi: hızar (renk), tela (toplam), tek asorti, ana
+  asortinin katı, olmayacak sınır, Excel'e düzenlenmiş hali; ana asorti, yönlü + yönsüz, takım denemeleri temiz.
+
 ## Sıradaki işler
 0. **Sürüm arşivi = GitHub Releases.** 32 sürüm (ilk-deneme, v1.0.0–v1.1.22, v2.0.0–v2.0.4) bir kerelik GitHub Actions işiyle
    taşındı, `surum-v*`, `arsiv`, `surum-test` dalları silindi (dallar: eleman, main, exe-deneme). Bu oturumlardan etiket ve
