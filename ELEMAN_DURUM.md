@@ -697,6 +697,37 @@ istiyor). **Program deposu herkese açık kalır.** Karar:
   "tüm renkler" Ayarlar'dan. Bulunamazsa tablo olduğu gibi kalır, uyarı yazar. Denendi: hızar (renk), tela (toplam), tek asorti, ana
   asortinin katı, olmayacak sınır, Excel'e düzenlenmiş hali; ana asorti, yönlü + yönsüz, takım denemeleri temiz.
 
+- 2026-11-27 (Ölçü sohbeti): **Eleman 3.8.5**, ölçü sırası (kullanıcı, Deerberg PITTARA: "yeni kelimeler yazdım ama daha
+  kaydetmediğim için öğrenmedi… boy istediğim yerde değil, kollarla ilgili ölçüler istediğim yerde değil"). Tabloyu kağıttaki
+  İngilizceyle elle yazmış (FULL LENGTH FROM HPS = BOY, 1/2 CHEST WIDTH = GÖGÜS, ARMHOLE ACROSS = KOLEVİ, LOWER SLEEVE WIDTH 1/2 =
+  KOLUCU…); şablonda İngilizcesi olmayanlar sıralayınca en alta düşüyordu (3.8.4'te ekrandaki sırası birebir çıktı).
+  - **Türkçe adla yer** (`trKat`, `trSlot`, şablonda `TPL[].trk`): yazılan Türkçe şablondaki Türkçeyle eşitse (Ğ/G, İ/I… ve boşluk
+    fark etmez: KOLBOYU = KOL BOYU) o yer; değilse yazılan kelimelerin hepsi şablondaki adda geçiyorsa en az fazla kelimeli tek ad
+    (BOY → OMUZDAN ÖN BOY). İki farklı ada eşit uyarsa karar yok (YAKA YÜKSEKLİĞİ: YAKA UCU / ARKA YAKA; geçmişte yeri hep değişik).
+    Fazlası olan ad (ETEK KIVIRMA ⊃ ETEK) eşleşmez: geçmişte çoğu en altta. Kaydetmeyi beklemez, sıralarken o anki Türkçeye bakar.
+  - İngilizce: `slotOf` baştaki/sondaki "1/2", "HALF", "(1/2)" olmadan da bakar; `EXTRA_SYN`'e FULL LENGTH (FROM/FR HPS), ARMHOLE
+    ACROSS, LOWER SLEEVE (WIDTH) (yalnız sıra için; `SYN` / adlandırma değişmedi).
+  - Sıra anahtarı `siraAnahtar(r)`: 1) elle yer (`r.elle`, `r.elleYer`) 2) İngilizce yer / şablon grubu (`dogalYer`) 3) öğrenilen
+    konum (`r.after`, yoksa sözlükteki: elle yazılan satıra da) 4) Türkçe yer 5) en alt. **"__END__" zayıf**: eski `learn()` "altında
+    tam şablon satırı yok" diye yazıyordu (pantolon tablolarında hep), Türkçe yer varsa o kazanır. Sıralama kararlı: eşit yerdekiler
+    şimdiki sıralarıyla (önce `paperIdx`).
+  - **Hata düzeltildi:** `dict.json`'daki "__END__"/"__START__" `normEn`'den geçip "END"/"START" oluyordu (alt çizgi boşluğa); hiç
+    tanınmıyordu. Şimdi `konumNorm` olduğu gibi bırakır.
+  - **Elle yer:** sürükle-bırak, ↑ ↓ ve satırın ＋'sı (araya ekleme) `elleYerle(r)`: satır üstündeki satırın sıra anahtarını alır
+    (en üste taşınınca en üst); "Şablona göre sırala" ve kayıttaki sıralama onu yerinde bırakır, kayıtta "şablon sırasında değil"
+    sorusu da çıkmaz. Tutamağı (⋮⋮) renkli, açıklamalı. "Kağıttaki sıra" elle yerleri siler. Taslakta saklanır.
+  - `learn()` konumu `konumOgren`: şablon satırı ve İngilizcesinden yeri olan "" (adından bulunur); Türkçesinden ya da öğrenilenden
+    bulunan yerde duruyorsa "" / o konum; elle taşındıysa ya da başka yerdeyse ("Bu sırayla kaydet") tablodaki yeri: üstündeki yeri
+    olan ilk satırın şablon ölçüsü; altında yeri olan yoksa "__END__", ama Türkçesinden yeri olan ya da elle bir ölçünün hemen altına
+    konan için o ölçünün altı (güçlü). Komşuluk artık tam şablon adına değil sıra anahtarına göre (müşterinin kendi İngilizcesiyle
+    yazılmış tablolarda da doğru öğrenir).
+  - Denemeler (`/home/claude/is_olcu`): PITTARA arayüzden elle yazılıp sıralandı (3.8.4 ekran görüntüsündeki sırayı verdi, 3.8.5:
+    BOY en üstte, KOLEVİ · PAZU · KOLUCU · KOLBOYU birlikte, ETEK/KOLUCU KIVIRMA ve YIRTMAÇ en altta); sürükleme, ↑↓, ＋, en üste
+    taşıma, kağıttaki sıra, "Bu sırayla kaydet" öğrenmesi ve sonraki tabloda uygulanması. Ortak klasördeki 1375 tablo (yalnız
+    okundu): karışık sıradan şablona göre sıralayınca onun kaydettiği sıraya göre taşınması gereken satır elle yazılmışta %12,2 →
+    %9,9, taranmışta %10,7 → %9,9; tam doğru tablo 346 → 380 / 377 → 384. 8 fotoğraf + 2 PDF taraması: okuma aynı, 2 kağıtta sıra
+    değişti (PAZU kol ölçülerinin yanına, pantolonda BOY üste). `kontrol.py` tamam.
+
 ## Sıradaki işler
 0. **Sürüm arşivi = GitHub Releases.** 32 sürüm (ilk-deneme, v1.0.0–v1.1.22, v2.0.0–v2.0.4) bir kerelik GitHub Actions işiyle
    taşındı, `surum-v*`, `arsiv`, `surum-test` dalları silindi (dallar: eleman, main, exe-deneme). Bu oturumlardan etiket ve

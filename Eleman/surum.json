@@ -1,7 +1,8 @@
 {
- "surum": "3.8.4",
+ "surum": "3.8.5",
  "tarih": "2026-11-27",
  "notlar": [
-  "Asorti · Bütün ek asorti tablolarında (hızar, tela, ribana, astar, kontrast, başka tablo) asorti kutuları ana asortideki gibi elle değişiyor; «Katları yeniden hesapla» asortileri koruyup katları yeniden bulur"
+  "Ölçü Tablosu · yeni ölçüler şablondaki yerine gidiyor, kaydetmeyi beklemeden: Türkçesini yazdığın an program yerini biliyor (BOY → en üst, GÖĞÜS / BEL / ETEK kendi yerine, KOLEVİ · PAZU · KOLUCU · KOLBOYU kol ölçülerinin yerine). «1/2 CHEST WIDTH», «LOWER SLEEVE WIDTH 1/2», «FULL LENGTH FROM HPS», «ARMHOLE ACROSS» İngilizcesinden de bulunuyor",
+  "Ölçü Tablosu · elle taşıdığın (sürükle ya da ↑ ↓) ve ＋ ile araya eklediğin satır, «Şablona göre sırala»ya ya da kaydederken sıralamaya basınca bıraktığın yerde kalıyor; kaydedince öğreniliyor, sonraki tablolarda da oraya geliyor. Yerini senin verdiğin satırın ⋮⋮ tutamağı renkli; «Kağıttaki sıra» bunları sıfırlar"
  ]
 }

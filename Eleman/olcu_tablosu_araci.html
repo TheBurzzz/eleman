@@ -168,6 +168,7 @@ td.f-new input.en{background:var(--badbg)}
 .enw{display:flex;gap:4px;align-items:center}
 .enw select{flex:none;width:122px;font-size:11.5px;padding:4px}
 .drag{cursor:grab;color:var(--mut);user-select:none;text-align:center;font-size:15px;opacity:.7}
+.drag.elle{color:var(--acc);opacity:1}
 tr.dragging{opacity:.4}
 tr.dropline td{border-top:2px solid var(--acc)}
 .snip{height:26px;max-width:100%;object-fit:cover;object-position:right center;display:block;border-radius:6px;cursor:zoom-in;border:1px solid var(--line);background:#fff}
@@ -469,16 +470,19 @@ window.addEventListener("storage",e=>{if(e.key==="eleman-tema"&&e.newValue)temaU
 /* ---------------- sözlük ---------------- */
 let TPL=[],TPLKEY=new Map();
 const DICT=new Map();
-for(const [en,tr,after,grp,n] of DATA.D){const k=normEn(en);if(!DICT.has(k))DICT.set(k,{en,tr,after:after?normEn(after):"",grp,n})}
+// "__END__" / "__START__" (en alt / en üst) olduğu gibi kalır: normEn alt çizgiyi boşluğa çevirip "END" yapıyordu, yeri kayboluyordu
+const konumNorm=a=>!a?"":/^__(END|START)__$/.test(a)?a:normEn(a);
+for(const [en,tr,after,grp,n] of DATA.D){const k=normEn(en);if(!DICT.has(k))DICT.set(k,{en,tr,after:konumNorm(after),grp,n})}
 function setTemplateRows(list){
-  TPL=list.map((t,i)=>({en:t.en,tr:t.tr,grp:t.grp||"",key:normEn(t.en),i}));
+  TPL=list.map((t,i)=>({en:t.en,tr:t.tr,grp:t.grp||"",key:normEn(t.en),i,trk:trKat(t.tr)}));
   TPLKEY=new Map(TPL.map(t=>[t.key,t]));
   for(const t of TPL){const d=DICT.get(t.key)||{n:0};DICT.set(t.key,{en:t.en,tr:t.tr||d.tr||"",after:d.after||"",grp:t.grp||d.grp||"",n:Math.max(d.n||0,999),tpl:true})}
 }
 setTemplateRows(DATA.T.map(([en,tr,grp])=>({en,tr,grp})));
 /* şablonda olmayan ama bir şablon satırının türevi olan ölçü (NECK DROP FRONT 1, CHEST WIDTH (4 CM)...) o satırın yerine/altına */
 /* bir ölçünün şablondaki yeri: aynı adı, içten içe/dikişten dikişe türü, eş anlamlısı (WAIST = WAIST WIDTH, WAIST POSITION = WAIST SEAM POSITION…) */
-const EXTRA_SYN={"WAIST":"WAIST WIDTH","HIP":"HIP WIDTH","BOTTOM":"BOTTOM STRAIGHT","1/2 WAIST":"WAIST WIDTH","1/2 HIP":"HIP WIDTH","1/2 BOTTOM":"BOTTOM STRAIGHT","ARMHOLE":"ARMHOLE STRAIGHT","SLEEVE OPENING":"BOTTOM SLEEVE WIDTH","UPPER SLEEVE":"UPPER SLEEVE WIDTH","FRONT LENGTH":"FROM LENGTH FR HPS","BODY LENGTH":"FROM LENGTH FR HPS"};
+const EXTRA_SYN={"WAIST":"WAIST WIDTH","HIP":"HIP WIDTH","BOTTOM":"BOTTOM STRAIGHT","1/2 WAIST":"WAIST WIDTH","1/2 HIP":"HIP WIDTH","1/2 BOTTOM":"BOTTOM STRAIGHT","ARMHOLE":"ARMHOLE STRAIGHT","SLEEVE OPENING":"BOTTOM SLEEVE WIDTH","UPPER SLEEVE":"UPPER SLEEVE WIDTH","FRONT LENGTH":"FROM LENGTH FR HPS","BODY LENGTH":"FROM LENGTH FR HPS",
+  "FULL LENGTH":"FROM LENGTH FR HPS","FULL LENGTH FROM HPS":"FROM LENGTH FR HPS","FULL LENGTH FR HPS":"FROM LENGTH FR HPS","ARMHOLE ACROSS":"ARMHOLE STRAIGHT","LOWER SLEEVE WIDTH":"BOTTOM SLEEVE WIDTH","LOWER SLEEVE":"BOTTOM SLEEVE WIDTH"};
 const baseKey=k=>k.replace(/\s*\((INSIDE|SEAM TO SEAM|EDGE TO EDGE)\)\s*$/,"").replace(/\s+(INSIDE|SEAM TO SEAM)$/,"").trim();
 function synKey(k){for(const [re,to] of SYN){const m=k.match(re);if(m)return normEn(typeof to==="function"?to(m):to)}return EXTRA_SYN[k]?normEn(EXTRA_SYN[k]):k}
 function slotOf(en){const k=normEn(en);
@@ -486,8 +490,21 @@ function slotOf(en){const k=normEn(en);
     if(TPLKEY.has(c))return {t:TPLKEY.get(c),exact:c===k};
     const tb=TPL.filter(t=>baseKey(t.key)===c).sort((a,b)=>a.i-b.i);if(tb.length){
       const v=/INSIDE/.test(k)?tb.find(t=>/INSIDE/.test(t.key)):/SEAM TO SEAM/.test(k)?tb.find(t=>/SEAM TO SEAM/.test(t.key)):null;return {t:v||tb[0],exact:false}}}
-  const p=tplSlot0(k);return p?{t:p,exact:false,derived:true}:null}
-function tplSlot(k){const s=slotOf(k);return s?s.t:null}
+  const p=tplSlot0(k);if(p)return {t:p,exact:false,derived:true};
+  // yarım ölçü: "1/2 CHEST WIDTH", "LOWER SLEEVE WIDTH 1/2" = CHEST WIDTH, LOWER SLEEVE WIDTH
+  const y=k.replace(/^(1\/2|HALF)\s+|\s+(1\/2|HALF)$|\s*\(\s*1\/2\s*\)/g,"").trim();
+  return y&&y!==k?slotOf(y):null}
+/* Türkçe adla şablon yeri: yazdığın Türkçe ad şablondaki Türkçe adla eşleşirse ölçü şablonda o yere gelir (BOY → OMUZDAN ÖN BOY,
+   KOLBOYU → KOL BOYU, GÖĞÜS, KOLEVİ, KOLUCU…). Kaydetmeyi beklemez: yazdığın an sıralamada kullanılır.
+   Eşit sayılır: harfleri aynı (Ğ/G, İ/I, Ş/S… ve boşluk fark etmez); yoksa yazdığın kelimelerin hepsi şablondaki adda geçiyorsa,
+   en az fazla kelimesi olan tek ad (BOY → OMUZDAN ÖN BOY). İki ada eşit uyuyorsa (YAKA YÜKSEKLİĞİ: YAKA UCU / ARKA YAKA) karar verilmez */
+function trKat(s){return String(s||"").toLocaleUpperCase("tr-TR").replace(/[İIıÎÌÍ]/g,"I").replace(/Ğ/g,"G").replace(/[ÜÛÙÚ]/g,"U").replace(/Ş/g,"S").replace(/Ö/g,"O").replace(/Ç/g,"C").replace(/[ÂÀÁÄ]/g,"A")
+  .replace(/[^A-Z0-9]+/g," ").trim()}
+function trSlot(tr){const t=trKat(tr);if(t.replace(/[^A-Z]/g,"").length<3)return null;const ts=t.replace(/ /g,""),w=t.split(" ");let alt=null,fz=1e9,es=false;
+  for(const x of TPL){if(!x.trk)continue;if(x.trk===t||x.trk.replace(/ /g,"")===ts)return {t:x,tam:true};
+    const kw=x.trk.split(" ");if(!w.every(q=>kw.includes(q)))continue;const f=kw.length-w.length;
+    if(f<fz){alt=x;fz=f;es=false}else if(f===fz&&baseKey(x.key)!==baseKey(alt.key))es=true}
+  return alt&&!es?{t:alt,tam:false}:null}
 function tplSlot0(k){if(TPLKEY.has(k))return TPLKEY.get(k);let best=null;for(const t of TPL){if((k.startsWith(t.key+" ")||k.startsWith(t.key+"("))&&(!best||t.key.length>best.key.length))best=t}return best}
 /* sözlük.xlsx'teki kelime karşılıklarıyla Türkçe öneri */
 const GL=(GLOSS||[]).map(([e,t])=>[normEn(e).split(" "),t.split(/\s*[-\/]\s*/)[0].trim()]).sort((a,b)=>b[0].length-a[0].length);
@@ -1489,17 +1506,38 @@ function groupTogether(rows){autoGroup(rows);const out=[],done=new Set();
     for(const x of rows)if(!done.has(x)&&(x.grp||"").trim()===g){out.push(x);done.add(x)}}
   return out}
 function orderRows(rows){autoGroup(rows);return groupTogether(orderRows0(rows))}
+/* satırın sıradaki yeri (küçük üstte). Şablon satırı i: i*100+50. Sırası:
+   1) elle taşıdığın / araya eklediğin satır: bıraktığın yer (sıralayınca da orada kalır, kaydedince öğrenilir)
+   2) İngilizce adın şablondaki yeri (eş anlamlısı, içten içe türü, türevi, 1/2'si)
+   3) grubu şablonda olan satır: o grubun yeri
+   4) öğrenilen / geçmiş tablolardaki yeri ("şu ölçünün altı", "en üst")
+   5) Türkçe adın şablondaki yeri (BOY, GÖĞÜS, KOLEVİ, KOLBOYU… yazdığın an)
+   6) öğrenilen "en alt" ya da bilinmiyorsa en alt.
+   "En alt" zayıftır: eski kayıtlarda "altında şablon satırı yoktu" demekti (pantolon tablolarında hep öyle), Türkçe ad daha iyi bilgi */
+function yerAnahtar(af,d){if(!af)return null;if(af==="__START__")return -10;if(af==="__END__")return 1e7;
+  const a=TPLKEY.get(af);if(a)return a.i*100+60;
+  const so=slotOf(af);if(so)return so.t.i*100+60;
+  const e=(d||0)<2&&DICT.get(af);return e&&e.after&&e.after!==af?yerAnahtar(e.after,(d||0)+1):null}
+function dogalYer(r){const k=normEn(r.en);const so=k&&slotOf(k);
+  if(so)return so.t.i*100+(so.derived?55:50);
+  const g=(r.grp||"").trim(),gt=g&&TPL.find(t=>(t.grp||"").trim()===g);if(gt)return gt.i*100+56;
+  return null}
+function siraAnahtar(r){
+  if(r.elle&&typeof r.elleYer==="number")return r.elleYer;
+  const n=dogalYer(r);if(n!=null)return n;
+  const d=r.en&&DICT.get(normEn(r.en));
+  const a=yerAnahtar(r.after||(d&&d.after)||"");if(a!=null&&a<1e7)return a;
+  const ts=trSlot(r.tr);if(ts)return ts.t.i*100+(ts.tam?50:52);
+  return 1e7}
+/* aynı yere düşenler şu anki sıralarıyla (kağıttaki sıra ya da senin dizdiğin): sıralama kararlı */
 function orderRows0(rows){
-  // aynı yere düşenler kağıttaki sıralarıyla
-  const key=r=>{const k=normEn(r.en);const so=slotOf(k);
-    if(so)return so.t.i*100+(so.derived?55:50);
-    const gt=(r.grp||"").trim()&&TPL.find(t=>(t.grp||"").trim()===(r.grp||"").trim());if(gt)return gt.i*100+56;
-    const a=r.after&&TPLKEY.get(r.after);if(a)return a.i*100+60;
-    if(r.after==="__START__")return -10;
-    return 1e7};
-  const K=new Map(rows.map(r=>[r,key(r)]));
-  return rows.slice().sort((a,b)=>K.get(a)-K.get(b)||a.paperIdx-b.paperIdx);
+  const K=new Map(rows.map(r=>[r,siraAnahtar(r)]));
+  return rows.slice().sort((a,b)=>K.get(a)-K.get(b));
 }
+/* elle taşınan / araya eklenen satır: hemen üstündeki satırın yerine bağlanır (en üste taşındıysa en üst) */
+function elleYerle(r){const i=ROWS.indexOf(r);if(i<0)return;r.elle=true;r.elleYer=i>0?siraAnahtar(ROWS[i-1]):Math.min(-10,...ROWS.slice(1).map(siraAnahtar))}
+/* sıradaki yer → öğrenilecek konum: şablondaki hangi ölçünün altında ("" = adından bulunur) */
+function anahtarKonum(k){return k<0?"__START__":k>=1e7?"__END__":((TPL[Math.floor(k/100)]||{}).key||"")}
 $("#blankBtn").onclick=async()=>{if(needCust())return;
   if(DEGISTI&&ROWS.length&&!(await ask("Kaydedilmemiş bir tablo açık. Boş tabloyla başlanırsa bu tablo kapanır. Devam edilsin mi?","Boş tabloyla başla")))return;
   LAST_SCANNED=false;LAST_SIZE=null;LAST_QUAL_RAW="";pickSize(null,true);nameEdited=false;
@@ -1524,7 +1562,7 @@ function applyNeck(r,v){
 function renderTable(){
   const tb=$("#tbl tbody");const GL0=groupList();
   tb.innerHTML=ROWS.map((r,i)=>`<tr data-i="${i}" draggable="false" class="${r.status==="unread"&&!r.en?"unread":""}">
-    <td class="drag" title="Sürükle">⋮⋮</td>
+    <td class="drag${r.elle?" elle":""}" title="${r.elle?"Yerini sen verdin: şablona göre sıralayınca da burada kalır, kaydedince öğrenilir":"Sürükle"}">⋮⋮</td>
     <td><i class="st ${stCls(r.status)}" title="${r.status==="chk"?"Kağıtta: "+esc(r.orig):r.status==="unread"?"Okunamadı":r.status==="new"?"Sözlükte yok":"Sözlükte var"}"></i></td>
     <td><select data-k="grp" aria-label="Grup">${GL0.concat(r.grp&&!GL0.includes(r.grp)?[r.grp]:[]).map(g=>`<option ${g===r.grp?"selected":""} value="${esc(g)}">${g||"—"}</option>`).join("")}</select></td>
     <td class="f-${stCls(r.status)}"><div class="enw"><input class="en" data-k="en" autocomplete="off" spellcheck="false" value="${esc(r.en)}" title="${r.orig?"Kağıtta: "+esc(r.orig):""}" placeholder="${r.status==="unread"?"OKUNAMADI — kağıda bakıp yaz":""}">${/^NECK (WIDTH|DROP)/.test(normEn(r.en))?`<select data-k="nv" title="İçten içe / dikişten dikişe">${[["","—"],["IN","İçten içe"],["SS","Dikişten dikişe"]].map(([v,t])=>`<option value="${v}" ${neckVar(r.en)===v?"selected":""}>${t}</option>`).join("")}</select>`:""}</div></td>
@@ -1544,7 +1582,7 @@ tbody.addEventListener("input",e=>{const tr=e.target.closest("tr");if(!tr)return
 tbody.addEventListener("change",e=>{const tr=e.target.closest("tr");if(!tr)return;const r=ROWS[+tr.dataset.i],k=e.target.dataset.k;
   if(k==="grp"){r.grp=e.target.value;r.grpEl=!r.grp;ROWS=groupTogether(ROWS);renderTable();degisti();return}
   if(k==="nv"){applyNeck(r,e.target.value);renderTable();degisti();return}
-  if(k==="en"){const e2=DICT.get(normEn(r.en));if(e2){r.en=e2.en;if(!r.tr)r.tr=e2.tr;if(!r.grp&&e2.grp)r.grp=e2.grp;r.status="ok"}else r.status=(r.status==="ok"||r.status==="unread")?"new":r.status;
+  if(k==="en"){const e2=DICT.get(normEn(r.en));r.after=(e2&&e2.after)||"";if(e2){r.en=e2.en;if(!r.tr)r.tr=e2.tr;if(!r.grp&&e2.grp)r.grp=e2.grp;r.status="ok"}else r.status=(r.status==="ok"||r.status==="unread")?"new":r.status;
     if(normEn(r.en)==="NECK WIDTH"&&!r.trTyped)yakaKurali(r,r.en);   // elle yazılan düz NECK WIDTH da içten içe ("—" seçilirse düz kalır)
     e.target.value=r.en;renderTable();degisti()}
   if(k==="tr"){e.target.value=r.tr}});
@@ -1553,9 +1591,9 @@ tbody.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)retu
   // ✓: okunan ad ve ölçü doğru. Sözlükte olmayan (kırmızı) ölçü ✓ ile "sözlükte var" olmaz, Türkçesi yine beklenir
   if(a==="ok"){const r=ROWS[i];if(r.status==="chk")r.status="ok";r.mChk=false;renderTable();degisti();return}
   if(a==="del"){const d=ROWS[i];if(d&&d.status==="unread"&&d.ocrText)DELETED_UNREAD.push(d.ocrText);ROWS.splice(i,1)}
-  if(a==="up"&&i>0)[ROWS[i-1],ROWS[i]]=[ROWS[i],ROWS[i-1]];
-  if(a==="down"&&i<ROWS.length-1)[ROWS[i+1],ROWS[i]]=[ROWS[i],ROWS[i+1]];
-  if(a==="ins"){ROWS.splice(i+1,0,newRow({status:"new"}));renderTable();degisti();setTimeout(()=>tbody.querySelector(`tr[data-i="${i+1}"] input.en`).focus(),0);return}
+  if(a==="up"&&i>0){[ROWS[i-1],ROWS[i]]=[ROWS[i],ROWS[i-1]];elleYerle(ROWS[i-1])}
+  if(a==="down"&&i<ROWS.length-1){[ROWS[i+1],ROWS[i]]=[ROWS[i],ROWS[i+1]];elleYerle(ROWS[i+1])}
+  if(a==="ins"){const y=newRow({status:"new"});ROWS.splice(i+1,0,y);elleYerle(y);renderTable();degisti();setTimeout(()=>tbody.querySelector(`tr[data-i="${i+1}"] input.en`).focus(),0);return}
   renderTable();degisti()});
 /* yön tuşlarıyla kutular arasında gezin: ↑↓ satır, ←→ İngilizce / Türkçe / ölçü (imleç kutunun başında/sonundaysa), Enter alt satır */
 const NAV=["en","tr","m"];
@@ -1572,7 +1610,7 @@ let dragI=null;
 tbody.addEventListener("mousedown",e=>{const h=e.target.closest(".drag");if(h){h.closest("tr").draggable=true}});
 tbody.addEventListener("dragstart",e=>{const tr=e.target.closest("tr");dragI=+tr.dataset.i;tr.classList.add("dragging");e.dataTransfer.effectAllowed="move";try{e.dataTransfer.setData("text/plain","r")}catch(_){}});
 tbody.addEventListener("dragover",e=>{if(dragI==null)return;e.preventDefault();tbody.querySelectorAll(".dropline").forEach(x=>x.classList.remove("dropline"));const tr=e.target.closest("tr");if(tr)tr.classList.add("dropline")});
-tbody.addEventListener("drop",e=>{e.preventDefault();const tr=e.target.closest("tr");if(dragI==null||!tr)return;let to=+tr.dataset.i;const [r]=ROWS.splice(dragI,1);if(dragI<to)to--;ROWS.splice(to,0,r);dragI=null;renderTable();degisti()});
+tbody.addEventListener("drop",e=>{e.preventDefault();const tr=e.target.closest("tr");if(dragI==null||!tr)return;let to=+tr.dataset.i;const [r]=ROWS.splice(dragI,1);if(dragI<to)to--;ROWS.splice(to,0,r);const oynadi=to!==dragI;dragI=null;if(oynadi)elleYerle(r);renderTable();degisti()});
 tbody.addEventListener("dragend",()=>{dragI=null;tbody.querySelectorAll("tr").forEach(t=>{t.draggable=false;t.classList.remove("dragging","dropline")})});
 // kağıt önizleme
 const zoom=$("#zoom");
@@ -1597,13 +1635,29 @@ $("#sifirlaBtn").onclick=async()=>{if(OKUYOR){toast("Bir kağıt okunuyor, bitme
   tabloKapat();kpAc(false);CUR=null;CUSTN="";initCust();window.scrollTo({top:0,behavior:"smooth"});toast("Sayfa sıfırlandı.")};
 $("#custEkle").onclick=()=>sablonEkle();
 
+/* kaydedilen tabloda şablon dışı ölçünün yeri: tablodaki yerine göre ("" = adından / Türkçesinden bulunur, öğrenmeye gerek yok).
+   Komşuları: üstündeki ve altındaki, şablonda yeri olan ilk satırlar. Elle taşıdıysan ya da adından bulunan yerde değilse
+   (ör. "Bu sırayla kaydet") tablodaki yeri öğrenilir: üstündeki şablon ölçüsünün altı; altında yeri olan yoksa en alt, üstünde yoksa en üst */
+function konumOgren(r,idx,KEYS){
+  if(dogalYer(r)!=null)return "";
+  let ka=-Infinity,kb=Infinity;
+  for(let j=idx-1;j>=0;j--)if(KEYS[j]<1e7){ka=KEYS[j];break}
+  for(let j=idx+1;j<ROWS.length;j++)if(KEYS[j]<1e7){kb=KEYS[j];break}
+  const d=DICT.get(normEn(r.en)),a0=yerAnahtar(r.after||(d&&d.after)||""),a=a0!=null&&a0<1e7?a0:null,ts=a==null&&trSlot(r.tr);
+  const n=a!=null?a:ts?ts.t.i*100+(ts.tam?50:52):1e7;
+  if(!r.elle&&ka<=n&&n<=kb)return a!=null?anahtarKonum(a):ts?"":"__END__";
+  // tablodaki yeri: üstündeki (yeri olan) ilk ölçünün altı. Altında yeri olan ölçü yoksa en alt; ama Türkçesinden yeri bulunan ölçüyü
+  // en alta koyduysan ya da elle bir ölçünün hemen altına taşıdıysan "en alt" (zayıf) değil "şu ölçünün altı" öğrenilir
+  if(kb===Infinity){if(ka===-Infinity)return "__END__";if(ts)return anahtarKonum(ka);
+    return r.elle&&idx>0&&KEYS[idx-1]<1e7?anahtarKonum(KEYS[idx-1]):"__END__"}
+  return ka===-Infinity?"__START__":anahtarKonum(ka)}
 /* her kayıtta öğren: kağıtta okunan ad -> düzeltilmiş ad, Türkçe tercihleri, yeni ölçüler ve yerleri, kumaş, ölçü aralıkları */
 function learn(){
   const D={names:{},tr:{},qual:{},extra:{},typ:{},fibers:[],ignore:DELETED_UNREAD.map(normEn).filter(k=>k.replace(/[^A-Z]/g,"").length>=8),saves:1,id:deltaId(),pc:PC,t:Date.now()};DELETED_UNREAD=[];
+  const KEYS=ROWS.map(siraAnahtar);
   ROWS.forEach((r,idx)=>{
     if(!r.en)return;const k=normEn(r.en);
-    let after="";for(let j=idx-1;j>=0;j--){const t=TPLKEY.get(normEn(ROWS[j].en));if(t){after=t.key;break}}
-    const tailT=ROWS.slice(idx+1).some(x=>TPLKEY.has(normEn(x.en)));const pos=TPLKEY.has(k)?"":(tailT?after:"__END__");
+    const pos=TPLKEY.has(k)?"":konumOgren(r,idx,KEYS);
     if(r.orig){const ok=normEn(r.orig);if(ok)D.names[ok]={en:r.en,tr:r.tr,grp:r.grp,after:pos}}
     const d=DICT.get(k);if(r.tr&&(!d||trFor(r.en,d.tr)!==r.tr))D.tr[k]=r.tr;
     if(!TPLKEY.has(k)){D.extra[k]={en:r.en,tr:r.tr||(d&&d.tr)||"",grp:r.grp||"",after:pos};
@@ -1971,7 +2025,7 @@ $("#prevBtn").onclick=openPreview;$("#printBtn").onclick=printSheet;$("#prevPrin
 $("#prevClose").onclick=()=>$("#prevModal").classList.add("hidden");$("#prevModal").onclick=e=>{if(e.target.id==="prevModal")$("#prevModal").classList.add("hidden")};
 $("#prevSave").onclick=()=>{$("#prevModal").classList.add("hidden");$("#saveBtn").click()};
 $("#sortBtn").onclick=()=>{if(!ROWS.length)return;ROWS=orderRows(ROWS);renderTable();degisti();toast("Şablon sırasına dizildi.")};
-$("#paperBtn").onclick=()=>{if(!ROWS.length)return;const inPaper=ROWS.filter(r=>r.paperIdx<EKLENEN).sort((a,b)=>a.paperIdx-b.paperIdx);const added=ROWS.filter(r=>r.paperIdx>=EKLENEN);ROWS=inPaper.concat(added);renderTable();degisti();toast("Kağıttaki sıraya dönüldü.")};
+$("#paperBtn").onclick=()=>{if(!ROWS.length)return;for(const r of ROWS){delete r.elle;delete r.elleYer}const inPaper=ROWS.filter(r=>r.paperIdx<EKLENEN).sort((a,b)=>a.paperIdx-b.paperIdx);const added=ROWS.filter(r=>r.paperIdx>=EKLENEN);ROWS=inPaper.concat(added);renderTable();degisti();toast("Kağıttaki sıraya dönüldü.")};
 $("#pageBtn").onclick=()=>{if(innerWidth>=1100){kpAc(!KP.acik);return}if(!PAGES.length){toast("Taranmış kağıt yok.");return}$("#pageImgs").innerHTML=PAGES.map((u,i)=>`${PAGES.length>1?`<div class="muted small" style="margin:${i?14:0}px 4px 6px">Sayfa ${i+1}</div>`:""}<img src="${u}" alt="Taranan kağıt" style="width:100%;border-radius:10px;border:1px solid var(--line);background:#fff;display:block">`).join("");$("#pageModal").classList.remove("hidden")};
 $("#pageClose").onclick=()=>$("#pageModal").classList.add("hidden");
 $("#pageModal").onclick=e=>{if(e.target.id==="pageModal")$("#pageModal").classList.add("hidden")};
